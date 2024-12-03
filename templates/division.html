@@ -1,0 +1,223 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+        <div class="page-wrapper">
+            <div class="content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h4>Division Add</h4>
+                        <h6>Create new Division</h6>
+                    </div>
+                </div>
+
+                <!-- Add Division Form -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-3 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Division Name</label>
+                                    <input type="text" id="division_name" name="division_name" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Center</label>
+                                    <select id="center" name="center" class="form-control">
+                                        <option value="">Select Center</option>
+                                        <!-- Add dynamic centers here -->
+                                        {% for center in center_name %}
+                                        <option value="{{ center.id }}">{{ center.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <a href="division.html" id="submit-division-btn" class="btn btn-submit me-2">Submit</a>
+                                <a href="{% url 'division-list' %}" class="btn btn-cancel">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Division List -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h4>Division Detail View</h4>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-top">
+                            <div class="search-set">
+                                <div class="search-input">
+                                    <a class="btn btn-searchset">
+                                        <img src="{% static 'assets/img/icons/search-white.svg' %}" alt="search icon">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table datanew">
+                                <thead>
+                                    <tr>
+                                        <th>Division Name</th>
+                                        <th>Center</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if divisions %}
+                                    {% for division in divisions %}
+                                    <tr>
+                                        <td>{{ division.name }}</td>
+                                        <td>{{ division.center_name }}</td>
+                                        <td>
+                                            <a class="me-3" href="#">
+												<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+											</a>
+											<a id="delete-division-btn" data-id="{{ division.id }}" 
+												href="javascript:void(0);">
+												<img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
+											</a> 
+                                        </td>
+                                    </tr>
+                                        {% endfor %}
+                                        {% else %}
+
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <!-- DELTE CONFIRMATION MODAL -->
+            <div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm Deletion</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center ">
+                        <p>Are you sure you want to delete this center?</p>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button type="button" class="btn btn-danger text-right" id="confirm-delete">Delete</button>
+                        <button type="button" class="btn btn-secondary text-right" id="cancel-delete" data-dismiss="modal">Cancel</button>
+                    </div>
+                    </div>
+                </div>
+                </div>
+
+ {% endblock %}
+
+ {% block scripts %}
+        <script>
+            $(document).ready(function () {
+                $('#submit-division-btn').click(function (event) {
+                    event.preventDefault(); // Prevent the default form submission
+                    var divisionName = $('#division_name').val();
+                    var center = $('#center').val();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url "division-list" %}', // Django URL for adding a division
+                        data: {
+                            'name': divisionName,
+                            'center': center,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                window.location.reload();
+                            } else {
+                                $('#error-message-division').text(response.message).show(); // Show error message for division
+                            }
+                        },
+                        error: function () {
+                            $('#error-message-division').text('An error occurred. Please try again.').show(); // Show error message for division
+                        }
+                    });
+                });
+            });
+
+                // Handle delete button click
+            
+    $(document).on('click', '#delete-division-btn', function (e) {
+        e.preventDefault(); // Prevent default link behavior
+
+        var divisionId = $(this).data('id'); // Get center ID from data attribute
+        if (!divisionId) {
+            alert('Division ID not found.');
+            return;
+        }
+
+        // Store the divisionId in the modal's confirm button for reference
+        $('#confirm-delete').data('id', divisionId);
+
+        // Show the confirmation modal
+        $('#confirmDeleteModal').modal('show');
+    });
+
+    // Handle the confirmation of deletion
+    $(document).on('click', '#confirm-delete', function () {
+        var divisionId = $(this).data('id'); // Retrieve division ID from the modal's confirm button
+
+        if (!divisionId) {
+            alert('Divisions ID not found.');
+            return;
+        }
+
+        // Construct the URL dynamically
+        const baseUrl = '/divisions/';
+        const deleteUrl = `${baseUrl}${divisionId}/`;
+
+        // Perform the AJAX request for deletion
+        $.ajax({
+            url: deleteUrl,
+            type: 'POST',
+            data: JSON.stringify({ 'division_id': divisionId }),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token header
+            },
+            success: function (response) {
+                if (response.success) {
+                    console.log('Delete successful, reloading page...');
+
+                    // Close the modal after success
+                    $('#confirmDeleteModal').modal('hide');
+
+                    // Reload the page immediately after successful deletion
+                    window.location.reload(true); // Force reload (bypass cache)
+                } else {
+                    alert('Error: ' + response.message);
+                    console.error('Delete failed: ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert('An error occurred: ' + error);
+                console.error('AJAX error:', error);
+            }
+        });
+    });
+
+    // Handle the cancel button to close the modal
+    $(document).on('click', '#cancel-delete, .close', function () {
+        $('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
+    });
+
+
+        </script>
+
+{% endblock %}

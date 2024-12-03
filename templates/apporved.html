@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Your Request Has Been Approved!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #28C76F;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px 5px 0 0;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px 0;
+            font-size: 14px;
+            color: #999;
+        }
+        a {
+            color: #28C76F;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+ 
+        <div class="content">
+            <p>Dear {{ user_name }},</p>
+            <p>We are pleased to inform you that your request has been approved. You can now access the system and start using the services.</p>
+            <p>If you have any questions or need further assistance, please do not hesitate to contact us.</p>
+            <p>Best regards,<br>The {{ company_name }} Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ current_year }} {{ company_name }}. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

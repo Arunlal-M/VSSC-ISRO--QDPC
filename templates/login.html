@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+        <meta name="description" content="POS - Bootstrap Admin Template">
+		<meta name="keywords" content="admin, estimates, bootstrap, business, corporate, creative, invoice, html5, responsive, Projects">
+        <meta name="author" content="Dreamguys - Bootstrap Admin Template">
+        <meta name="robots" content="noindex, nofollow">
+        <title>Login - Pos admin template</title>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        {% load static %}
+		<!-- Favicon -->
+        <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicon.png' %}">
+		<!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+		
+        <!-- Fontawesome CSS -->
+		<link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
+		<link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
+		
+		<!-- Main CSS -->
+        <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+		
+    </head>
+    <body class="account-page">
+	
+		<!-- Main Wrapper -->
+        <div class="main-wrapper">
+			<div class="account-content">
+				<div class="login-wrapper">
+                    
+                    <div class="login-img">
+                        <img src="{% static 'assets/img/hi.jpg' %}" alt="img">
+                    </div>
+                    <div class="login-content">
+                        <div class="login-userset">
+                             <div class="login-logo logo-normal">
+                                <img src="{% static 'assets/img/est.png' %}" alt="img">
+                            </div>
+							<!-- <a href="index.html" class="login-logo logo-white">
+								<img src="assets/img/logo-white.png"  alt="">
+							</a> -->
+                            <!-- <div class="login-userheading">
+                                <h3>Sign In</h3>
+                                <h4>Please login to your account</h4>
+                            </div> -->
+                           <div class="form-login">
+                                <label>User Name</label>
+                                <div class="form-addons">
+                                    <input type="text" id="username" name="username">
+                                    <!-- <img src="assets/img/icons/mail.svg" alt="img"> -->
+                                </div>
+                            </div>
+                            <div class="form-login">
+                                <label>Password</label>
+                                <div class="pass-group">
+                                    <input type="password" class="pass-input" id="password" name="password">
+                                    <span class="fas toggle-password fa-eye-slash"></span>
+                                </div>
+                            </div>
+                            <div id="error-message" style="color: red; display: none;"></div> <!-- Hidden initially -->
+
+                            <div class="form-login">
+                                <div class="alreadyuser">
+                                    <h4 style="text-align:right;"> <a href="#" id="forgot-username-link">Forgot Username ? <a href="#" id="forgot-password-link">Forgot Password ?</a></a></h4>
+                                </div>
+                            </div>
+                            <!-- <div class="form-login">
+                                <a class="btn btn-login" href="index.html">Sign In</a>
+                            </div> -->
+                            <!-- <div class="signinform text-center">
+                                <h4>Don’t have an account? <a href="signup.html" class="hover-a">Sign Up</a></h4>
+                            </div> -->
+                            <!-- <div class="form-setlogin">
+                                <h4>Or sign up with</h4>
+                            </div> -->
+                            <div class="row">
+                                <div class="col-lg-3 col-sm-3 col-3">
+
+                                </div>
+                                <div class="col-lg-12 col-sm-12 col-12 text-center">
+                                    <div class="form-login">
+                                        <a class="btn btn-login" id="login-btn" href="index.html">Sign In</a>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-sm-3 col-3">
+
+                                </div>
+                                <div class="signinform text-center">
+                                    <h4>Not a Member? <a href="#"  id="register-btn" class="hover-a">Register now</a></h4>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+			</div>
+        </div>
+		<!-- /Main Wrapper -->
+		
+		<!-- jQuery -->
+        <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+
+         <!-- Feather Icon JS -->
+		<script src="{% static 'assets/js/feather.min.js' %}"></script>
+		
+		<!-- Bootstrap Core JS -->
+        <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+		
+		<!-- Custom JS -->
+		<script src="{% static 'assets/js/script.js' %}"></script>
+		
+    </body>
+    <script>
+        
+ $(document).ready(function() {
+    $('#login-btn').click(function(event) {
+        event.preventDefault(); // Prevent the default form submission
+        
+        var username = $('#username').val();
+        var password = $('#password').val();
+
+        if (!username || !password) {
+            $('#error-message').text('Username and Password are required.').show(); // Show error message
+            return; // Stop further execution
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '{% url "login_view" %}', // Update this to your actual login endpoint
+            data: {
+                'username': username,
+                'password': password,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    var token = response.result[0].token;
+                    var name = response.result[0].username;
+
+                    // Redirect to the dashboard page with username as query parameter
+                    window.location.href = "{% url 'user-dashboard' %}";
+                } else {
+                    $('#error-message').text(response.message).show(); // Show error message
+                }
+            },
+            error: function() {
+                $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+            }
+        });
+    });
+});
+
+
+
+        
+        
+            // Clear input fields
+           
+            $('#forgot-username-link').click(function(event) {
+                event.preventDefault(); // Prevent the default action of the link
+                window.location.href = '/forgot-username'; // Redirect to /forgot-username on click
+            });
+            
+
+            $('#forgot-password-link').click(function(event) {
+                event.preventDefault(); // Prevent the default action of the link
+                window.location.href = '/forgot-password'; // Redirect to /forgot-username on click
+            });
+        
+
+            
+            $('#register-btn').click(function(event) {
+                event.preventDefault(); // Prevent the default action of the link
+                window.location.href = '/sign-up    '; // Redirect to /forgot-username on click
+            });
+        
+   
+
+       
+    </script>
+</html>

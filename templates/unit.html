@@ -1,0 +1,187 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+	<div class="content">
+		<div class="page-header">
+			<div class="page-title">
+				<h4>Unit Add</h4>
+				<h6>Create new unit</h6>
+			</div>
+		</div>
+		<!-- /add -->
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+
+					<div class="col-lg-3 col-sm-6 col-12">
+						<div class="form-group">
+							<label> Name</label>
+							<input type="text" id="unit_name" name="unit_name" class="form-control">
+						</div>
+					</div>
+
+					<div class="col-lg-3 col-sm-6 col-12">
+						<div class="form-group">
+							<label> Abbreviation</label>
+							<input type="text" id="unit_abbreviation" name="unit_abbreviation" class="form-control">
+						</div>
+					</div>
+
+					<div class="col-lg-12">
+						<a href="unit.html" id="submit-btn" class="btn btn-submit me-2">Submit</a>
+						<a href="{% url 'unit-list' %}" class="btn btn-cancel">Cancel</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- /add -->
+
+
+		<div class="page-header">
+			<div class="page-title">
+				<h4>Unit List View</h4>
+				<!-- <h6>Manage your products</h6> -->
+			</div>
+		</div>
+
+
+		<!-- /product list -->
+		<div class="card">
+			<div class="card-body">
+				<div class="table-top">
+					<div class="search-set">
+						<div class="search-path">
+							<a class="btn btn-filter" id="filter_search">
+								<img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+								<span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+							</a>
+						</div>
+						<div class="search-input">
+							<a class="btn btn-searchset"><img src="{% static 'assets/img/icons/search-white.svg' %}"
+									alt="img"></a>
+						</div>
+					</div>
+					<div class="wordset">
+						<ul>
+							<li>
+								<a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img
+										src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+							</li>
+							<li>
+								<a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img
+										src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+							</li>
+							<li>
+								<a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img
+										src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<!-- table iterations -->
+				<div class="table-responsive">
+					<table class="table datanew">
+						<thead>
+							<tr>
+
+								<th>ID</th>
+								<th>Unit Name</th>
+								<th>Unit Abbreviation</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							{% if units %}
+							{% for unit in units %}
+							<tr>
+
+								<td>{{ unit.id }}</td>
+								<td>{{ unit.name }}</td>
+								<td>{{ unit.abbreviation }}</td>
+								<td>
+									<a id="delete-unit-btn" data-id="{{ unit.id }}">
+										<img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
+									</a>
+								</td>
+							</tr>
+							{% endfor %}
+							{% else %}
+
+						{% endif %}
+						</tbody>
+					</table>
+				</div>
+
+
+
+			</div>
+		</div>
+	</div>
+	{% endblock %}
+	{% block scripts %}
+	<script>
+		$(document).ready(function () {
+			$('#submit-btn').click(function (event) {
+				event.preventDefault(); // Prevent the default form submission
+				var name = $('#unit_name').val();
+				var abbreviation = $('#unit_abbreviation').val();
+
+				$.ajax({
+					type: 'POST',
+					url: '{% url "unit-list" %}', //  Replace with your Django URL for adding a supplier
+					data: {
+
+						'name': name,
+						'abbreviation': abbreviation,
+						'csrfmiddlewaretoken': '{{ csrf_token }}'
+					},
+					success: function (response) {
+
+						if (response.success) {
+							window.location.reload()
+						} else {
+							$('#error-message').text(response.message).show(); // Show error message
+						}
+					},
+					error: function () {
+						$('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+					}
+				});
+			});
+		});
+
+
+
+		$(document).on('click', '#delete-unit-btn', function () {
+			var unitId = $(this).data('id'); // Get the supplier ID from the button's data attribute
+			if (unitId) {
+				const baseUrl = '/unit/';
+				const deleteUrl = `${baseUrl}${unitId}/`; // URL for deleting Unit
+
+				$.ajax({
+					url: deleteUrl,
+					type: 'POST', // Use POST for deleting supplier
+					headers: {
+						'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token in the headers
+					},
+					success: function (response) {
+						if (response.success) {
+							window.location.reload(); // Reload the page on success
+						} else {
+							alert('Error: ' + response.message);
+						}
+					},
+					error: function (xhr, status, error) {
+						alert('An error occurred: ' + error);
+					}
+				});
+			} else {
+				alert('Unit ID not found.');
+			}
+		});
+
+	</script>
+	{% endblock %}

@@ -1,0 +1,405 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Add Batch</h4>
+                <h6>Create new Batch</h6>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Batch ID</label>
+                            <input type="text" id="batch-id" name="batch-id" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Raw Material</label>
+                            <select id="raw_material" name="raw_material" class="form-control">
+                                <option value="">Select a Raw Material</option>
+                                {% for rwm in raw_materials %}
+                                <option value="{{ rwm.id }}">{{ rwm.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label for="procurement_date">Procurement Date</label>
+                            <input type="date" id="procurement_date" name="procurement_date" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Batch Size</label>
+                            <input type="text" name="batch_size_value" id="batch_size_value" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Unit</label>
+                            <select class="select" id="batch_size_unit" name="batch_size_unit" >
+                                <option value="">Select a Unit</option>
+                                {% for unit in units %}
+                                <option value="{{ unit.id }}">{{ unit.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Packing Details</label>
+                            <input type="text" name="packing_details" id="packing_details" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <button id="submitButton" class="btn btn-submit me-2">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="recents" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Test List</h5>
+                <button type="button" class="close" id="modal-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs-sets">
+                    <div class="tab-content" id="tab-content">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#raw_material').on('change', function () {
+            var selectedValue = $(this).val();
+            if (selectedValue) {
+                $.ajax({
+                    url: `/product/raw-material/${selectedValue}/`,
+                    type: 'GET',
+                    success: function (response) {
+                        var rawMaterialData = response.data;
+                        console.log(response.data)
+
+                        var acceptanceTests = rawMaterialData.acceptance_test;
+                        var tabContent = $('#tab-content');
+                        tabContent.empty().hide();
+
+                        // Fill the Batch ID Field
+                        var batchId = $('#batch-id').val(); // Assuming the API returns a batch_id
+                        $('#batch-id').val(batchId);
+                        $('#batch-id').siblings('.text-danger').remove();
+
+                        if (!batchId) {
+                            $('#batch-id').addClass('is-invalid'); // Add a class for styling if needed
+                            $('#batch-id').after('<span class="text-danger">Please fill in the Batch ID</span>');
+                            $('#recents').modal('hide');
+                        } else {
+                            $('#batch-id').removeClass('is-invalid'); // Remove validation if value is present
+                            $('#batch-id').siblings('.text-danger').remove();
+                            $('#recents').modal('show');
+                            // Remove any previous message
+
+                            // Populate tabContent if batchId is present
+                            tabContent.show(); // Show tabContent only when Batch ID is valid
+
+                            var source = rawMaterialData.sources;
+                            var suppliers = rawMaterialData.suppliers;
+                            var grade = rawMaterialData.grade;
+
+                            // Start building the new content
+                            var newContent = `
+                        <div class="row mb-3 align-items-center border-bottom">
+                            <div class="col-lg-3 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Batch ID</label>
+                                    <input type="text" class="form-control" id="batch-id" value="${batchId}" placeholder="Enter Batch ID" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Source</label>
+                                    <select class="form-control" id="source-dropdown">
+                                        <option value="">Select a Source</option>`;
+                            // Loop through sources to create option elements
+                            source.forEach(function (source) {
+                                newContent += `<option value="${source.id}">${source.name}</option>`;
+                            });
+
+                            // Close the select element and continue with the rest of the form
+                            newContent += `
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Supplier</label>
+                                    <select class="form-control" id="supplier-dropdown">
+                                        <option value="">Select a Supplier</option>`;
+                            // Loop through suppliers to create option elements
+                            suppliers.forEach(function (suppliers) {
+                                newContent += `<option value="${suppliers.id}">${suppliers.name}</option>`;
+                            });
+
+                            // Close the select element and continue with the rest of the form
+                            newContent += `
+                                    </select>
+                                </div>
+                            </div>
+
+                    <div class="col-lg-3 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Grade</label>
+                                    <select class="form-control" id="grade-dropdown">
+                                        <option value="">Select a Grade</option>`;
+
+                            // Loop through suppliers to create option elements
+                            grade.forEach(function (grade) {
+                                newContent += `<option value="${grade.id}">${grade.name}</option>`;
+                            });
+
+                            // Close the select element and continue with the rest of the form
+                            newContent += `
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                            acceptanceTests.forEach((test) => {
+                                newContent += `
+                            <div class="row mb-3 align-items-center border-bottom">
+                               <div class="col-lg-2 col-sm-6 col-12 p-2">
+                                    <div class="form-group">
+                                        <label>Specification</label>
+                                        <input type="text" id="specification-value-${test.id}" value="${test.min}-${test.max}" placeholder="Enter specification" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-sm-6 col-12 p-2">
+                                    <div class="form-group">
+                                        <label>${test.name}</label>
+                                        <input type="number" id="test-value-${test.id}" placeholder="Enter test value" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-sm-6 col-12 p-2">
+                                    <div class="form-group">
+                                        <label>Unit</label>
+                                        <input type="text" id="unit-${test.id}" value="${test.unit}" placeholder="Enter unit" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-sm-6 col-12 p-2">
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select class="form-control" id="status-${test.id}" style="background-color: green; color: white;">
+                                            <option value="Valid">Specification Met</option>
+                                            <option value="Invalid">Specification Not Met</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-sm-6 col-12 p-2">
+                                    <div class="form-group">
+                                        <label>Remark</label>
+                                        <input type="text" id="remark-${test.id}" placeholder="Enter remark" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-sm-6 col-12 p-2">
+                                    <div class="form-group">
+                                        <label>File</label>
+                                        <input type="file" class="form-control mt-2" id="file-${test.id}">
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                            // Add event listener to check if test value is within the min and max range
+                            $(document).on('input', `#test-value-${test.id}`, function () {
+                                var enteredValue = parseFloat($(this).val());
+
+                                var min = parseFloat(test.min);
+                                var max = parseFloat(test.max);
+                                var statusDropdown = $(`#status-${test.id}`);
+
+                                // Automatically select status based on entered value
+                                if (enteredValue >= min && enteredValue <= max) {
+                                    statusDropdown.val("Valid");
+                                    statusDropdown.css("background-color", "green");
+                                    statusDropdown.css("color", "white");
+                                } else {
+                                    statusDropdown.val("Invalid");
+                                    statusDropdown.css("background-color", "red");
+                                    statusDropdown.css("color", "white");
+                                }
+                            });
+
+                        });
+
+                            newContent += `
+                        <div class="row">
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <button id="submit-all-tests" class="btn btn-submit me-2">Submit All</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                            tabContent.append(newContent);
+                        }
+                        $('#submit-all-tests').off('click').on('click', function () {
+                            var formData = new FormData();
+                            formData.append('raw_material', selectedValue);
+                            formData.append('batch_id', batchId);
+                        
+                            // Loop through each acceptance test and append its data to FormData
+                            acceptanceTests.forEach((test, index) => {
+                                formData.append(`acceptance_tests[${index}][id]`, test.id);
+                                formData.append(`acceptance_tests[${index}][test_value]`, $(`#test-value-${test.id}`).val());
+                                formData.append(`acceptance_tests[${index}][min_value]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[0], 10));
+                                formData.append(`acceptance_tests[${index}][max_value]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[1], 10));
+                                formData.append(`acceptance_tests[${index}][status]`, $(`#status-${test.id}`).val());
+                                formData.append(`acceptance_tests[${index}][remark]`, $(`#remark-${test.id}`).val());
+                                formData.append(`acceptance_tests[${index}][created_by]`, 'user');
+                        
+                                // Append the file directly (if a file is selected)
+                                var fileInput = $(`#file-${test.id}`)[0].files[0];
+                                if (fileInput) {
+                                    formData.append(`acceptance_tests[${index}][file]`, fileInput);
+                                }
+                            });
+                        
+                            // Append additional fields for source, supplier, and grade
+                            formData.append('sources', $('#source-dropdown').val());
+                            formData.append('suppliers', $('#supplier-dropdown').val());
+                            formData.append('grade', $('#grade-dropdown').val());
+                        
+                            // AJAX request to send FormData to the server
+                            $.ajax({
+                                url: '{% url "rawmaterial-batch-test-add" %}',
+                                type: 'POST',
+                                data: formData,
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                },
+                                processData: false,
+                                contentType: false,
+                                success: function (response) {
+                                    alert('Files and test values submitted successfully.');
+                                    $('#modal-close-btn').click();
+                                },
+                                error: function (error) {
+                                    console.log('Error submitting data:', error);
+                                }
+                            });
+                        });
+                        
+                        
+                    },
+                    error: function (error) {
+                        console.log('Error fetching data:', error);
+                    }
+                });
+            }
+        });
+    });
+
+    $(document).ready(function() {
+        $('#submitButton').click(function(event) {
+            event.preventDefault(); 
+            // Check if this alert shows
+
+            // Gather form data
+            var rawMaterial = $('#raw_material').val();
+            var batchId = $('#batch-id').val();
+            var procurementDate = $('#procurement_date').val();
+            var batchSizeValue = parseFloat($('#batch_size_value').val()); // Ensure float conversion
+            var batchSizeUnit = $('#batch_size_unit').val();
+            // var batchSizeUnit = $('#batch_size_unit').val() ? $('#batch_size_unit').val().map(Number) : [];
+            var packingDetails = $('#packing_details').val();
+
+            // Create the data object
+            var rawMaterialBatchData = {
+                raw_material: rawMaterial,
+                batch_id: batchId,
+                procurement_date: procurementDate,
+                batch_size_value: batchSizeValue,
+                batch_size_unit: batchSizeUnit,
+                packing_details: packingDetails
+            };
+        // Debug: Check the data object
+
+            // Send data as JSON
+            $.ajax({
+                type: 'POST',
+                url: '{% url "raw-material-batch-add" %}', // URL to your Django view
+                data: JSON.stringify(rawMaterialBatchData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+                },
+                success: function(response) {
+                // Check the response
+                    if (response.success) {
+                        window.location.href = "{% url 'raw-material-batch-fetch' %}"; // Redirect or update the UI as needed
+                    } else {
+                        $('#error-message').text(response.message).show(); // Show error message
+                    }
+                },
+                error: function() {
+                    $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+                }
+            });
+        });
+    });
+
+</script>
+
+
+<style>
+    .modal-dialog {
+        max-width: 1250px;
+        margin-left: 290px;
+    }
+
+    /* Add border to each row */
+    .row.border-bottom {
+        border-bottom: 1px solid #ccc;
+    }
+
+    /* Make the style responsive for mobile view */
+    @media (max-width: 768px) {
+        .modal-dialog {
+            max-width: 90%;
+            margin-left: 5%;
+        }
+
+        .row.border-bottom {
+            flex-direction: column;
+        }
+
+        .row.border-bottom>div {
+            margin-bottom: 10px;
+        }
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,582 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+            <div class="page-wrapper">
+                <div class="content">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h4>User List</h4>
+                        </div>
+                    </div>
+                    <div class="comp-sec-wrapper">
+                
+                      
+                        
+                        <!-- Tabs -->
+                        <section class="comp-section">
+                            <div class="section-header">
+                                <!-- <h3 class="section-title">User List</h3> -->
+                                <div class="line"></div>
+                            </div>
+                            
+                            
+                            <div class="row">
+                                
+
+                                <div class="col-md-12">
+                                    <div class="card bg-white">
+                                        <div class="card-header">
+                                            <h5 class="card-title">Solid justified</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="nav nav-tabs nav-tabs-solid nav-justified">
+                                                <li class="nav-item"><a class="nav-link active" href="#solid-justified-tab1" data-bs-toggle="tab">Active</a></li>
+                                                <li class="nav-item"><a class="nav-link" href="#solid-justified-tab2" data-bs-toggle="tab">Inactive</a></li>
+                                            </ul>
+                                            <div class="tab-content">
+                                                <div class="tab-pane show active" id="solid-justified-tab1">
+                                                    <div class="table-responsive">
+                                                        <table class="table  datanew">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>User name </th>
+                                                                    <th>UserType</th>
+                                                                    <th>Center</th>
+                                                                    <th>Divisions</th>
+                                                                    <th>Role </th>
+                                                                    <th>Created on  </th>
+                                                                    <th>Status</th>
+                                                                    <th>Action</th>
+                                                                    
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for user in users %}
+                                                                {% if  user.is_active %}
+                                                                <tr>
+                                                                    <td>{{ user.username }}</td>
+                                                                    <td>{{ user.usertype }}</td>
+                                                                    <td>
+                                                                        {% for cet in user.centre.all %}
+                                                                            {{ cet.name }}{% if not forloop.last %}, {% endif %}
+                                                                        {% endfor %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% for div in user.divisions.all %}
+                                                                            {{ div.name }}{% if not forloop.last %}, {% endif %}
+                                                                        {% endfor %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% for role in user.role.all %}
+                                                                            {{ role.name }}{% if not forloop.last %}, {% endif %}
+                                                                        {% endfor %}
+                                                                    </td>
+                                                                    <td>{{ user.date_joined }}</td>
+                                                                    <td>
+                                                                        <div class="status-toggle d-flex justify-content-between align-items-center">
+                                                                            <input type="checkbox" id="user_{{ user.id }}" class="check" data-user-id="{{ user.id }}" {% if user.is_active %}checked{% endif %}>
+                                                                            <label for="user_{{ user.id }}" class="checktoggle">checkbox</label>
+                                                                        </div>
+                                                                    </td>
+                                                                     <td>
+                                                                         <a class="me-3 update-user-btn" href="editquotation.html" data-bs-toggle="modal" data-bs-target="#exampleModal"data-user-id="{{ user.id }}">
+                                                                            <!-- <img src="assets/img/icons/edit.svg" alt="img"> -->
+                                                                            <i class="fa fa-edit"></i>
+                                                                            </a>                                                            
+                                                                  
+                                                                    </td>
+                                                                   
+                                                                </tr>
+                                                                {% endif %}
+                                                                {% endfor %}
+                                                         
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="tab-pane" id="solid-justified-tab2">
+                                                    <div class="table-responsive">
+                                                        <table class="table  datanew">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>User name </th>
+                                                                    <th>User type</th>
+                                                                    <th>email</th>
+                                                                    <th>Role</th>
+                                                                    <th>Created On</th>
+                                                                    <th>Status</th>
+                                                                    <th>Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for user in users %}
+                                                                {% if not user.is_active %}
+                                                                <tr>
+                                                                    <td>{{ user.username }}</td>
+                                                                    <td>{{ user.usertype }}</td>
+                                                                    <td>{{ user.email }}</td>
+                                                                    <td><select id="options" name="options">
+                                                                        {% for role in all_roles %}
+                                                                        <option value="{{ role.id }}">{{ role.name }}</option>
+                                                                    {% endfor %}
+                                                                       
+                                                                    </select></td>
+                                                                    <td>3/15/2022</td>
+                                                                    <td><span class="bg-lightred badges">InActive</span></td>
+                                                                    <td>
+                                                                          
+                                                                        <!-- <a class="me-3" href="newuseredit.html"> -->
+                                                                            <!-- <img src="assets/img/icons/edit.svg" alt="img"> -->
+                                                                            <!-- <span class="bg-lightgreen badges">Approve</span> -->
+                                                                            <button type="button" class="bg-lightgreen badges"  data-user-id="{{ user.id }}"  id="confirm-button-me">Approve User</button>
+                                                                        <!-- </a> -->
+                                                                        <a class="me-3 reject-user-btn" href="javascript:void(0);" data-user-id="{{ user.id }}"> <span class="bg-lightred badges">Reject User</span> </a>
+                                                                    </td>
+                                                                </tr>
+                                                                
+                                                         
+                                                            </tbody>
+                                                            {% endif %}
+                                                            {% endfor %}
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </section>
+                        <!-- /Tabs -->
+
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <!-- /Main Wrapper -->
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">User Update</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container mt-2">
+                           
+                            <form class="row">
+                                <div class="col-6 mt-2">
+                                    <label for="username" class="form-label">User Name</label>
+                                    <input type="text" class="form-control" id="username" placeholder="Enter User Name" readonly>
+                                </div>
+                        
+                                <div class="col-12 mt-2 ">
+                                    <label for="role" class="form-label">Role</label>
+                                    <div id="role" class="form-check scrollable-div">
+                                        <!-- Checkboxes will be populated dynamically -->
+                                    </div>
+                                </div>
+                                
+                                <div class="col-6 mt-2">
+                                    <label for="usertype" class="form-label">User Type</label>
+                                    <select class="form-select" id="usertype" disabled>
+                                        <!-- User Type options will be populated dynamically -->
+                                    </select>
+                                </div>
+
+                                <div class="col-6 mt-2">
+                                    <label for="center" class="form-label">Center</label>
+                                    <select class="form-select" id="center" disabled>
+                                        <!-- Center options will be populated dynamically -->
+                                    </select>
+                                </div>
+
+                                <div class="col-6 mt-2" style= "margin-left:7px">
+                                    <label for="division" class="form-label">Division</label>
+                                    <select class="form-select" id="division"   >
+                                        <!-- Division options will be populated dynamically -->
+                                    </select>
+                                </div>
+        
+
+                                <input type="hidden" id="userId" name="userId" value="">
+
+                                </div>
+                                    <div class="col-12 mt-3 d-flex justify-content-center">
+                                        <button type="submit" id="saveUserChanges" class="btn btn-primary btn-lg mt-3" style="display: none;">Update</button>
+                                    </div>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div> -->
+                </div>
+            </div>
+    {% endblock %}
+
+{% block scripts %}
+    <script>
+    function populateDivisionDropdown(allDivisions, selectedDivisions, userId) {
+    const divisionSelect = $('#division');
+    divisionSelect.empty(); // Clear existing options
+
+    // Populate the division dropdown
+    allDivisions.forEach(division => {
+        divisionSelect.append(`<option value="${division.id}">${division.name}</option>`);
+    });
+
+    selectedDivisions.forEach(divisionId => {
+        $(`#division option[value="${divisionId}"]`).prop('selected', true);
+    });
+
+    
+
+    // Set the user ID in the hidden input field
+    $('#userId').val(userId);
+
+    // Trigger the change event to update Select2 if you're using it
+    
+}
+
+
+function populateCenterDropdown(allCentres,selectedCentres) {
+      
+      const centerSelect = $('#center');
+      centerSelect.empty(); // Clear existing options
+
+      allCentres.forEach(center => {
+          centerSelect.append(`<option value="${center.id}">${center.name}</option>`);
+      });
+
+      selectedCentres.forEach(centerId => {
+          $(`#center option[value="${centerId}"]`).prop('selected', true);
+      });
+     
+      // Trigger the change event to update Select2
+     
+  }
+  function populateRoleTypeDropdown(allRoles, selectedRoles) {
+    const roleSelect = $('#role');
+    roleSelect.empty(); // Clear existing options
+
+    // Populate the container with checkboxes
+    allRoles.forEach(role => {
+        const isChecked = selectedRoles.includes(role.id) ? 'checked' : '';
+        roleSelect.append(`
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" value="${role.id}" ${isChecked}>
+                ${role.name}
+            </label><br>
+        `);
+    });
+}
+
+
+function populateUserTypeDropdown(allUsertypes, selectedusertype) {
+
+const usertypeSelect = $('#usertype');
+usertypeSelect.empty(); // Clear existing options
+
+// Populate the dropdown
+allUsertypes.forEach(usertype => {
+    usertypeSelect.append(`<option value="${usertype.id}">${usertype.name}</option>`);
+});
+
+// Ensure selectedusertype is an array
+if (!Array.isArray(selectedusertype)) {
+    selectedusertype = [selectedusertype];
+}
+
+usertypeSelect.val(selectedusertype); // Use .val() to set selected values
+
+// Trigger the change event to upda  usertypeSelect.trigger('change');
+}
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+
+    // Get all checkboxes
+    const checkboxes = document.querySelectorAll('.status-toggle .check');
+    const updateUserStatusUrl = '{% url "update_user_status" %}';
+
+    checkboxes.forEach(checkbox => {
+      
+        checkbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            const username = this.id.split('_')[1]; // Extract username from checkbox id
+            const id = this.getAttribute('data-user-id'); 
+          
+            // Prepare data to send
+            const data = {
+                'username': username,
+                'is_active': isChecked,
+                'id': id, 
+            };
+
+            // Send AJAX request to update user status
+            fetch(updateUserStatusUrl, {
+                
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token for Django
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    console.error('Failed to update user status.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+
+$(document).ready(function() {
+   
+   $('.update-user-btn').on('click', function() {
+       $('#saveUserChanges').show(); 
+      
+       const baseUrl = '/user/user-update/';
+   
+       const userId = $(this).data('user-id');
+ /// Get the user ID from the button's data attribute
+       const userUpdateUrl = `${baseUrl}${userId}/`; // Construct the URL
+
+       // Make an AJAX call to fetch the user data
+       $.ajax({
+           type: 'GET',
+           url: userUpdateUrl,
+           success: function(response) {
+            
+               // Assuming response contains the user data
+               const userData = response.data;
+               // Populate the form fields in the modal
+               $('#userId').val(userData.userid);
+               $('#username').val(userData.username);
+              
+               populateCenterDropdown(userData.all_centres, userData.centre)
+               populateDivisionDropdown(userData.all_divisions, userData.divisions, userData.userid);
+               populateUserTypeDropdown(userData.all_usertypes,userData.usertype)
+               populateRoleTypeDropdown(userData.all_roles,userData.role);
+
+   
+               // Open the modal
+               $('#exampleModal').modal('show');
+           },
+           error: function(error) {
+               console.error('Failed to fetch user data:', error);
+           }
+       });
+   });
+
+
+});
+
+
+$(document).ready(function() {
+    $('#saveUserChanges').click(function(event) {
+        event.preventDefault(); // Prevent the default form submission
+      
+        const userId = $('#userId').val();
+        const userUpdateUrl = `{% url 'user-update' user_id=0 %}`.replace('0', userId); // Construct the URL for the user update with user ID
+        var username = $('#username').val();
+        var centre = $('#center').val() ? [parseInt($('#center').val())] : [];
+        var divisions = $('#division').val() ? [parseInt($('#division').val())] : [];
+        var role = $('#role input[type="checkbox"]:checked').map(function() {
+        return parseInt($(this).val());
+    }).get();
+
+
+        // Gather form data
+        const formData = {
+            'centre': centre,
+            'divisions': divisions,
+            'role': role,
+        };
+
+        // Make an AJAX call to update the user data
+        $.ajax({
+            type: 'PUT',
+            url: userUpdateUrl,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token for Django
+            },
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            success: function(response) {
+                if (response.success) {
+                    // Close the modal
+                    // $('#userUpdateModal').modal('hide');
+                    // Optionally, refresh the page or update the UI
+                    window.location.reload();
+                } else {
+                    $('#error-message').text(response.message).show(); // Show error message
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error updating user data:', error);
+                $('#error-message').text('An error occurred while updating user data. Please try again.').show(); // Show error message
+            }
+        });
+    });
+});
+
+
+$(document).ready(function() {
+
+    const baseUrl = '/user/approve-user/'; // Adjust this to your actual URL pattern
+
+    $(document).on("click", "#confirm-button-me", function () {
+
+        const userId = $(this).data('user-id');
+        const selectedRoles = $('#options').val(); // Get selected roles from dropdown
+        console.log(selectedRoles)
+        const url = `${baseUrl}${userId}/`; // Append user ID to the base URL
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes,Approve it!",
+            confirmButtonClass: "btn btn-primary",
+            cancelButtonClass: "btn btn-danger ml-1",
+            buttonsStyling: false,
+        }).then(function (result) {
+            if (result.value) {
+                // Fetch request to approve the user and update the role
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}' // Ensure CSRF token is included
+                    },
+                    body: JSON.stringify({ roles: selectedRoles }) // Send selected roles with the request
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: "success",  // Use "icon" instead of "type" as "type" is deprecated
+                            title: "Approved!",
+                            text: "You Approved Successfully.",
+                            confirmButtonClass: "btn btn-success",
+                        }).then(() => {
+                            // Add a delay before reloading the page
+                            setTimeout(function() {
+                                location.reload();  // Reload the page after showing the message
+                            }, 1000);  // 1000 milliseconds = 1 second
+                        });
+                    } else {   
+                        Swal.fire({
+                            icon: "error", // Use "icon" instead of "type" for error
+                            title: "Approval not Successful!",
+                            text: "User was not approved.",
+                            confirmButtonClass: "btn btn-danger",
+                        });
+                    }
+                });
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                Swal.fire({
+                    title: "Cancelled",
+                    text: "Not Approved :)",
+                    icon: "error",
+                    confirmButtonClass: "btn btn-success",
+                });
+            }
+        });
+
+    });
+
+});
+
+const baseUrlReject = '/user/reject-user/'; // Adjust this to your actual URL pattern
+
+$(document).on("click", ".reject-user-btn", function() {
+    const userId = $(this).data('user-id');
+    const url = `${baseUrlReject}${userId}/`; // Append user ID to the base URL
+    console.log(userId)
+
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, reject it!",
+        confirmButtonClass: "btn btn-primary",
+        cancelButtonClass: "btn btn-danger ml-1",
+        buttonsStyling: false,
+    }).then(function(result) {
+        if (result.value) {
+            // Fetch request to reject the user
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}' // Ensure CSRF token is included
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Rejected!",
+                        text: "User  has been rejected.",
+                        confirmButtonClass: "btn btn-success",
+                    }).then(() => {
+                        location.reload(); // Reload the page after showing the message
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Rejection not Successful!",
+                        text: "User  was not rejected.",
+                        confirmButtonClass: "btn btn-danger",
+                    });
+                }
+            });
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            Swal.fire({
+                title: "Cancelled",
+                text: "User  not rejected :)",
+                icon: "error",
+                confirmButtonClass: "btn btn-success",
+            });
+        }
+    });
+});
+
+
+    </script>
+      <style>
+        .scrollable-div {
+            width: 360px; /* Set the width of the div */
+            height: 100px; /* Set the height of the div */
+            overflow: auto; /* Add scrollbars if needed */
+            border: 1px solid #ccc; 
+            margin-left: 12px;/* Optional: Add a border for better visibility */
+        }
+    </style>
+{% endblock %}

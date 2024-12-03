@@ -1,0 +1,183 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}                 
+                                            <tbody>
+                                                                {% for user in users %}
+                                                                    {% if not user.is_active %}
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label class="checkboxs">
+                                                                                <input type="checkbox">
+                                                                                <span class="checkmarks"></span>
+                                                                            </label>
+                                                                        </td>
+                                                                        <td>{{ user.username }}</td>
+                                                                        <td>{{ user.usertype }}</td>
+                                                                        <td>
+                                                                            {% for cet in user.centre.all %}
+                                                                                {{ cet.name }}{% if not forloop.last %}, {% endif %}
+                                                                            {% endfor %}
+                                                                        </td>
+                                                                        <td>
+                                                                            {% for div in user.divisions.all %}
+                                                                                {{ div.name }}{% if not forloop.last %}, {% endif %}
+                                                                            {% endfor %}
+                                                                        </td>
+                                                                        <td>
+                                                                            {% for role in user.role.all %}
+                                                                                {{ role.name }}{% if not forloop.last %}, {% endif %}
+                                                                            {% endfor %}
+                                                                        </td>
+                                                                        <td>{{ user.date_joined }}</td>
+                                                                        <td><span class="bg-lightred badges">Inactive</span></td>
+                                                                        <td>
+                                                                            <button type="button" class="bg-secondary badges"  data-user-id="{{ user.id }}" id="approve_butn">Approve</button>
+                                                                            <a class="me-3 confirm-text" href="javascript:void(0);">
+                                                                                <span class="bg-lightred badges">Reject</span>
+                                                                            </a>
+                                                                        </td>
+                                                                    </tr>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </section>
+                        <!-- /Tabs -->
+
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+
+
+$(document).ready(function() {
+    // Hardcode the base URL
+    const baseUrl = '/user/approve-user/'; // Adjust this to your actual URL pattern
+
+    $(document).on("click", "#approve_butn", function () {
+        const userId = $(this).data('user-id');
+        const url = `${baseUrl}${userId}/`; // Append user ID to the base URL
+
+        // Log URL for debugging
+        console.log("Request URL:", url);
+
+        Swal.fire({
+            title: "Do you want to approve this user?",
+            showCancelButton: true,
+            confirmButtonText: "Approve",
+            
+           
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Call the API to approve the user
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}' // Ensure CSRF token is included
+                    },
+                    // No need to include the body if your endpoint only needs the URL parameter
+                })
+                .then(response => response.json())
+                .then(data => {
+                 
+                    if (data.isSuccess) {
+                        Swal.fire("User Approved Successfully", "", "success");
+                        // Optionally, refresh the page or update the UI here
+                        location.reload(); // Refresh the page after successful approval
+                    } else {
+                        Swal.fire("Approval Failed", data.error || "An error occurred", "error");
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                                    title: "User Approved Successfully",
+                                    icon: "success",
+                                    timer: 3000, // Show for 3 seconds
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    setTimeout(() => {
+                                        window.location.reload(); // Reload the page after 3 seconds
+                                    }, 1000); // 3 seconds delay
+                                });
+                });
+            }
+        });
+    });
+
+
+
+
+});
+
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+    
+        // Get all checkboxes
+        const checkboxes = document.querySelectorAll('.status-toggle .check');
+        const updateUserStatusUrl = '{% url "update_user_status" %}';
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                const username = this.id.split('_')[1]; // Extract username from checkbox id
+                const id = this.getAttribute('data-user-id'); 
+              
+                // Prepare data to send
+                const data = {
+                    'username': username,
+                    'is_active': isChecked,
+                    'id': id, 
+                };
+
+                // Send AJAX request to update user status
+                fetch(updateUserStatusUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token for Django
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        console.error('Failed to update user status.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    });
+
+
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('log-out').addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent the default anchor behavior
+                // Use the Django URL template tag to get the URL for login_view
+                window.location.href = '{% url "login_view" %}';
+            });
+        });
+        
+    </script>
+{% endblock %}
