@@ -1,0 +1,18 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<h1>Assign Permissions for Group: {{ group.name }}</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <div>
+        <label>Select Permissions:</label><br>
+        {% for permission in permissions %}
+            <input type="checkbox" name="permissions" value="{{ permission.id }}" 
+            {% if permission in group.permissions.all %}checked{% endif %}>
+            {{ permission.name }}<br>
+        {% endfor %}
+    </div>
+    <button type="submit">Save Permissions</button>
+</form>
+{% endblock %}

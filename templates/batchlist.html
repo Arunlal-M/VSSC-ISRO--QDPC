@@ -1,0 +1,194 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+	
+			<div class="page-wrapper">
+				<div class="content">
+					<div class="page-header">
+						<div class="page-title">
+							<h4>Raw Material Batch</h4>
+							<!-- <h6>Manage your products</h6> -->
+						</div>
+						<div class="page-btn">
+							<a href="{% url 'raw-material-batch-add' %}" class="btn btn-added"><img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Batch</a>
+						</div>
+					</div>
+					
+
+					<!-- /product list -->
+					<div class="card">
+						<div class="card-body">
+							<div class="table-top">
+								<div class="search-set">
+									<div class="search-path">
+										<a class="btn btn-filter" id="filter_search">
+											<img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+											<span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+										</a>
+									</div>
+									<div class="search-input">
+										<a class="btn btn-searchset"><img src="{% static 'assets/img/icons/search-white.svg' %}" alt="img"></a>
+									</div>
+								</div>
+								<div class="wordset">
+									<ul>
+										<li>
+											<a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+										</li>
+										<li>
+											<a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+										</li>
+										<li>
+											<a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
+										</li>
+									</ul>
+								</div>
+							</div>
+							
+							<div class="table-responsive">
+								<table class="table  datanew">
+									<thead>
+										<tr>
+											<th>Rawmaterial</th>
+											<th>Batch Id</th>
+											<th>Batch Size</th>
+											<th>Procurement Date</th>
+											<th>Packing Detials</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for batch in batches %}
+										<tr>
+											<td class="clickable-row" data-batch-id="{{ batch.batch_id }}"><a class="clickable-row">{{ batch.raw_material_name }}</a></td>
+											<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.batch_id }}</td>
+											<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.batch_size_value }}</td>
+											<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.procurement_date }}</td>
+               							    <td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.packing_details }}</td>
+											<td>
+												<a class="me-3" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#materialpage">
+													<img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+												</a>
+												<!-- <a class="me-3" href="editproduct.html">
+													<img src="assets/img/icons/edit.svg" alt="img">
+												</a>
+												<a class="confirm-text" href="javascript:void(0);">
+													<img src="assets/img/icons/delete.svg" alt="img">
+												</a> -->
+											</td>
+										</tr>
+										{% empty %}
+									{% endfor %}
+										
+									
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<!-- /product list -->
+				</div>
+			</div>
+        </div>
+		<!-- /Main Wrapper -->
+
+        <div class="modal fade" id="materialpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Raw Material Batch</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container mt-5">
+                           
+                            <!-- <form>
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">User Name</label>
+                                    <input type="text" class="form-control" id="username" placeholder="Enter User Name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone</label>
+                                    <input type="text" class="form-control" id="phone" placeholder="Enter Phone">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" placeholder="Enter Email">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="role" class="form-label">Role</label>
+                                    <select class="form-select" id="role">
+                                        <option>Select Role</option>
+                                        <option>Admin</option>
+                                        <option>User</option>
+                                        <option>Guest</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="createdOn" class="form-label">Created On</label>
+                                    <input type="date" class="form-control" id="createdOn">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status">
+                                        <option>Select Status</option>
+                                        <option>Active</option>
+                                        <option>Inactive</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update</button>
+                            </form> -->
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Rawmaterial</label>
+                                <div id="username" class="form-control">Pink oxide</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Batch Id</label>
+                                <div id="phone" class="form-control">12345745</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Batch Size</label>
+                                <div id="email" class="form-control">25 kg</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Expiry Date</label>
+                                <div id="role" class="form-control">2024-08-08</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="createdOn" class="form-label">Packing Detials</label>
+                                <div id="createdOn" class="form-control">2024-08-08</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <div id="status" class="form-control">Active</div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <!-- <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+
+
+	<script>
+		// REDIRECT DETAIL VIEW JQUERY
+		
+		$(document).on('click', '.clickable-row', function () {
+			// Access the batch ID using the correct data attribute
+			var batchId = $(this).data('batch-id'); // Get the batch ID from the row's data-batch-id attribute
+			var baseUrl = '/product/batch/'; // Adjust the base URL as needed
+			var detailUrl = baseUrl + batchId + '/'; // Construct the URL to the detailed view page
+		
+			// Redirect to the detailed view page
+			window.location.href = detailUrl;
+		});
+		</script>
+		
+        {% endblock %}
+
+
+			

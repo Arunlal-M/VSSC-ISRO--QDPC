@@ -1,0 +1,461 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Product Add</h4>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <!-- Section-1: Name, Category, Owner -->
+                    <div class="col-lg-12 mb-4">
+                        <h5>Section-1</h5>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" id="name" name="name">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="category" name="category" class="form-control">
+                                <option>Choose Category</option>
+                                {% for cat in category %}
+                                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Owner</label>
+                            <select id="product_owner" name="product_owner" class="form-control">
+                                <option>Choose owner</option>
+                                {% for own in owner %}
+                                    <option value="{{ own.id }}">{{ own.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section-2: End Use, Specific Use -->
+                    <div class="col-lg-12 mt-4 mb-4">
+                        <h5>Section-2</h5>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>End Use</label>
+                            <select id="end_uses" name="end_uses" class="form-control">
+                                <option>Choose end use</option>
+                                {% for end in enduse %}
+                                    <option value="{{ end.id }}">{{ end.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Specific Use</label>
+                            <input type="text" id="specific_use" name="specific_use">
+                        </div>
+                    </div>
+
+                    <!-- Section-3: Processing Agencies, Testing Agencies -->
+                    <div class="col-lg-12 mt-4 mb-4">
+                        <h5>Section-3</h5>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Processing Agencies</label>
+                            <select id="processing_agencies" name="processing_agencies" class="form-control">
+                                <option>Choose Processing Agencies</option>
+                                {% for pg in processingagency %}
+                                    <option value="{{ pg.id }}">{{ pg.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Testing Agencies</label>
+                            <select id="testing_agencies" name="testing_agencies" class="form-control">
+                                <option>Choose Testing Agencies</option>
+                                {% for tg in testingagency %}
+                                    <option value="{{ tg.id }}">{{ tg.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section-4: Shelf Life Value, Shelf Life Unit -->
+                    <div class="col-lg-12 mt-4 mb-4">
+                        <h5>Section-4</h5>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Shelf Life Value</label>
+                            <input type="text" id="shelf_life_value" name="shelf_life_value">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Shelf Life Unit</label>
+                            <select id="shelf_life_unit" name="shelf_life_unit" class="form-control">
+                                <option value="">Select a unit</option>
+                                <option value="days">Days</option>
+                                <option value="months">Months</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                 <!-- Section-5: Drawing Applicable, Drawing Number, Drawing Status -->
+<div class="col-lg-12 mt-4 mb-4">
+    <h5>Section-5</h5>
+</div>
+<div class="col-lg-3 col-sm-6 col-12">
+    <div class="form-group">
+        <label>Drawing Applicable</label>
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="drawing_applicable_yes" name="drawing_applicable" value="yes"> 
+            <label class="form-check-label" for="drawing_applicable_yes">Check if Applicable</label>
+            {% comment %} <label>
+                <input type="radio" id="drawing_applicable_no" name="drawing_applicable" value="no"> No
+            </label> {% endcomment %}
+        </div>
+    </div>
+</div>
+
+<!-- Container for Drawing Number -->
+<div class="col-lg-4 col-sm-6 col-12" id="drawing-number-container" style="display: none;">
+    <div class="form-group">
+        <label>Drawing Number</label>
+        <input type="text" id="drawing_number" name="drawing_number">
+    </div>
+</div>
+
+<!-- Container for Drawing Title -->
+<div class="col-lg-4 col-sm-6 col-12" id="drawing-title-container" style="display: none;">
+    <div class="form-group">
+        <label>Drawing Title</label>
+        <input type="text" id="drawing_title" name="drawing_title">
+    </div>
+</div>
+
+<!-- Container for Drawing Status -->
+<div class="col-lg-4 col-sm-6 col-12" id="drawing-status-container" style="display: none;">
+    <div class="form-group">
+        <label>Drawing Status</label>
+        <select id="drawing_status" name="drawing_status" class="form-control">
+            <option>Choose Status</option>
+            <option value="Provisional">Provisional</option>
+            <option value="CCB approved">CCB approved</option>
+        </select>
+    </div>
+</div>
+
+<!-- Container for Drawing Document -->
+<div class="col-lg-4 col-sm-6 col-12" id="drawing-document-container">
+    <div class="form-group">
+        <label>Upload Drawing Document</label>
+        <input type="file" id="drawing_document" name="drawing_document" class="form-control mt-2">
+    </div>
+</div>
+
+
+
+
+
+
+
+
+                    <!-- Section-6: Components, Raw Materials, Consumables, Equipment Used -->
+                    <div class="col-lg-12 mt-4 mb-4">
+                        <h5>Section-6</h5>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Components</label>
+                            <select id="components" name="components" class="form-control">
+                                <option>Choose components</option>
+                                {% for comp in components %}
+                                    <option value="{{ comp.id }}">{{ comp.component_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Raw Materials</label>
+                            {% comment %} <input type="text" id="raw_materials" name="raw_materials"> {% endcomment %}
+                            <select id="raw_material" name="raw_material" class="form-control">
+                                <option>Choose rawmaterials</option>
+                                {% for rwm in rawmaterial %}
+                                    <option value="{{ rwm.id }}">{{ rwm.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Consumable</label>
+                            {% comment %} <input type="text" id="consumable" name="consumable"> {% endcomment %}
+                            <select id="consumable" name="consumable" class="form-control">
+                                <option>Choose consumables</option>
+                                {% for con in consumable %}
+                                    <option value="{{ con.id }}">{{ con.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Equipment Used</label>
+                            {% comment %} <input type="text" id="equipment_used" name="equipment_used"> {% endcomment %}
+                            <select id="equipment" name="equipment" class="form-control">
+                                <option>Choose equipment</option>
+                                {% for equ in equipment %}
+                                    <option value="{{ equ.id }}">{{ equ.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section-7: Method of Identification, Prefix, Suffix -->
+                    <div class="col-lg-12 mt-4 mb-4">
+                        <h5>Section-7</h5>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Method of Identification</label>
+                            <select id="identification_method" name="identification_method" class="form-control">
+                                <option value="">Select a method</option>
+                                <option value="Batch Number">Batch Number</option>
+                                <option value="Identification Number">Identification Number</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Prefix</label>
+                            <input type="text" id="prefix" name="prefix">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Suffix</label>
+                            <input type="text" id="suffix" name="suffix">
+                        </div>
+                    </div>
+
+                    <!-- Section-8: Add Documents -->
+                    <div class="col-lg-12 mt-4 mb-4">
+                        <h5>Section-8</h5>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label>Add Documents</label>
+                            <input type="file"id="product_document" name="product_document" class="form-control" multiple>
+
+                        </div>
+                    </div>
+
+                    <!-- Submit and Cancel Buttons -->
+                    <div class="col-lg-12 mt-4 mb-4">
+                        <a href="product.html" id="submit-btn" class="btn btn-submit me-2">Submit</a>
+                        <a href="{% url 'product-add' %}" class="btn btn-cancel">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Initially hide all drawing-related fields
+    $('#drawing-number-container').hide();
+    $('#drawing-title-container').hide();
+    $('#drawing-status-container').hide();
+    $('#drawing-document-container').hide();
+
+    // Show/hide Drawing Number and Drawing Status based on Drawing Applicable selection
+    $('input[name="drawing_applicable"]').change(function() {
+        if ($(this).is(':checked')) {  // Check if the checkbox is checked
+            $('#drawing-number-container').show();  // Show fields
+            $('#drawing-title-container').show();
+            $('#drawing-status-container').show();
+            $('#drawing-document-container').show();
+        } else {
+            $('#drawing-number-container').hide();  // Hide fields
+            $('#drawing-title-container').hide();
+            $('#drawing-status-container').hide();
+            $('#drawing-document-container').hide();
+            $('#drawing_number').val('');  // Clear input
+            $('#drawing_title').val('');
+            $('#drawing_status').val('');  // Reset select
+            $('#drawing_document').val('');
+        }
+    });
+    
+
+        $('#submit-btn').click(function(event) {
+            event.preventDefault();
+
+            // Create a FormData object
+            var productData = new FormData();
+            productData.append('name', $('#name').val());
+            productData.append('category', parseInt($('#category').val()));
+            productData.append('product_owner', parseInt($('#product_owner').val()));
+            productData.append('end_uses', $('#end_uses').val());
+            productData.append('specific_use', $('#specific_use').val());
+            productData.append('shelf_life_value', parseInt($('#shelf_life_value').val()));
+            productData.append('shelf_life_unit', $('#shelf_life_unit').val());
+            productData.append('processing_agencies', parseInt($('#processing_agencies').val()));
+            productData.append('testing_agencies', parseInt($('#testing_agencies').val()));
+            productData.append('components', $('#components').val());
+            productData.append('raw_material', $('#raw_material').val());
+            productData.append('consumable', $('#consumable').val());
+            productData.append('equipment', $('#equipment').val());
+            productData.append('drawing_number', $('#drawing_number').val());
+            productData.append('drawing_title', $('#drawing_title').val());
+            productData.append('drawing_status', $('#drawing_status').val());
+            productData.append('drawing_applicable', $('input[name="drawing_applicable"]:checked').val());
+            
+            // Append the drawing_document file
+            var drawingDocument = $('#drawing_document')[0].files[0];
+            if (drawingDocument) {
+                productData.append('drawing_document', drawingDocument);
+            }
+
+            productData.append('identification_method', $('#identification_method').val());
+            productData.append('batch_size', $('#batch_size').val());
+            productData.append('prefix', $('#prefix').val());
+            productData.append('suffix', $('#suffix').val());
+
+            // Append the product_document file
+            var productdocument = $('#product_document')[0].files[0];
+            if (productdocument) {
+                 productData.append('product_document', productdocument);
+           }
+                        
+                        
+
+            console.log(productData);
+
+            $.ajax({
+                url: '{% url "product-add" %}',
+                type: 'POST',
+                data: productData,
+                contentType: false, // Important for file uploads
+                processData: false, // Important for file uploads
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for security
+                },
+                success: function(response) {
+                    if (response.success) {
+                        window.location.href = "{% url 'product-view' %}";
+                    } else {
+                        $('#error-message').text(response.message).show(); // Show error message
+                    }
+                },
+                error: function(error) {
+                    alert('Error adding product: ' + error.responseText);
+                }
+            });
+        });
+    });
+
+    function populateDivisionDropdown(allDivisions, selectedDivisions, userId) {
+    const divisionSelect = $('#division');
+    divisionSelect.empty(); // Clear existing options
+
+    // Populate the division dropdown
+    allDivisions.forEach(division => {
+        divisionSelect.append(`<option value="${division.id}">${division.name}</option>`);
+    });
+
+    selectedDivisions.forEach(divisionId => {
+        $(`#division option[value="${divisionId}"]`).prop('selected', true);
+    });
+
+    // Set the user ID in the hidden input field
+    $('#userId').val(userId);
+
+    // Trigger the change event to update Select2 if you're using it
+    
+}
+
+
+function populateCenterDropdown(allCentres,selectedCentres) {
+      
+      const centerSelect = $('#center');
+      centerSelect.empty(); // Clear existing options
+
+      allCentres.forEach(center => {
+          centerSelect.append(`<option value="${center.id}">${center.name}</option>`);
+      });
+
+      selectedCentres.forEach(centerId => {
+          $(`#center option[value="${centerId}"]`).prop('selected', true);
+      });
+     
+      // Trigger the change event to update Select2
+     
+  }
+  function populateRoleTypeDropdown(allRoles, selectedRoles) {
+    const roleSelect = $('#role');
+    roleSelect.empty(); // Clear existing options
+
+    // Populate the container with checkboxes
+    allRoles.forEach(role => {
+        const isChecked = selectedRoles.includes(role.id) ? 'checked' : '';
+        roleSelect.append(`
+            <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" value="${role.id}" ${isChecked}>
+                ${role.name}
+            </label><br>
+        `);
+    });
+}
+
+
+function populateUserTypeDropdown(allUsertypes, selectedusertype) {
+
+const usertypeSelect = $('#usertype');
+usertypeSelect.empty(); // Clear existing options
+
+// Populate the dropdown
+allUsertypes.forEach(usertype => {
+    usertypeSelect.append(`<option value="${usertype.id}">${usertype.name}</option>`);
+});
+
+// Ensure selectedusertype is an array
+if (!Array.isArray(selectedusertype)) {
+    selectedusertype = [selectedusertype];
+}
+
+usertypeSelect.val(selectedusertype); // Use .val() to set selected values
+
+// Trigger the change event to upda  usertypeSelect.trigger('change');
+}
+
+
+
+
+
+
+
+		</script>
+		
+{% endblock %}

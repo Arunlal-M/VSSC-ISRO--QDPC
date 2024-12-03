@@ -1,0 +1,361 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+		<div class="page-wrapper">
+			<div class="content">
+				<div class="page-header">
+					<div class="page-title">
+						<h4>Equipment List</h4>
+						<h6>Manage your Equipment Configuration</h6>
+					</div>
+					<div class="page-btn">
+						<a href="{% url 'equipment-add' %}" class="btn btn-added"><img
+								src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add New
+							Equipment</a>
+					</div>
+				</div>
+
+
+				<!-- /product list -->
+				<div class="card">
+					<div class="card-body">
+						<div class="table-top">
+							<div class="search-set">
+								<div class="search-path">
+									<a class="btn btn-filter" id="filter_search">
+										<img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+										<span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+									</a>
+								</div>
+								<div class="search-input">
+									<a class="btn btn-searchset"><img
+											src="{% static 'assets/img/icons/search-white.svg' %}" alt="img"></a>
+								</div>
+							</div>
+							<div class="wordset">
+								<ul>
+									<li>
+										<a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img
+												src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+									</li>
+									<li>
+										<a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img
+												src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+									</li>
+									<li>
+										<a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img
+												src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
+									</li>
+
+								</ul>
+							</div>
+						</div>
+
+						<!-- /Filter -->
+						<div class="table-responsive">
+							<table class="table  datanew">
+								<thead>
+									<tr>
+										<!-- <th>Id</th>  -->
+										<th>Name</th>
+										<th>Serial No</th>
+										<th>Make</th>
+										<th>Last calibration date</th>
+										<!-- <th>Calibration validity duration type</th> -->
+										<!-- <th>Calibration validity duration value</th> -->
+										<th>Calibration due date</th>
+										<!-- <th>Upload calibration certification</th> -->
+
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% if equipment %}
+									{% for equ in equipment %}
+									<tr>
+										<!-- <td>{{equ.id}}</td>   -->
+										<td>{{equ.name}}</td>
+										<td>{{equ.serial_no}}</td>
+										<td>{{equ.make}}</td>
+										<td>{{equ.last_calibration_date }}</td>
+										<!-- <td>{{equ.calibration_validity_duration_type}}</td> -->
+										<!-- <td>{{equ.calibration_validity_duration_value}}</td> -->
+										<td>{{equ.calibration_due_date}}</td>
+										<!-- <td>{{equ.calibration_certificate}}</td> -->
+
+
+										<td>
+											<select class="form-control" id="status-{{equ.id}}" style="background-color: green; color: white;" disabled>
+												<option value="Open" >Active</option>
+												<option value="Closed">Expired</option>
+											</select>
+										</td>
+
+
+
+										<td>
+											<a class="me-3" data-bs-toggle="modal" data-bs-target="#productpage">
+												<img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+											</a>
+											<a class="me-3" href="editproduct.html">
+												<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+											</a>
+											<a id="delete-btn" data-id="{{equ.id}}" href="javascript:void(0);">
+												 <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
+											</a>
+										</td>
+									</tr>
+
+									<script>
+										$(document).ready(function() {
+											// Get the current date
+											var currentDate = new Date();
+
+											// Get the due date from the context data
+											var dueDate = new Date("{{equ.calibration_due_date}}");
+
+											// Compare the two dates
+											if (dueDate < currentDate) {
+											  // If the due date is earlier than the current date, set the status to "Expired"
+											  $("#status-{{equ.id}}").val("Closed");
+											  $("#status-{{equ.id}}").css("background-color", "red");
+											  $("#status-{{equ.id}}").css("color", "white");
+											} else {
+											  // If the due date is later than or equal to the current date, set the status to "Active"
+											  $("#status-{{equ.id}}").val("Open");
+											  $("#status-{{equ.id}}").css("background-color", "green");
+											  $("#status-{{equ.id}}").css("color", "white");
+											}
+										});
+									</script>
+
+									{% endfor %}
+									{% else %}
+								</tbody>
+							</table>
+						</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- DELTE CONFIRMATION MODAL -->
+	<div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Confirm Deletion</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body text-center ">
+					<p>Are you sure you want to delete this center?</p>
+				</div>
+				<div class="modal-footer d-flex justify-content-center">
+					<button type="button" class="btn btn-danger text-right" id="confirm-delete">Delete</button>
+					<button type="button" class="btn btn-secondary text-right" id="cancel-delete"
+						data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+	<div class="modal fade" id="productpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Equipment Configuration List</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+				</div>
+				<!-- <div class="modal-body">
+                        <div class="container mt-5">
+                           
+                           
+                            <div class="mb-3">
+                                <label for="username" class="form-label">User  Name</label>
+                                <div id="username" class="form-control">John Doe</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <div id="phone" class="form-control">123-456-7890</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <div id="email" class="form-control">johndoe@example.com</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <div id="role" class="form-control">Admin</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="createdOn" class="form-label">Created On</label>
+                                <div id="createdOn" class="form-control">2024-08-08</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <div id="status" class="form -control">Active</div>
+                            </div>
+                            
+                        </div>
+						
+
+
+                    </div> -->
+				<div class="container mt-5">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="mb-4">
+								<label for="username" class="form-label">Name</label>
+								<div id="username" class="form-control">John Doe</div>
+							</div>
+							<div class="mb-4">
+								<label for="phone" class="form-label">Category</label>
+								<div id="phone" class="form-control">123-456-7890</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Owner</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Processing Agencies</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Name of Processing Agency</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Drawing</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Batch size</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Batch identification</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="mb-4">
+								<label for="role" class="form-label">End Uses</label>
+								<div id="role" class="form-control">Admin</div>
+							</div>
+							<div class="mb-4">
+								<label for="createdOn" class="form-label">Use</label>
+								<div id="createdOn" class="form-control">2024-08-08</div>
+							</div>
+							<div class="mb-4">
+								<label for="status" class="form-label">Shelf life type</label>
+								<div id="status" class="form-control">Active</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Testing agencies</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label"> Components</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Method of identification</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Prefix </label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Suffix </label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div> -->
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(document).on('click', '#delete-btn', function (e) {
+        e.preventDefault(); // Prevent default link behavior
+
+        var equipId = $(this).data('id'); // Get equip ID from data attribute
+        if (!equipId) {
+            alert('Equipment ID not found.');
+            return;
+        }
+
+        // Store the equipId in the modal's confirm button for reference
+        $('#confirm-delete').data('id', equipId);
+
+        // Show the confirmation modal
+        $('#confirmDeleteModal').modal('show');
+    });
+
+    // Handle the confirmation of deletion
+    $(document).on('click', '#confirm-delete', function () {
+        var equipId = $(this).data('id'); // Retrieve center ID from the modal's confirm button
+
+        if (!equipId) {
+            alert('Equipment ID not found.');
+            return;
+        }
+
+        // Construct the URL dynamically
+        const baseUrl = '{% url "equipment-list" %}';
+        const deleteUrl = `${baseUrl}${equipId}/`;
+
+        // Perform the AJAX request for deletion
+        $.ajax({
+            url: deleteUrl,
+            type: 'POST',
+            data: JSON.stringify({ 'equip_id': equipId }),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token header
+            },
+            success: function (response) {
+                if (response.success) {
+                    console.log('Delete successful, reloading page...');
+
+                    // Close the modal after success
+                    $('#confirmDeleteModal').modal('hide');
+
+                    // Reload the page immediately after successful deletion
+                    window.location.reload(true); // Force reload (bypass cache)
+                } else {
+                    alert('Error: ' + response.message);
+                    console.error('Delete failed: ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert('An error occurred: ' + error);
+                console.error('AJAX error:', error);
+            }
+        });
+    });
+
+    // Handle the cancel button to close the modal
+    $(document).on('click', '#cancel-delete, .close', function () {
+        $('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
+    });
+
+</script>
+
+{% endblock %}
