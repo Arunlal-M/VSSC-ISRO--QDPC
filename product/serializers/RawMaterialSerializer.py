@@ -8,10 +8,13 @@ from qdpc_core_models.models.acceptance_test import AcceptanceTest
 from qdpc_core_models.models.grade import Grade
 
 class RawMaterialSerializer(serializers.ModelSerializer):
+    # Define fields for Many-to-Many relationships
     sources = serializers.PrimaryKeyRelatedField(queryset=Sources.objects.all(), many=True)
     suppliers = serializers.PrimaryKeyRelatedField(queryset=Suppliers.objects.all(), many=True)
     acceptance_test = serializers.PrimaryKeyRelatedField(queryset=AcceptanceTest.objects.all(), many=True)
     grade = serializers.PrimaryKeyRelatedField(queryset=Grade.objects.all(), many=True)
+    
+    # SerializerMethodFields to provide readable names
     calculate_expiry_date = serializers.SerializerMethodField()
     source_names = serializers.SerializerMethodField()
     supplier_names = serializers.SerializerMethodField()
@@ -27,6 +30,7 @@ class RawMaterialSerializer(serializers.ModelSerializer):
             'is_active',
             'suppliers',
             'grade',
+            'shelf_life_type',  # New field for the shelf life type
             'shelf_life_value',
             'acceptance_test',
             'shelf_life_unit',

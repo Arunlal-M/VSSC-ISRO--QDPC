@@ -40,6 +40,8 @@ path('consumable-batch-test-add/',ConsumableBatchAcceptenceTest.as_view(),name='
 # path('con-acceptance-add/',ConAcceptanceTestAdd.as_view(),name='con-acceptance-add'),
 # path('con-acceptance-list/',ConAcceptanceTestList.as_view(),name='con-acceptance-list'),
 
+
+
 # BATCH LIST DETAILED VIEW
 
 path('batch/<str:batch_id>/', ConsumableBatchDetailView.as_view(), name='batch_detail'),

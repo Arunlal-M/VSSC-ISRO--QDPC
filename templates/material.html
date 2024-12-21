@@ -232,7 +232,7 @@
                         <div class="col-6 mt-2">
                             <label for="acceptance" class="form-label">Acceptance test</label>
                             <select class="select" id="acceptance" name="acceptance_test[]" multiple>
-                                {% for accep in acceptance_test %}
+                                {% for accep in all_acceptance %}
                                     <option value="{{ accep.id }}">{{ accep.name }}</option>
                                 {% endfor %}
                             </select>
@@ -411,16 +411,6 @@
         });
     });
 
-    //REDIRECT JQUERY
-
-    // $(document).on('click', '.clickable-row', function () {
-    //     var batchId = $(this).data('batch-id'); // Get the batch ID from the row's data attribute
-    //     var baseUrl = '/product/rawmaterial-detiled-view/'; // Adjust the base URL as needed
-    //     var detailUrl = baseUrl + batchId + '/'; // Construct the URL to the detailed view page
-
-    //     // Redirect to the detailed view page
-    //     window.location.href = detailUrl;
-    // });
 
     $(document).on('click', '#delete-btn', function (e) {
         e.preventDefault(); // Prevent default link behavior

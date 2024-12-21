@@ -26,7 +26,6 @@ class ProcessStep(models.Model):
     rm_status = models.CharField(max_length=50, choices=[
         ('Valid', 'Valid'),
         ('Material Expired', 'Material Expired'),
-        ('Test Certificate Expired', 'Test Certificate Expired'),
     ])
     
     equipment_status = models.CharField(max_length=50, choices=[

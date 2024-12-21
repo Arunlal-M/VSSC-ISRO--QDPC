@@ -63,22 +63,38 @@
                             </select>
                         </div>
                     </div>
+
+                    
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
-                            <label>Shelf Life</label>
-                            <input type="text" name="shelf_life_value" id="shelf_life_value">
-                            <div id="shelf_life_error" class="text-danger" style="display:none;"></div>
+                            <label for="shelf_life_type">Shelf Life</label>
+                            <select id="shelf_life_type" name="shelf_life_type" class="form-control">
+                                <option value="">Choose Type</option>
+                                <option value="tbd">TBD (To Be Decided)</option>
+                                <option value="not_applicable">Not Applicable</option>
+                                <option value="add_duration">Add Duration</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-4">
+                    
+                    <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
+                        <div class="form-group">
+                            <label for="shelf_life_value">Shelf Life Duration</label>
+                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control" placeholder="Enter duration">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
                         <div class="form-group">
                             <label for="unit">Shelf Life Period</label>
-                            <select name="unit" id="unit" class="form-control">
+                            <select id="unit" name="unit" class="form-control">
                                 <option value="days">Days</option>
                                 <option value="months">Months</option>
                             </select>
                         </div>
                     </div>
+
+
                     <div class="col-lg-12">
                         <button type="button" id="submitButton" class="btn btn-submit me-2">Submit</button>
                         <a href="{% url 'raw-material-add' %}" class="btn btn-cancel">Clear</a>
@@ -176,11 +192,29 @@
 {% block scripts %}
 <script>
     $(document).ready(function () {
+        $('#shelf_life_duration_group').hide();
+        $('#shelf_life_period_group').hide();
+            
+
+        $('#shelf_life_type').change(function () {
+            const selectedOption = $(this).val();
+    
+            if (selectedOption === 'add_duration') {
+                // Show duration and period inputs
+                $('#shelf_life_duration_group').show();
+                $('#shelf_life_period_group').show();
+            } else {
+                // Hide duration and period inputs
+                $('#shelf_life_duration_group').hide();
+                $('#shelf_life_period_group').hide();
+            }
+        });
+
         // Show Add Document Modal only if Precertified is checked
         $('#precertified').change(function () {
             const rawMaterial = $('#raw-material').val().trim(); // Get Raw Material value
             const rawMaterialInput = $('#raw-material'); // Raw Material input field
-            const acceptanceInput = $('#acceptance'); // Acceptance input field
+            const acceptanceInput = $('#acceptance_test'); // Acceptance input field
 
             if (!rawMaterial) {
                 rawMaterialInput.addClass('is-invalid'); // Add invalid styling
@@ -210,8 +244,9 @@
         $('#submitButton').click(function (event) {
             event.preventDefault();
 
-            var name = $('#raw-material').val();
+            var name = $('#raw-material').val().trim();
             var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
+            var shelf_life_type = $('#shelf_life_type').val();
             var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
             var shelf_life_unit = $('#unit').val();
             var precertified = $('#precertified').is(':checked');
@@ -219,26 +254,37 @@
             var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
             var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
 
-            if (isNaN(shelf_life_value) || shelf_life_value <= 0) {
+            // Validation for shelf life value
+            if (shelf_life_type === 'add_duration' && (isNaN(shelf_life_value) || shelf_life_value <= 0)) {
                 $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
                 return;
             }
 
-       // Get the current date
-       var currentDate = new Date();
-        var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM -DD
+            // Check if shelf_life_type is 'tbd' or 'not applicable' and reset values to null
+            else if (shelf_life_type === 'tbd' || shelf_life_type === 'not applicable') {
+                shelf_life_value = null;
+                shelf_life_unit = null;
+                return
+            }
 
-        // Create the data object
-        var rawMaterialData = {
-            name: name,
-            grade: grade,
-            shelf_life_value: shelf_life_value,
-            shelf_life_unit: shelf_life_unit,
-            user_defined_date: userDefinedDate, // Autofill current date
-            sources: sources,
-            suppliers: suppliers,
-            acceptance_test: acceptance_test,
-        };
+
+            // Get the current date
+            var currentDate = new Date();
+            var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
+
+            // Create the data object with all the fields
+            var rawMaterialData = {
+                name: name,
+                grade: grade,
+                shelf_life_type: shelf_life_type,
+                shelf_life_value: shelf_life_value,
+                shelf_life_unit: shelf_life_unit,
+                user_defined_date: userDefinedDate, // Autofill current date
+                precertified: precertified,
+                sources: sources,
+                suppliers: suppliers,
+                acceptance_test: acceptance_test,
+            };
 
             $.ajax({
                 type: 'POST',
