@@ -51,6 +51,74 @@ class DivisionListView(BaseModelViewSet):
                 'success': False,
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+class EditDivisionView(BaseModelViewSet):
+    """
+    View to handle editing of a Division using the PUT method and support division retrieval by center.
+    """
+
+    def get(self, request, divisionId=None, center_id=None):
+        """
+        Handle retrieval of division data by divisionId or filter divisions by center_id.
+        """
+        try:
+            if divisionId is not None:
+                # Retrieve a specific division by ID
+                division = Division.objects.get(id=divisionId)
+                all_centers = Center.objects.all()
+
+                # Create a response data object for the division
+                data = {
+                    'id': division.id,
+                    'name': division.name,
+                    'center': {
+                        'id': division.center.id,
+                        'name': division.center.name
+                    },
+                    'all_centers': [{'id': center.id, 'name': center.name} for center in all_centers],
+                }
+                return Response({'data': data}, status=status.HTTP_200_OK)
+
+            elif center_id is not None:
+                # Filter divisions by center ID
+                divisions = Division.objects.filter(center_id=center_id)
+                serializer = DivisionSerializer(divisions, many=True)
+                return Response({'divisions': serializer.data}, status=status.HTTP_200_OK)
+
+            else:
+                return Response({'message': 'Invalid parameters.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Division.DoesNotExist:
+            return Response({'detail': 'Division not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Center.DoesNotExist:
+            return Response({'detail': 'Center not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, divisionId):
+        """
+        Handle editing a division by its ID.
+        """
+        try:
+            division = Division.objects.get(id=divisionId)
+        except Division.DoesNotExist:
+            return Response({'detail': 'Division not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = DivisionSerializer(division, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'success': True,
+                'message': 'Division updated successfully.',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+
+        return Response({
+            'success': False,
+            'message': 'Validation failed.',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
 
 class DeleteDivisonView(BaseModelViewSet):
     """

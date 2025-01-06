@@ -47,8 +47,12 @@
                                     data-bs-target="#updateProcessStepModal" data-step-id="{{ step.step_id }}">
                                     <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                 </a>
-                                <a id="delete-btn" data-id="{{ step.step_id }}" href="javascript:void(0);">
+                                <a class="me-3" id="delete-btn" data-bs-toggle="modal"
+                                    data-bs-target="#confirmDeleteModal" data-step-id="{{ step.step_id }}">
                                     <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
+                                </a>
+                                <a  data-id="{{ step.step_id }}" href="javascript:void(0);">
+                                   
                                 </a>
                             </td>
                         </tr>
@@ -67,7 +71,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="updateProcessStepModalLabel">Update Process Step</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="updateProcessStepForm" class="row">
@@ -250,10 +256,12 @@
                     }
                 });
             });
-
+        });
         
             $(document).on('click', '#delete-btn', function (e) {
                 e.preventDefault(); // Prevent default link behavior
+                const stepId = $(this).data('step-id');
+                const processTitle = "{{ process_title }}";
 
                 // var stepId = $(this).data('id'); // Get Step ID from data attribute
                 if (!stepId) {
@@ -272,6 +280,8 @@
             // Handle the confirmation of deletion
             $(document).on('click', '#confirm-delete', function () {
                 // var stepId = $(this).data('id'); // Retrieve Step ID from the modal's confirm button
+                const stepId = $(this).data('step-id');
+                const processTitle = "{{ process_title }}";
 
                 if (!stepId) {
                     alert('Step ID not found.');
@@ -279,8 +289,7 @@
                 }
 
                 // Construct the URL dynamically
-                const baseUrl = "/process/delete-step/";
-                const deleteUrl = `${baseUrl}${processTitle}${stepId}/`;
+                const deleteUrl = `/process/delete-step/${processTitle}/${stepId}/`;
 
                 // Perform the AJAX request for deletion
                 $.ajax({
@@ -318,6 +327,6 @@
                 $('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
             });
         });
-    });
+
 </script>
 {% endblock %}

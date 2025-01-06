@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.urls import path,include
-from .views.source import SourceListView,DeleteSourceView
+from .views.source import SourceListView,DeleteSourceView,EditSourceView
 from .views.supplier import SupplierListView,DeleteSupplierView
-from .views.division import DivisionListView,DeleteDivisonView
+from .views.division import DivisionListView,DeleteDivisonView,EditDivisionView
 from .views.center import CenterListView,DeleteCenterView
 from .views.unit import UnitView,DeleteUnitView
 from .views.group import GroupListView
@@ -22,11 +22,16 @@ urlpatterns = [
     path('component/',include('component.urls')),
 
     path('sources/', SourceListView.as_view(), name='source-list'),
+    path('sources/view/<int:sourceId>/', EditSourceView.as_view(), name='source-view'),
+    path('sources/edit/<int:sourceId>/', EditSourceView.as_view(), name='source-edit'),
     path('suppliers/', SupplierListView.as_view(), name='supplier-list'),
+    path('suppliers/edit/<int:supplierId>/', SupplierListView.as_view(), name='supplier-list'),
     path('centers/', CenterListView.as_view(), name='center-list'),
     path('centers/<int:centerId>/', DeleteCenterView.as_view(), name='center-delete'),
     
     path('divisions/', DivisionListView.as_view(), name='division-list'),
+    path('divisions/view/<int:divisionId>/', EditDivisionView.as_view(), name='division-view'),
+    path('divisions/edit/<int:divisionId>/', EditDivisionView.as_view(), name='division-edit'),
     path('divisions/<int:divisionId>/', DeleteDivisonView.as_view(), name='division-delete'),
     
     path('divisions/center/<int:center_id>/', DivisionListView.as_view(), name='get-divisions-by-center'),    

@@ -9,5 +9,5 @@ urlpatterns = [
     
     path('view/<str:process_title>/<int:stepId>/', EditProcessStepView.as_view(), name='process_edit'),
     path('edit/<str:process_title>/<int:stepId>/', EditProcessStepView.as_view(), name='process_edit'),
-    path('delete-step//<str:process_title>/<int:stepId>/', DeleteProcessStepView.as_view(), name='process_delete'),
+    path('delete-step/<str:process_title>/<int:stepId>/', DeleteProcessStepView.as_view(), name='process_delete'),
 ]
