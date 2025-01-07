@@ -3,7 +3,7 @@ from django.urls import path,include
 from .views.source import SourceListView,DeleteSourceView,EditSourceView
 from .views.supplier import SupplierListView,DeleteSupplierView
 from .views.division import DivisionListView,DeleteDivisonView,EditDivisionView
-from .views.center import CenterListView,DeleteCenterView
+from .views.center import CenterListView,DeleteCenterView,EditCenterView
 from .views.unit import UnitView,DeleteUnitView
 from .views.group import GroupListView
 from .views.permission import GroupPermissionListView  # Import the views from the views module
@@ -26,7 +26,11 @@ urlpatterns = [
     path('sources/edit/<int:sourceId>/', EditSourceView.as_view(), name='source-edit'),
     path('suppliers/', SupplierListView.as_view(), name='supplier-list'),
     path('suppliers/edit/<int:supplierId>/', SupplierListView.as_view(), name='supplier-list'),
+    
+    
     path('centers/', CenterListView.as_view(), name='center-list'),
+    path('centers/view/<int:centerId>/', EditCenterView.as_view(), name='center-view'),
+    path('centers/edit/<int:centerId>/', EditCenterView.as_view(), name='center-edit'),
     path('centers/<int:centerId>/', DeleteCenterView.as_view(), name='center-delete'),
     
     path('divisions/', DivisionListView.as_view(), name='division-list'),
