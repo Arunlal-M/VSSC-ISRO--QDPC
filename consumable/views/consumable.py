@@ -95,6 +95,7 @@ class ConsumableAdd(BaseModelViewSet):
             'acceptence_test':latest_acceptance_tests,
             'grades':grades,
         }
+        
         return render(request, 'addconsumable.html',context)
     
     def post(self, request):

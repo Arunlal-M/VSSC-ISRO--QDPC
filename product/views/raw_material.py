@@ -42,7 +42,8 @@ class RawMatrialListFetchView(BaseModelViewSet):
         all_sources = Sources.objects.all().values('id', 'name')
         all_suppliers = Suppliers.objects.all().values('id', 'name')
         all_grades = Grade.objects.all().values('id', 'name','abbreviation')
-
+        all_acceptance = AcceptanceTest.objects.all().values('id', 'name')
+        
         raw_materials_data = {
             'id': material.id,
             'name': material.name,
@@ -50,6 +51,7 @@ class RawMatrialListFetchView(BaseModelViewSet):
             'suppliers': [{'id': supplier.id, 'name': supplier.name} for supplier in material.suppliers.all()],
             'grade': [{'id': grade.id, 'name': grade.name,'abbreviation':grade.abbreviation} for grade in material.grade.all()],                  
             'acceptance_test': [{'id': acceptance_test.id, 'name': acceptance_test.name,'min':acceptance_test.min_value,'max':acceptance_test.max_value, 'unit': str(acceptance_test.unit)} for acceptance_test in material.acceptance_test.all()],
+            'shelf_life_type': material.shelf_life_type,
             'shelf_life_value': material.shelf_life_value,
             'shelf_life_unit': material.shelf_life_unit,
             'user_defined_date': material.user_defined_date,
@@ -57,6 +59,7 @@ class RawMatrialListFetchView(BaseModelViewSet):
             'all_sources': list(all_sources),  # Include all available sources
             'all_suppliers': list(all_suppliers),  # Include all available suppliers
             'all_grades': list(all_grades),  # Include all available grades
+            'all_acceptance' : list(all_acceptance),
         }
 
         return raw_materials_data

@@ -114,10 +114,10 @@
                                                                         <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                                                     </a>
                                                                     
-                                                                    <a id="delete-btn" data-id="{{ batch.id }}">
+                                                                    <!-- <a id="delete-btn" data-id="{{ batch.id }}">
                                                                         <img src="{% static 'assets/img/icons/delete.svg' %}"
                                                                             alt="img">
-                                                                    </a>
+                                                                    </a> -->
                                                                 </td>
                                                             </tr>
 														{% endif %}
@@ -198,10 +198,10 @@
                                                                         <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                                                     </a>
                                                                     
-                                                                    <a id="delete-btn" data-id="{{ batch.id }}">
+                                                                    <!-- <a id="delete-btn" data-id="{{ batch.id }}">
                                                                         <img src="{% static 'assets/img/icons/delete.svg' %}"
                                                                             alt="img">
-                                                                    </a>
+                                                                    </a> -->
 
                                                                 </td>
                                                             </tr>
@@ -430,14 +430,14 @@
 
     //REDIRECT JQUERY
 
-    $(document).on('click', '.clickable-row', function () {
-        var batchId = $(this).data('batch-id'); // Get the batch ID from the row's data attribute
-        var baseUrl = '/consumable/consumable-detiled-view/'; // Adjust the base URL as needed
-        var detailUrl = baseUrl + batchId + '/'; // Construct the URL to the detailed view page
+    // $(document).on('click', '.clickable-row', function () {
+    //     var batchId = $(this).data('batch-id'); // Get the batch ID from the row's data attribute
+    //     var baseUrl = '/consumable/consumable-detiled-view/'; // Adjust the base URL as needed
+    //     var detailUrl = baseUrl + batchId + '/'; // Construct the URL to the detailed view page
 
-        // Redirect to the detailed view page
-        window.location.href = detailUrl;
-    });
+    //     // Redirect to the detailed view page
+    //     window.location.href = detailUrl;
+    // });
 
     $(document).on('click', '#delete-btn', function (e) {
         e.preventDefault(); // Prevent default link behavior
@@ -457,15 +457,15 @@
 
     // Handle the confirmation of deletion
     $(document).on('click', '#confirm-delete', function () {
-        var consumId = $(this).data('id'); // Retrieve Consumable ID from the modal's confirm button
+        var consumableId = $(this).data('id'); // Retrieve Consumable ID from the modal's confirm button
 
-        if (!consumId) {
+        if (!consumableId) {
             alert('Consumable ID not found.');
             return;
         }
 
         // Construct the URL dynamically
-        const baseUrl = "{% url 'consumable-list' %}";
+        const baseUrl = "/consumable/consumable-list/delete/";
         const deleteUrl = `${baseUrl}${consumableId}/`;
 
         // Perform the AJAX request for deletion

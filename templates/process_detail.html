@@ -1,10 +1,11 @@
 {% extends 'index.html' %}
 {% block content %}
+{% load static %}
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
-                <h4>Process Detail - {{ process.process_title }}</h4>
+                <h4>Process Detail - {{ process_title }}</h4>
             </div>
         </div>
         <div class="card">
@@ -42,12 +43,17 @@
                             <td>{{ step.measured_value_observation }}</td>
                             <td>{{ step.remarks }}</td>
                             <td>
-                                <a class="me-3 view-user-btn" data-bs-toggle="modal" data-bs-target="#materialpage" data-batch-id="{{ batch.id }}">
+                                <a class="me-3 view-user-btn" data-bs-toggle="modal"
+                                    data-bs-target="#updateProcessStepModal" data-step-id="{{ step.step_id }}">
                                     <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                 </a>
-                                <!-- <a id="delete-btn" data-id="{{ batch.id }}" href="javascript:void(0);">
+                                <a class="me-3" id="delete-btn" data-bs-toggle="modal"
+                                    data-bs-target="#confirmDeleteModal" data-step-id="{{ step.step_id }}">
                                     <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
-                               </a> -->
+                                </a>
+                                <a  data-id="{{ step.step_id }}" href="javascript:void(0);">
+                                   
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -58,90 +64,95 @@
     </div>
 </div>
 
-<!-- THE UPDATE VIEW MODAL  -->
-<div class="modal fade" id="materialpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Modal for Updating Process Step -->
+<div class="modal fade" id="updateProcessStepModal" tabindex="-1" aria-labelledby="updateProcessStepModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Raw Material View</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+                <h5 class="modal-title" id="updateProcessStepModalLabel">Update Process Step</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
-                <div class="container mt-2">
-                    <form class="row">
-                        <input type="hidden" id="raw_material_id" name="raw_material_id" value="">
-                        <div class="col-6 mt-2">
-                            <label for="username" class="form-label">Rawmaterial</label>
-                            <input type="text" class="form-control" id="raw-material" name="raw-material"
-                                placeholder="Rawmaterial" readonly>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="sources" class="form-label">Sources</label>
-                            <select class="select" id="sources" name="sources[]" multiple>
-                                {% for sour in all_sources %}
-                                    <option value="{{ sour.id }}">{{ sour.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="suppliers" class="form-label">Suppliers</label>
-                            <select class="select" id="suppliers" name="suppliers[]" multiple>
-                                {% for sup in all_suppliers %}
-                                    <option value="{{ sup.id }}">{{ sup.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="grade" class="form-label">Grade</label>
-                            <select class="select" id="grade" name="grade[]" multiple>
-                                {% for grade in all_grades %}
-                                    <option value="{{ grade.id }}">{{ grade.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="acceptance" class="form-label">Acceptance test</label>
-                            <select class="select" id="acceptance" name="acceptance_test[]" multiple>
-                                {% for accep in acceptance_test %}
-                                    <option value="{{ accep.id }}">{{ accep.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="shelf life" class="form-label">Shelf Life</label>
-                            <input type="text" class="form-control" id="shelf_life" name="shelf_life"
-                                placeholder="shelf life">
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="status" class="form-label">Shelf Life Period</label>
-                            <select name="unit" id="unit" class="form-control">
-                                <option value="days">Days</option>
-                                <option value="months">Months</option>
-                            </select>
-                        </div>
+                <form id="updateProcessStepForm" class="row">
+                    <input type="hidden" id="step_id" name="step_id" value="">
 
-                        <div class="d-flex justify-content-center mt-3">
-                            <button type="button" class="btn btn-primary btn-sm"
-                                id="updateRawMaterial">Update</button>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Fields for process data -->
+                    <div class="col-6 mt-2">
+                        <label for="process_description" class="form-label">Description</label>
+                        <textarea type="text" class="form-control" id="process_description" name="process_description"
+                            placeholder="Description"></textarea>
+                    </div>
+
+                    <!-- Populate dropdowns dynamically -->
+                    <div class="col-6 mt-2">
+                        <label for="raw_materials" class="form-label">Raw Materials</label>
+                        <select class="select" id="raw_materials" name="raw_materials[]" multiple></select>
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="rm_status" class="form-label">Raw Material Status</label>
+                        <input type="text" class="form-control" id="rm_status" name="rm_status"
+                            placeholder="Raw Material Status">
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="equipment" class="form-label">Equipment</label>
+                        <select class="select" id="equipment" name="equipment[]" multiple></select>
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="equipment_status" class="form-label">Equipment Status</label>
+                        <input type="text" class="form-control" id="equipment_status" name="equipment_status"
+                            placeholder="Equipment Status">
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="consumables" class="form-label">Consumables</label>
+                        <select class="select" id="consumables" name="consumables[]" multiple></select>
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="components" class="form-label">Components</label>
+                        <select class="select" id="components" name="components[]" multiple></select>
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="process_step_spec" class="form-label">Specifications</label>
+                        <input type="text" class="form-control" id="process_step_spec" name="process_step_spec"
+                            placeholder="Specifications">
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="measured_value_observation" class="form-label">Test Value</label>
+                        <input type="text" class="form-control" id="measured_value_observation"
+                            name="measured_value_observation" placeholder="Test Value">
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="remarks" class="form-label">Remarks</label>
+                        <textarea class="form-control" id="remarks" name="remarks" rows="3"
+                            placeholder="Remarks"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-3">
+                        <button type="button" class="btn btn-primary btn-sm" id="updateProcessStep">Update</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
-
-
-<!-- DELTE CONFIRMATION MODAL -->
+<!-- DELETE CONFIRMATION MODAL -->
 <div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Confirm Deletion</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center ">
                 <p>Are you sure you want to delete this Process?</p>
@@ -149,205 +160,173 @@
             <div class="modal-footer d-flex justify-content-center">
                 <button type="button" class="btn btn-danger text-right" id="confirm-delete">Delete</button>
                 <button type="button" class="btn btn-secondary text-right" id="cancel-delete"
-                    data-dismiss="modal">Cancel</button>
+                    data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
 </div>
 
-
 {% endblock %}
 
 {% block scripts %}
 <script>
-    $('#add-raw-material').click(function (event) {
-        event.preventDefault(); 
-        window.location.href = "{% url 'raw-material-add' %}";
-    });
-
-    function populateSourceDropdown(all_sources, selectedSources) {
-        const sourceSelect = $('#sources');
-        sourceSelect.empty(); 
-        all_sources.forEach(source => {
-            sourceSelect.append(`<option value="${source.id}">${source.name}</option>`);
-        });
-        selectedSources.forEach(sourceId => {
-            $(`#sources option[value="${sourceId}"]`).prop('selected', true);
-        });
-        sourceSelect.trigger('change');
-    }
-
-    function populateSuppliersDropdown(all_suppliers, selectedSuppliers) {
-        const supplierSelect = $('#suppliers');
-        supplierSelect.empty(); 
-        all_suppliers.forEach(supplier => {
-            supplierSelect.append(`<option value="${supplier.id}">${supplier.name}</option>`);
-        });
-        selectedSuppliers.forEach(supplierId => {
-            $(`#suppliers option[value="${supplierId}"]`).prop('selected', true);
-        });
-        supplierSelect.trigger('change');
-    }
-
-    function populateGradeDropdown(all_grades, selectedGrades) {
-        const gradeSelect = $('#grade');
-        gradeSelect.empty(); 
-        all_grades.forEach(grade => {
-            gradeSelect.append(`<option value="${grade.id}">${grade.name}</option>`);
-        });
-        selectedGrades.forEach(gradeId => {
-            $(`#grade option[value="${gradeId}"]`).prop('selected', true);
-        });
-        gradeSelect.trigger('change');
-    }
-    function populateAcceptanceDropdown(all_acceptance_tests, selectedAcceptanceTests) {
-    const acceptanceSelect = $('#acceptance');
-    acceptanceSelect.empty(); 
-    all_acceptance_tests.forEach(test => {
-        acceptanceSelect.append(`<option value="${test.id}">${test.name}</option>`);
-    });
-    selectedAcceptanceTests.forEach(testId => {
-        $(`#acceptance option[value="${testId}"]`).prop('selected', true);
-    });
-    acceptanceSelect.trigger('change');
-}
-
-    $('.view-user-btn').on('click', function () {
-        $('#saveUserChanges').show();
-        const baseUrl = '/product/raw-material/';
-        const batchId = $(this).data('batch-id'); 
-        const rawmaterialUpdateUrl = `${baseUrl}${batchId}/`; 
-
-        $.ajax({
-            type: 'GET',
-            url: rawmaterialUpdateUrl,
-            success: function (response) {
-                const rawData = response.data;
-                $('#raw-material').val(rawData.name);
-                $('#shelf_life').val(rawData.shelf_life_value);
-                $('#unit').val(rawData.shelf_life_unit);
-                $('#raw_material_id').val(rawData.id);
-
-                populateSourceDropdown(rawData.all_sources, rawData.sources.map(source => source.id));
-                populateSuppliersDropdown(rawData.all_suppliers, rawData.suppliers.map(supplier => supplier.id));
-                populateGradeDropdown(rawData.all_grades, rawData.grades.map(grade => grade.id));
-                populateAcceptanceDropdown(rawData.all_acceptance_tests, rawData.acceptance_test.map(test => test.id)); 
-               
-                $('#materialpage').modal('show');
-            },
-            error: function (error) {
-                console.error('Failed to fetch raw material data:', error);
-            }
-        });
-    });
-
     $(document).ready(function () {
-        $('#updateRawMaterial').click(function (event) {
-            event.preventDefault();
-
-            var rawMaterialId = $('#raw_material_id').val();
-            var name = $('#raw-material').val();
-            var grades = Array.from(document.getElementById('grade').selectedOptions).map(option => Number(option.value)) || [];
-            var shelf_life_value = parseInt($('#shelf_life').val(), 10);
-            var shelf_life_unit = $('#unit').val();
-            var sources = Array.from(document.getElementById('sources').selectedOptions).map(option => Number(option.value)) || [];
-            var suppliers = Array.from(document.getElementById('suppliers').selectedOptions).map(option => Number(option.value)) || [];
-
-            const rawMaterialData = {
-                'name': name,
-                'grades': grades,
-                'shelf_life_value': shelf_life_value,
-                'shelf_life_unit': shelf_life_unit,
-                'sources': sources,
-                'suppliers': suppliers,
-            };
+        // Function to populate modal fields
+        $('.view-user-btn').on('click', function () {
+            const stepId = $(this).data('step-id');
+            const processTitle = "{{ process_title }}";
+            const editUrl = `/process/view/${processTitle}/${stepId}/`;
 
             $.ajax({
-                type: 'PUT',
-                url: '/product/raw-material/' + rawMaterialId + '/',
-                data: JSON.stringify(rawMaterialData),
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
+                type: 'GET',
+                url: editUrl,
                 success: function (response) {
-                    if (response.isSuccess) {
-                        window.location.href = "/success-page/";
-                    } else {
-                        $('#error-message').text(response.message).show();
-                    }
+                    // Populate modal fields
+                    $('#step_id').val(response.data.id);
+                    $('#process_description').val(response.data.process_description);
+                    $('#rm_status').val(response.data.rm_status);
+                    $('#equipment_status').val(response.data.equipment_status);
+                    $('#remarks').val(response.data.remarks);
+                    $('#process_step_spec').val(response.data.process_step_spec);
+                    $('#measured_value_observation').val(response.data.measured_value_observation);
+
+                    // Populate dropdowns
+                    populateSelect('#raw_materials', response.data.all_raw_materials, response.data.raw_materials);
+                    populateSelect('#equipment', response.data.all_equipment, response.data.equipment);
+                    populateSelect('#consumables', response.data.all_consumables, response.data.consumables);
+                    populateSelect('#components', response.data.all_components, response.data.components);
+
+                    $('#updateProcessStepModal').modal('show');
                 },
-                error: function () {
-                    $('#error-message').text('An error occurred. Please try again.').show();
+                error: function (xhr) {
+                    alert('Failed to load data. Please try again.');
                 }
+            
+            });
+            
+
+
+            // Helper function to populate select fields
+            function populateSelect(selector, allOptions, selectedOptions) {
+                const select = $(selector);
+                select.empty();
+                allOptions.forEach(option => {
+                    const isSelected = selectedOptions.some(sel => sel.id === option.id) ? 'selected' : '';
+                    select.append(`<option value="${option.id}" ${isSelected}>${option.name}</option>`);
+                });
+            }
+        
+            
+
+            // Handle save button click
+            $('#updateProcessStep').on('click', function () {
+                // const stepId = $('#step_id').val();
+                const updateUrl = `/process/edit/${processTitle}/${stepId}/`;
+
+                const updatedData = {
+                    description: $('#process_description').val(),
+                    rm_status: $('#rm_status').val(),
+                    equipment_status: $('#equipment_status').val(),
+                    remarks: $('#remarks').val(),
+                    raw_materials: $('#raw_materials').val(),
+                    equipment: $('#equipment').val(),
+                    consumables: $('#consumables').val(),
+                    components: $('#components').val(),
+                    process_step_spec: $('#process_step_spec').val(),
+                    measured_value_observation: $('#measured_value_observation').val(),
+                };
+
+                $.ajax({
+                    type: 'PUT',
+                    url: updateUrl,
+                    data: JSON.stringify(updatedData),
+                    contentType: 'application/json',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload(); // Reload the page on success
+                        } else {
+                            alert('Update failed: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred. Please try again.');
+                    }
+                });
             });
         });
-    });
+        
+            $(document).on('click', '#delete-btn', function (e) {
+                e.preventDefault(); // Prevent default link behavior
+                const stepId = $(this).data('step-id');
+                const processTitle = "{{ process_title }}";
 
-
-    $(document).on('click', '#delete-btn', function (e) {
-        e.preventDefault(); // Prevent default link behavior
-
-        var rawId = $(this).data('id'); // Get RAW MATERIAL ID from data attribute
-        if (!rawId) {
-            alert('Raw Material ID not found.');
-            return;
-        }
-
-        // Store the RAW MATERIAL in the modal's confirm button for reference
-        $('#confirm-delete').data('id', rawId);
-
-        // Show the confirmation modal
-        $('#confirmDeleteModal').modal('show');
-    });
-
-    // Handle the confirmation of deletion
-    $(document).on('click', '#confirm-delete', function () {
-        var rawId = $(this).data('id'); // Retrieve MATERIAL ID from the modal's confirm button
-
-        if (!rawId) {
-            alert('Material ID not found.');
-            return;
-        }
-
-        // Construct the URL dynamically
-        const baseUrl = "/product/raw-material/delete/";
-        const deleteUrl = `${baseUrl}${rawId}/`;
-
-        // Perform the AJAX request for deletion
-        $.ajax({
-            url: deleteUrl,
-            type: 'POST',
-            data: JSON.stringify({ 'rawId': rawId }),
-            contentType: 'application/json',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token header
-            },
-            success: function (response) {
-                if (response.success) {
-                    console.log('Delete successful, reloading page...');
-
-                    // Close the modal after success
-                    $('#confirmDeleteModal').modal('hide');
-
-                    // Reload the page immediately after successful deletion
-                    window.location.reload(true); // Force reload (bypass cache)
-                } else {
-                    alert('Error: ' + response.message);
-                    console.error('Delete failed: ' + response.message);
+                // var stepId = $(this).data('id'); // Get Step ID from data attribute
+                if (!stepId) {
+                    alert('Step ID not found.');
+                    return;
                 }
-            },
-            error: function (xhr, status, error) {
-                alert('An error occurred: ' + error);
-                console.error('AJAX error:', error);
-            }
-        });
-    });
 
-    // Handle the cancel button to close the modal
-    $(document).on('click', '#cancel-delete, .close', function () {
-        $('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
-    });
+                // Store the Step ID in the modal's confirm button for reference
+                $('#confirm-delete').data('id', stepId);
+
+                // Show the confirmation modal
+                $('#confirmDeleteModal').modal('show');
+            });
+            
+
+            // Handle the confirmation of deletion
+            $(document).on('click', '#confirm-delete', function () {
+                // var stepId = $(this).data('id'); // Retrieve Step ID from the modal's confirm button
+                const stepId = $(this).data('step-id');
+                const processTitle = "{{ process_title }}";
+
+                if (!stepId) {
+                    alert('Step ID not found.');
+                    return;
+                }
+
+                // Construct the URL dynamically
+                const deleteUrl = `/process/delete-step/${processTitle}/${stepId}/`;
+
+                // Perform the AJAX request for deletion
+                $.ajax({
+                    url: deleteUrl,
+                    type: 'POST',
+                    data: JSON.stringify({ 'stepId': stepId }),
+                    contentType: 'application/json',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token header
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            console.log('Delete successful, reloading page...');
+
+                            // Close the modal after success
+                            $('#confirmDeleteModal').modal('hide');
+
+                            // Reload the page immediately after successful deletion
+                            window.location.reload(true); // Force reload (bypass cache)
+                        } else {
+                            alert('Error: ' + response.message);
+                            console.error('Delete failed: ' + response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('An error occurred: ' + error);
+                        console.error('AJAX error:', error);
+                    }
+                    
+                });
+            });
+
+            // Handle the cancel button to close the modal
+            $(document).on('click', '#cancel-delete, .btn-close', function () {
+                $('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
+            });
+        });
 
 </script>
 {% endblock %}

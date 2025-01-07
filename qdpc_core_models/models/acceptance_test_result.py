@@ -11,7 +11,7 @@ class AcceptanceTestResult(models.Model):
     raw_material_batch = models.ForeignKey(RawMaterialBatch, on_delete=models.CASCADE, related_name='test_results')
     acceptance_test = models.ForeignKey(AcceptanceTest, on_delete=models.CASCADE)
     test_value = models.FloatField()
-    unit=models.ForeignKey(Unit,on_delete=models.CASCADE)  # To store PDF or image files
+    unit=models.ForeignKey(Unit,on_delete=models.CASCADE,)  # To store PDF or image files
     test_date = models.DateField(default=timezone.now)
     validity_date = models.DateField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)

@@ -70,31 +70,29 @@
                     </div>
 
 
-            <div class="col-lg-3 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>RM(s) Used</label>
-                            <select id="raw_material" name="step_${stepCounter}_raw_material[]" class="form-control" >
-                                <option>Choose Rawmaterial</option>
-                                {% for material in raw_materials %}
-                                    <option value="{{ material.id }}">{{ material.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="form-group">
+                        <label>RM(s) Used</label>
+                        <select id="raw_material" name="step_${stepCounter}_raw_material[]" class="form-control">
+                            <option>Choose Rawmaterial</option>
+                            {% for material_status in raw_materials_with_status %}
+                                <option 
+                                    value="{{ material_status.material.id }}" 
+                                    style="color: {% if material_status.is_expired %}red{% else %}green{% endif %};">
+                                    {{ material_status.material.name }} - Expiry Date: {{ material_status.material.calculate_expiry_date|date:"Y-m-d" }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
+                </div>
 
 
-
-
-
-
-                  
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>RM Status</label>
                             <select name="step_${stepCounter}_rm_status" class="form-select">
                                 <option value="Valid">Valid</option>
                                 <option value="Material Expired">Material Expired</option>
-                                <option value="Test Certificate Expired">Test Certificate Expired</option>
                             </select>
                         </div>
                     </div>
@@ -104,8 +102,12 @@
                             <label>Equipment(s) Used</label>
                             <select id="equipment" name="step_${stepCounter}_equipment[]" class="form-control">
                                 <option>Choose equipment</option>
-                                {% for equ in equipment %}
-                                    <option value="{{ equ.id }}">{{ equ.name }}</option>
+                                {% for equip_status in equipment_with_status %}
+                                <option 
+                                    value="{{ equip_status.equip.id }}" 
+                                    style="color: {% if equip_status.is_expired %}red{% else %}green{% endif %};">
+                                    {{ equip_status.equip.name }} - Calibration Date: {{ equip_status.equip.calibration_due_date|date:"Y-m-d" }}
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -128,9 +130,13 @@
                             <label>Consumable(s) Used</label>
                             <select id="consumable" name="step_${stepCounter}_consumable[]" class="form-control">
                                 <option>Choose Consumable</option>
-                                {% for con in consumables %}
-                                    <option value="{{ con.id }}">{{ con.name }}</option>
-                                {% endfor %}
+                                {% for consum_status in consumables_with_status %}
+                                <option 
+                                    value="{{ consum_status.consum.id }}" 
+                                    style="color: {% if consum_status.is_expired %}red{% else %}green{% endif %};">
+                                    {{ consum_status.consum.name }} - Expiry Date: {{ consum_status.consum.calculate_expiry_date|date:"Y-m-d" }}
+                                </option>
+                            {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -142,8 +148,12 @@
                             <label>Component(s) Used</label>
                             <select id="component" name="step_${stepCounter}_component[]" class="form-control">
                                 <option>Choose Component</option>
-                                {% for com in component %}
-                                    <option value="{{ com.id }}">{{ com.name }}</option>
+                                 {% for comp_status in component_with_status %}
+                                <option 
+                                    value="{{ comp_status.comp.id }}" 
+                                    style="color: {% if comp_status.is_expired %}red{% else %}green{% endif %};">
+                                    {{ comp_status.comp.name }} - Expiry Date: {{ comp_status.comp.calculate_expiry_date|date:"Y-m-d" }}
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
