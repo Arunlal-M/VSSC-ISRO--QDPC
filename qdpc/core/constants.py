@@ -76,3 +76,7 @@ COMPONENT_BATCH_FAILED="Component batch Failed"
 COMPONENT_DELETE_SUCCESSFULLY="Component  Deleted Successfully"
 
 PROCESS_STEP_DELETE_SUCCESSFULLY="Process Step deleted sucessfully"
+
+DOCUMENT_CREATION_FAILED="Document creation failed due to invalid data."
+DOCUMENT_CREATION_SUCESSFULLY="Document created successfully."
+DOCUMENT_DELETE_SUCCESSFULLY="Document deleted sucessfully"

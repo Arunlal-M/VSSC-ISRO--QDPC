@@ -2,7 +2,7 @@ from qdpc.core.modelviewset import BaseModelViewSet
 from rest_framework import status
 from qdpc.core import constants
 from django.shortcuts import render, redirect
-from qdpc_core_models.models.component import Component
+from qdpc_core_models.models.component import Component,ComponentDocument
 from component.serializers.component_serializer import ComponentSerializer
 from component.services.component_service import ComponentService
 from qdpc_core_models.models.supplier import Suppliers
@@ -14,6 +14,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response  
 from django.db.models import Max
 from qdpc_core_models.models.grade import Grade
+from qdpc_core_models.models.document_type import DocumentType
+
 
 class ComponentListFetchView(BaseModelViewSet):
   
@@ -51,6 +53,7 @@ class ComponentListFetchView(BaseModelViewSet):
             'suppliers': [{'id': supplier.id, 'name': supplier.name} for supplier in comp.suppliers.all()],
             'grade': [{'id': grade.id, 'name': grade.name,'abbreviation':grade.abbreviation} for grade in comp.grade.all()],                  
             'acceptance_test': [{'id': acceptance_test.id, 'name': acceptance_test.name,'min':acceptance_test.min_value,'max':acceptance_test.max_value, 'unit': str(acceptance_test.unit)} for acceptance_test in comp.acceptance_test.all()],
+            'shelf_life_type': comp.shelf_life_type,
             'shelf_life_value': comp.shelf_life_value,
             'shelf_life_unit': comp.shelf_life_unit,
             'user_defined_date': comp.user_defined_date,
@@ -88,12 +91,15 @@ class ComponentAdd(BaseModelViewSet):
         grades=self.get_all_obj(model_name=Grade)
         # Filter the AcceptanceTest objects to get only the most recent ones
         latest_acceptance_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
-        
+        document_types = DocumentType.objects.all()  # Add this line to fetch document types
+
         context = {
             'sources': sources,
             'suppliers': suppliers,
             'acceptence_test':latest_acceptance_tests,
             'grades':grades,
+            'document_types': document_types,  # Pass document types to the template
+
         }
         return render(request, 'addcomponent.html',context)
     
@@ -294,4 +300,48 @@ class UpdateComponentStatusView(BaseModelViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
        
 
+class AddComponentDocumentView(BaseModelViewSet):
+    def post(self, request, format=None):
+        try:
+            component_id = request.data.get('component')
+            category_id = request.data.get('category')  # Get the category ID
 
+            if not component_id or not category_id:
+                return Response({
+                    'success': False,
+                    'message': 'Component is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # try:
+            #     raw_material = RawMaterial.objects.get(name=raw_material_id)
+            # except RawMaterial.DoesNotExist:
+            #     return Response({
+            #         'success': False,
+            #         'message': 'Raw Material not found'
+            #     }, status=status.HTTP_404_NOT_FOUND)
+            category = DocumentType.objects.get(id=category_id)
+
+            # Create the document
+            document = ComponentDocument.objects.create(
+                component=component_id,
+                title=request.data.get('title'),
+                category=category,  # Assign the DocumentType instance here
+                issue_no=request.data.get('issue_no'),
+                revision_no=request.data.get('revision_no'),
+                release_date=request.data.get('release_date'),
+                approved_by=request.data.get('approved_by'),
+                document=request.FILES.get('document'),
+                validity=request.data.get('validity')
+            )
+
+            return Response({
+                'success': True,
+                'message': 'Component Document added successfully',
+                'document_id': document.id
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': f"An error occurred: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

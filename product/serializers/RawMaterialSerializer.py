@@ -41,10 +41,10 @@ class RawMaterialSerializer(serializers.ModelSerializer):
             'calculate_expiry_date',
             'acceptance_test_names',
         ]
-        
+
     def validate_shelf_life_value(self, value):
         """Ensure shelf_life_value is numeric (float or integer)."""
-        if not isinstance(value, (float, int)):
+        if value is not None and not isinstance(value, (float, int)):
             raise serializers.ValidationError("Shelf life value must be a numeric type.")
         return value
 
@@ -64,6 +64,14 @@ class RawMaterialSerializer(serializers.ModelSerializer):
         # Ensure obj.acceptance_tests.all() returns AcceptanceTest instances
         return [test.name for test in obj.acceptance_test.all()]
 
+    def validate(self, data):
+        # Ensure shelf_life_value and shelf_life_unit are None when shelf_life_type is 'not_applicable' or 'tbd'
+        shelf_life_type = data.get('shelf_life_type')
+        if shelf_life_type in ['not_applicable', 'tbd']:
+            data['shelf_life_value'] = None
+            data['shelf_life_unit'] = None
+        return data
+
     def create(self, validated_data):
         sources = validated_data.pop('sources', [])
         suppliers = validated_data.pop('suppliers', [])
@@ -72,6 +80,7 @@ class RawMaterialSerializer(serializers.ModelSerializer):
 
         raw_material = RawMaterial.objects.create(**validated_data)
 
+        # Set many-to-many relationships
         raw_material.sources.set(sources)
         raw_material.suppliers.set(suppliers)
         raw_material.grade.set(grades)

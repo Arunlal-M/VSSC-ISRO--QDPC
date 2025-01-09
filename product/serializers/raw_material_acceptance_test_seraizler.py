@@ -100,3 +100,14 @@ class RawMaterialAcceptanceTestSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return RawMaterialAcceptanceTest.objects.create(**validated_data)
+    
+    
+    
+    # def validate(self, data):
+    #     # Ensure shelf_life_value and shelf_life_unit are None when shelf_life_type is 'not_applicable' or 'tbd'
+    #     raw_material = data.get('raw_material')
+    #     if raw_material in ['acceptance_test','min_value',
+    #         'max_value']:
+    #         data['raw_material'] = None
+    #         # data['shelf_life_unit'] = None
+    #     return data

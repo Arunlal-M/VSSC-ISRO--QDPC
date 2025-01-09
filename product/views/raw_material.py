@@ -14,6 +14,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response  
 from django.db.models import Max
 from qdpc_core_models.models.grade import Grade
+from qdpc_core_models.models.document_type import DocumentType
+
 
 class RawMatrialListFetchView(BaseModelViewSet):
   
@@ -90,12 +92,14 @@ class RawMaterialAdd(BaseModelViewSet):
         grades = self.get_all_obj(model_name=Grade)
         # Filter the AcceptanceTest objects to get only the most recent ones
         latest_acceptance_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
-        
+        document_types = DocumentType.objects.all()  # Add this line to fetch document types
+
         context = {
             'sources': sources,
             'suppliers': suppliers,
             'acceptence_test':latest_acceptance_tests,
             'grades' : grades,
+            'document_types': document_types,  # Pass document types to the template
         }
         return render(request, 'addmaterial.html',context)
     
@@ -293,10 +297,14 @@ class UpdateRawmaterialStatusView(BaseModelViewSet):
 
     
 class AddRawMaterialDocumentView(BaseModelViewSet):
+    
+     
+    
     def post(self, request, format=None):
         try:
             raw_material_id = request.data.get('raw_material')
-            if not raw_material_id:
+            category_id = request.data.get('category')  # Get the category ID
+            if not raw_material_id or not category_id:
                 return Response({
                     'success': False,
                     'message': 'Raw Material is required'
@@ -309,12 +317,14 @@ class AddRawMaterialDocumentView(BaseModelViewSet):
             #         'success': False,
             #         'message': 'Raw Material not found'
             #     }, status=status.HTTP_404_NOT_FOUND)
-
+            
+            category = DocumentType.objects.get(id=category_id)
             # Create the document
+            
             document = RawMaterialDocument.objects.create(
                 raw_material=raw_material_id,
                 title=request.data.get('title'),
-                category=request.data.get('category'),
+                category=category,  # Assign the DocumentType instance here
                 issue_no=request.data.get('issue_no'),
                 revision_no=request.data.get('revision_no'),
                 release_date=request.data.get('release_date'),

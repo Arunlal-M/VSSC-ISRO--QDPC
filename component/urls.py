@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .views.component import ComponentAdd
-from.views.component import ComponentListFetchView,ComponentDetailView,DeleteComponentView,UpdateComponentStatusView
+from.views.component import ComponentListFetchView,ComponentDetailView,DeleteComponentView,UpdateComponentStatusView,AddComponentDocumentView
 from .views.component_batch import ComponentBatchFetchView,ComponentBatchAddView
 from .views.component_batch import ComponentBatchAcceptenceTest
 from django.urls import path,include
@@ -16,6 +16,7 @@ path('component-add/', ComponentAdd.as_view(), name='component-add'),
 path('component-list/<int:batch_id>/', ComponentListFetchView.as_view(), name='component-update'),
 path('update-component-status/<str:componentId>/', UpdateComponentStatusView.as_view(), name='update-component-status'),
 path('component-list/delete/<int:componentId>/',DeleteComponentView.as_view(), name='component-delete'),
+path('component-document/add/', AddComponentDocumentView.as_view(), name='add-component-document'),
 
 
 

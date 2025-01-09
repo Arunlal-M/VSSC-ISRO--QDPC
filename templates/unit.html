@@ -102,6 +102,10 @@
 								<td>{{ unit.name }}</td>
 								<td>{{ unit.abbreviation }}</td>
 								<td>
+									<a class="me-3 view-user-btn" data-bs-toggle="modal"
+									data-bs-target="#updateUnitModal" data-id="{{ unit.id }}">
+									<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+								</a>
 									<a id="delete-unit-btn" data-id="{{ unit.id }}">
 										<img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
 									</a>
@@ -119,7 +123,80 @@
 
 			</div>
 		</div>
+<!-- Modal for Updating unit -->
+<div class="modal fade" id="updateUnitModal" tabindex="-1" aria-labelledby="updateUnitModal"
+aria-hidden="true">
+<div class="modal-dialog modal-lg">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h5 class="modal-title" id="updateUnitModalLabel">Update Unit</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+		<div class="modal-body">
+			<form id="updateUnitForm" class="row">
+				<input type="hidden" id="unit_id" name="unit_id" value="">
+
+				<!-- Fields for source data -->
+				<div class="col-6 mt-2">
+					<label for="unit_n" class="form-label">Unit Name</label>
+					<input type="text" class="form-control" id="unit_n" name="unit_n"
+						placeholder="unit Name"></input>
+				</div>
+
+				<!-- Populate dropdowns dynamically -->
+				<div class="col-6 mt-2">
+					<label for="unit_abb" class="form-label">Abbreviation</label>
+					<input type="text" class="form-control" id="unit_abb" name="unit_abb"></input>
+				</div>
+
+				
+
+				<div class="d-flex justify-content-center mt-3">
+					<button type="button" class="btn btn-primary btn-sm" id="updateUnit">Update</button>
+				</div>
+
+			</form>
+		</div>
 	</div>
+</div>
+</div>
+
+
+<!-- DELTE CONFIRMATION MODAL -->
+<div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Confirm Deletion</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body text-center ">
+				<p>Are you sure you want to delete this Unit?</p>
+			</div>
+			<div class="modal-footer d-flex justify-content-center">
+				<button type="button" class="btn btn-danger text-right" id="confirm-delete">Delete</button>
+				<button type="button" class="btn btn-secondary text-right" id="cancel-delete"
+					data-dismiss="modal">Cancel</button>
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+
+
+	</div>
+
+
+
+
+
 	{% endblock %}
 	{% block scripts %}
 	<script>
@@ -153,35 +230,141 @@
 			});
 		});
 
+// Open edit modal and populate fields
+$('.view-user-btn').on('click', function () {
+	const unitId = $(this).data('id');
+	const editUrl = `/unit/view/${unitId}/`;
 
+	$.ajax({
+		type: 'GET',
+		url: editUrl,
+		success: function (response) {
+			if (response && response.data) {
+				$('#unit_id').val(response.data.id);
+				$('#unit_n').val(response.data.name);
+				$('#unit_abb').val(response.data.abbreviation);  // Populate abbreviation
 
-		$(document).on('click', '#delete-unit-btn', function () {
-			var unitId = $(this).data('id'); // Get the supplier ID from the button's data attribute
-			if (unitId) {
-				const baseUrl = '/unit/';
-				const deleteUrl = `${baseUrl}${unitId}/`; // URL for deleting Unit
+				
 
-				$.ajax({
-					url: deleteUrl,
-					type: 'POST', // Use POST for deleting supplier
-					headers: {
-						'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token in the headers
-					},
-					success: function (response) {
-						if (response.success) {
-							window.location.reload(); // Reload the page on success
-						} else {
-							alert('Error: ' + response.message);
-						}
-					},
-					error: function (xhr, status, error) {
-						alert('An error occurred: ' + error);
-					}
-				});
+				// Clear any previous error messages
+				$('#error-message').hide().text('');
+
+				$('#updateGradeModal').modal('show');
 			} else {
-				alert('Unit ID not found.');
+				alert('Failed to load data: ' + response.message);
+			}
+		},
+		error: function () {
+			alert('Failed to load data. Please try again.');
+		}
+	});
+
+
+	// Handle update submission
+	$('#updateUnit').off('click').on('click', function () {
+		const unitId = $('#unit_id').val();
+		const updateUrl = `/unit/edit/${unitId}/`;
+
+		const updatedData = {
+			name: $('#unit_n').val(),
+			abbreviation: $('#unit_abb').val(),
+			
+		};
+
+		$.ajax({
+			type: 'PUT',
+			url: updateUrl,
+			data: JSON.stringify(updatedData),
+			contentType: 'application/json',
+			headers: {
+				'X-CSRFToken': '{{ csrf_token }}'
+			},
+			success: function (response) {
+				if (response.success) {
+					location.reload(); // Reload the page on success
+				} else {
+					alert('Update failed: ' + response.message);
+				}
+			},
+			error: function () {
+				alert('An error occurred. Please try again.');
 			}
 		});
+	});
+});
+
+
+
+
+
+
+
+
+
+
+		
+
+$(document).ready(function () {
+	$(document).on('click', '#delete-unit-btn', function (e) {
+		e.preventDefault(); // Prevent default link behavior
+		var unitId = $(this).data('id'); // Get the supplier ID from the button's data attribute
+        //console.log("unit ID to delete:", gradeId); // Debug log
+		if (!unitId) {
+			alert('unit Id not found.');
+				return;
+			}
+			$('#confirm-delete').data('id',unitId);
+	
+			// Show the confirmation modal
+			$('#confirmDeleteModal').modal('show');
+		});
+
+		
+// Handle the confirmation of deletion
+$(document).on('click', '#confirm-delete', function () {
+	var unitId = $(this).data('id'); // Retrieve center ID from the modal's confirm button
+
+	if (!unitId) {
+		alert('unit Id not found.');
+		return;
+	}
+
+
+
+			const baseUrl = '/unit/';
+			const deleteUrl = `${baseUrl}${unitId}/`; // URL for deleting unit0
+	
+			$.ajax({
+				url: deleteUrl,
+				type: 'POST', // Use POST for deleting supplier
+				headers: {
+					'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token in the headers
+				},
+				success: function (response) {
+					if (response.success) {
+
+				// Close the modal after success
+				$('#confirmDeleteModal').modal('hide');
+
+
+
+					window.location.reload(true); // Reload the page on success
+					} else {
+					alert('Error: ' + response.message);
+					}
+				},
+				error: function (xhr, status, error) {
+					alert('An error occurred: ' + error);
+				}
+			});
+		
+	});
+	// Handle the cancel button to close the modal
+	$(document).on('click', '#cancel-delete, .close', function () {
+		$('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
+	});
+});
+
 
 	</script>
 	{% endblock %}

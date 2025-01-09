@@ -7,8 +7,7 @@ from .acceptance_test import AcceptanceTest
 from datetime import timedelta
 from django.utils.timezone import now
 from qdpc_core_models.models.document_categary import DocumentCategory
-
-
+from qdpc_core_models.models.document_type import DocumentType
 
 class RawMaterial(models.Model):
     
@@ -44,23 +43,23 @@ class RawMaterial(models.Model):
 
 class RawMaterialDocument(models.Model):
         
-    CATEGORY_NAME_CHOICES = [
-        ('DOC/DOCX', '.doc/.docx'),
-        ('PDF', '.pdf'),
-        ('TXT', '.txt'),
-        ('XLS/XLSX', '.xls/.xlsx'),
-        ('CSV', '.csv'),
-        ('PPT/PPTX', '.ppt/.pptx'),
-        ('ODP', '.odp'),
-        ('JPG/JPEG', '.jpg/.jpeg'),
-        ('PNG', '.png'),
-        ('ZIP', '.zip'),
-        ('RAR', '.rar'),
-     ]
+    # CATEGORY_NAME_CHOICES = [
+    #     ('DOC/DOCX', '.doc/.docx'),
+    #     ('PDF', '.pdf'),
+    #     ('TXT', '.txt'),
+    #     ('XLS/XLSX', '.xls/.xlsx'),
+    #     ('CSV', '.csv'),
+    #     ('PPT/PPTX', '.ppt/.pptx'),
+    #     ('ODP', '.odp'),
+    #     ('JPG/JPEG', '.jpg/.jpeg'),
+    #     ('PNG', '.png'),
+    #     ('ZIP', '.zip'),
+    #     ('RAR', '.rar'),
+    #  ]
     
     raw_material = models.CharField(max_length=255,unique=True,null=True,blank=True)
     title = models.CharField(max_length=255)
-    category = models.CharField(max_length=255, choices=CATEGORY_NAME_CHOICES, default='PDF')
+    category = models.ForeignKey(DocumentType, on_delete=models.CASCADE,related_name='rawmaterial_documenttype',blank=True, null=True)
     issue_no = models.CharField(max_length=255)
     revision_no = models.CharField(max_length=255)
     release_date = models.DateField()

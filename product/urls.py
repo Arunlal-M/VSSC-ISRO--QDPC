@@ -9,7 +9,7 @@ from .views.raw_material_batch import RawmatrialBatchAcceptenceTest
 from django.urls import path,include
 from django.conf.urls.static import static
 from django.conf import settings
-from .views.product_view import ProductListView,ProductAddView,DeleteProductView,UpdateProductStatusView
+from .views.product_view import ProductListView,ProductAddView,DeleteProductView,UpdateProductStatusView,AddProductDocumentView
 
 
 urlpatterns = [
@@ -51,6 +51,8 @@ path('list-view/',ProductListView.as_view(),name='product-view'),
 path('product-add/',ProductAddView.as_view(),name='product-add'),
 path('list-view/<str:productId>/',DeleteProductView.as_view(),name='product-delete'),
 path('update-product-status/<str:productId>/', UpdateProductStatusView.as_view(), name='update-product-status'),
+path('product-document/add/', AddProductDocumentView.as_view(), name='add-product-document'),
+
 
 # BATCH LIST DETAILED VIEW
 

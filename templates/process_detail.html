@@ -235,7 +235,6 @@
                     process_step_spec: $('#process_step_spec').val(),
                     measured_value_observation: $('#measured_value_observation').val(),
                 };
-
                 $.ajax({
                     type: 'PUT',
                     url: updateUrl,
@@ -262,7 +261,6 @@
                 e.preventDefault(); // Prevent default link behavior
                 const stepId = $(this).data('step-id');
                 const processTitle = "{{ process_title }}";
-
                 // var stepId = $(this).data('id'); // Get Step ID from data attribute
                 if (!stepId) {
                     alert('Step ID not found.');
