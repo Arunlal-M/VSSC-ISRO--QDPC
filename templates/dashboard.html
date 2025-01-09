@@ -1,0 +1,153 @@
+{% extends 'index.html' %}
+{% block content %}
+
+            <div class="page-wrapper">
+                <div class="content">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h4>User List</h4>
+                        </div>
+                    </div>
+                    <div class="comp-sec-wrapper">
+                
+                      
+                        
+                        <!-- Tabs -->
+                        <section class="comp-section">
+                            <div class="section-header">
+                                <!-- <h3 class="section-title">User List</h3> -->
+                                <div class="line"></div>
+                            </div>
+                            
+                            
+                            <div class="row">
+                                
+
+                                <div class="col-md-12">
+                                    <div class="card bg-white">
+                                        <div class="card-header">
+                                            <h5 class="card-title">Solid justified</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="nav nav-tabs nav-tabs-solid nav-justified">
+                                                <li class="nav-item"><a class="nav-link active" href="#solid-justified-tab1" data-bs-toggle="tab">Active</a></li>
+                                                <li class="nav-item"><a class="nav-link" href="#solid-justified-tab2" data-bs-toggle="tab">Inactive</a></li>
+                                            </ul>
+                                            <div class="tab-content">
+                                                <div class="tab-pane show active" id="solid-justified-tab1">
+                                                    <div class="table-responsive">
+                                                        <table class="table  datanew">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>
+                                                                        <label class="checkboxs">
+                                                                            <input type="checkbox">
+                                                                            <span class="checkmarks"></span>
+                                                                        </label>
+                                                                    </th>
+                                                                    <th>User name </th>
+                                                                    <th>Phone</th>
+                                                                    <th>email</th>
+                                                                    <th>Role</th>
+                                                                    <th>Created On</th>
+                                                                    <th>Status</th>
+                                                                    
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>
+                                                                        <label class="checkboxs">
+                                                                            <input type="checkbox">
+                                                                            <span class="checkmarks"></span>
+                                                                        </label>
+                                                                    </td>
+                                                                    <td>Thomas</td>
+                                                                    <td>+12163547758  </td>
+                                                                    <td>thomas@example.com </td>
+                                                                    <td>Admin</td>
+                                                                    <td>3/15/2022</td>
+                                                                    <td>
+                                                                        <div class="status-toggle d-flex justify-content-between align-items-center">
+                                                                            <input type="checkbox" id="user2" class="check" checked="">
+                                                                            <label for="user2" class="checktoggle">checkbox</label>
+                                                                        </div>
+                                                                    </td>
+                                                                    
+                                                                </tr>
+                                                         
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="tab-pane" id="solid-justified-tab2">
+                                                    <div class="table-responsive">
+                                                        <table class="table  datanew">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>
+                                                                        <label class="checkboxs">
+                                                                            <input type="checkbox">
+                                                                            <span class="checkmarks"></span>
+                                                                        </label>
+                                                                    </th>
+                                                                    <th>User name </th>
+                                                                    <th>Phone</th>
+                                                                    <th>email</th>
+                                                                    <th>Role</th>
+                                                                    <th>Created On</th>
+                                                                    <th>Status</th>
+                                                                    <th>Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>
+                                                                        <label class="checkboxs">
+                                                                            <input type="checkbox">
+                                                                            <span class="checkmarks"></span>
+                                                                        </label>
+                                                                    </td>
+                                                                    <td>Thomas</td>
+                                                                    <td>+12163547758  </td>
+                                                                    <td>thomas@example.com </td>
+                                                                    <td><select id="options" name="options">
+                                                                        <option value="option1">Admin</option>
+                                                                        <option value="option2">User</option>
+                                                                        
+                                                                    </select></td>
+                                                                    <td>3/15/2022</td>
+                                                                    <td><span class="bg-lightgreen badges">Active</span></td>
+                                                                    <td>
+                                                                          
+                                                                        <a class="me-3" href="newuseredit.html">
+                                                                            <!-- <img src="assets/img/icons/edit.svg" alt="img"> -->
+                                                                            <span class="bg-lightgreen badges">Approve</span>
+                                                                        </a>
+                                                                        <a class="me-3 confirm-text" href="javascript:void(0);">
+                                                                            <!-- <img src="assets/img/icons/delete.svg" alt="img"> -->
+                                                                            <span class="bg-lightred badges">Rejected</span>
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                         
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </section>
+                        <!-- /Tabs -->
+
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        {% endblock %}

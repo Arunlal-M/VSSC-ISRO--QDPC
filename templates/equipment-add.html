@@ -1,0 +1,193 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+			<div class="page-wrapper">
+				<div class="content">
+					<div class="page-header">
+						<div class="page-title">
+							<h4>Equipment Add</h4>
+							<h6>Equipment Configuration</h6>
+						</div>
+					</div>
+					<!-- /add -->
+					<div class="card">
+						<div class="card-body">
+							<div class="row">
+								<div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Name</label>
+										<input type="text" id="name" name="name" >
+									</div>
+								</div>
+
+
+                                <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label>Equipment Owner</label>
+                                        <select id="owner" name="owner" class="select">
+                                            <option value="">Choose owner</option>
+                                            {% for own in equipment_owner %}
+                                                <option value="{{ own.id }}">{{ own.name }}</option> <!-- Adjust field name if necessary -->
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Serial No</label>
+										<input type="text" id="serial_no" name="serial_no" >
+									</div>
+								</div>
+                                <div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Make</label>
+										<input type="text" id="make" name="make">
+									</div>
+								</div>
+                                {% comment %} <div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Last Calibration Date</label>
+										<div class="input-groupicon">
+											<input type="text"  id="last_calibration_date" name="last_calibration_date" placeholder="Choose Date"   class="datetimepicker">
+											<a class="addonset">
+												<img src="{% static 'assets/img/icons/calendars.svg' %}" alt="img">
+											</a>
+										</div>
+									</div>
+								</div> {% endcomment %}
+								
+                               
+                                <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label >Last Calibration Date</label>
+                                        <input type="date" id="last_calibration_date" name="last_calibration_date" placeholder="Choose Date" class="form-control">
+                                    </div>
+                                </div>
+                                
+                               
+                                <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label>Calibration Validity Duration Type</label>
+                                        <div class="row">
+                                          <div class="col-10">
+                                            <select id="calibration_validity_duration_type" name="calibration_validity_duration_type" class="form-control">
+                                                <option value="" disabled selected>Select duration type</option>
+                                                <option value="days">Days</option>
+                                                <option value="months">Months</option>
+                                            </select>
+                                             </div> 
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label>Calibration Validity Duration Value</label>
+                                        <div class="row">
+                                            <div class="col-10">
+                                                <input type="text" id="calibration_validity_duration_value" name="calibration_validity_duration_value" class="form-control" >
+                                            </div>
+                                         
+                                        </div>
+                                    </div>
+                                </div>
+            
+
+
+{% comment %} 
+                                <div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Calibration Due Date</label>
+										<div class="input-groupicon">
+											<input type="text"id="calibration_due_date" name="calibration_due_date" placeholder="Choose Date" class="datetimepicker">
+											<a class="addonset">
+												<img src="{% static 'assets/img/icons/calendars.svg' %}" alt="img">
+											</a>
+										</div>
+									</div>
+								</div> {% endcomment %}
+
+
+                                <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label >Calibration Due Date</label>
+                                        <input type="date" id="calibration_due_date" name="calibration_due_date" placeholder="Choose Date" class="form-control">
+                                    </div>
+                                </div>
+
+
+                                
+                                <div class="col-lg-4 col-sm-6 col-12" id="inputContainer">
+									<div class="form-group">
+										<label>Upload Calibration Certificate</label>
+										<input type="file" id="calibration_certificate" name="calibration_certificate"class="form-control mt-2" multiple>
+									</div>
+								</div>
+								
+                                
+							
+								
+                                
+								<div class="col-lg-12">
+									<a href="equipment-list.html" id="submit-btn" class="btn btn-submit me-2">Submit</a>
+									<a href="{% url 'equipment-add' %}" class="btn btn-cancel">Cancel</a>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- /add -->
+				</div>
+			</div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+        $(document).ready(function() {
+            $('#submit-btn').click(function(event) {
+                //alert("Test")
+                //alert("button   clicked")
+
+                event.preventDefault(); // Prevent the default form submission
+        
+                var formData = new FormData(); // Use FormData to handle file uploads
+        
+                // Get form values
+                formData.append('name', $('#name').val());
+                formData.append('equipment_owner', parseInt($('#owner').val()));
+                formData.append('serial_no', $('#serial_no').val());
+                formData.append('make', $('#make').val());
+                formData.append('last_calibration_date', $('#last_calibration_date').val());
+                formData.append('calibration_validity_duration_type', $('#calibration_validity_duration_type').val());
+                formData.append('calibration_validity_duration_value', $('#calibration_validity_duration_value').val());
+                formData.append('calibration_due_date', $('#calibration_due_date').val());
+        
+                // Handle file upload
+                formData.append('calibration_certificate', $('#calibration_certificate')[0].files[0]);
+        
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "equipment-add" %}', // Update this with your Django URL
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for security
+                    },
+                    data: formData, // Pass the FormData object
+                    contentType: false, // Required for file uploads
+                    processData: false, // Required for file uploads
+                    success: function(response) {
+                      
+                        window.location.href = "{% url 'equipment-list' %}"; // Redirect after success
+                    },
+                    error: function(xhr, status, error) {
+                        alert('An error occurred: ' + error); // Show error message in case of failure
+                    }
+                });
+            });
+        });
+        
+    </script>
+{% endblock %}

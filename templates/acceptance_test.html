@@ -1,0 +1,275 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<div class="page-wrapper">
+	<div class="content">
+		<div class="page-header">
+			<div class="page-title">
+				<h4>Acceptance Test Add</h4>
+				<h6>Create new Test</h6>
+			</div>
+		</div>
+
+		<!-- /add -->
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+					<!-- Test Name Input -->
+					<div class="col-lg-4 col-sm-6 col-12">
+						<div class="form-group">
+							<label>Acceptance Test Name</label>
+							<input type="text" name="name" id="name" class="form-control">
+							<div id="name-error-message" class="text-danger" style="display: none;"></div>
+						</div>
+					</div>
+
+					<!-- Test Type Selection -->
+					<div class="col-lg-4 col-sm-6 col-12">
+						<div class="form-group">
+							<label for="test_type">Specification</label>
+							<select id="test_type" name="test_type" class="form-control">
+								<option value="">Choose Type</option>
+								<option value="quantitative">Quantitative</option>
+								<option value="qualitative">Qualitative</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- Quantitative Fields -->
+					<div class="col-12" id="quantitative-fields" style="display: none;">
+						<div class="form-group row">
+							<div class="col-lg-3 col-sm-4">
+								<label class="col-form-label">Min Value</label>
+								<input type="text" name="min_value" id="min_value" class="form-control">
+							</div>
+							<div class="col-lg-2 col-sm-3 text-center align-self-end">
+								<label class="col-form-label">to</label>
+							</div>
+							<div class="col-lg-3 col-sm-4">
+								<label class="col-form-label">Max Value</label>
+								<input type="text" name="max_value" id="max_value" class="form-control">
+							</div>
+						</div>
+						<div class="form-group row">
+							<div class="col-lg-3 col-sm-4">
+								<label class="col-form-label">Unit</label>
+								<select name="unit" id="unit" class="form-control">
+									<option value="">Select Unit</option>
+									{% for unit in units %}
+									<option value="{{ unit.id }}">{{ unit.name }}</option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+					</div>
+
+
+					<!-- Qualitative Fields -->
+					<div class="col-lg-4 col-sm-6 col-12" id="qualitative-fields" style="display: none;">
+						<div class="form-group">
+							<label for="test_result">Test Result</label>
+							<input type="text" name="test_result" id="test_result" class="form-control">
+						</div>
+					</div>
+
+					<!-- Reevaluation Frequency Value -->
+					<div class="col-lg-4 col-sm-6 col-12">
+						<div class="form-group">
+							<label>Reevaluation Frequency Value</label>
+							<input type="number" placeholder="Enter value" name="reevaluation_frequency_value"
+								id="reevaluation_frequency_value" class="form-control">
+						</div>
+					</div>
+
+					<!-- Reevaluation Time Period -->
+					<div class="col-lg-4 col-sm-6 col-12">
+						<div class="form-group">
+							<label for="reevaluation_frequency_unit">Time Period</label>
+							<select id="reevaluation_frequency_unit" name="reevaluation_frequency_unit"
+								class="form-control">
+								<option value="">Select Timeperiod</option>
+								<option value="months">Months</option>
+								<option value="days">Days</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<!-- Test Results Input -->
+		<!-- <div class="col-lg-4 col-sm-6 col-12" id="inputContainer">
+						<div class="form-group">
+							<label>Test Results</label>
+							<input type="file" name="sampling_plan" id="sampling_plan" class="form-control mt-2"
+								multiple>
+						</div>
+					</div> -->
+
+		<!-- Dynamic File Input Addition -->
+		<script>
+			document.getElementById('addButton').addEventListener('click', function () {
+				var newDiv = document.createElement('div');
+				newDiv.className = 'form-group mt-2 d-flex align-items-center';
+
+				var newFileInput = document.createElement('input');
+				newFileInput.type = 'file';
+				newFileInput.className = 'form-control';
+				newFileInput.multiple = true;
+				newDiv.appendChild(newFileInput);
+
+				var closeButton = document.createElement('button');
+				closeButton.type = 'button';
+				closeButton.className = 'btn btn-danger btn-sm ml-2';
+				closeButton.innerHTML = '&times;';
+				closeButton.style.fontSize = '20px';
+				newDiv.appendChild(closeButton);
+
+				document.getElementById('inputContainer').appendChild(newDiv);
+
+				closeButton.addEventListener('click', function () {
+					newDiv.remove();
+				});
+			});
+		</script>
+
+		<!-- Submit and Cancel Buttons -->
+		<div class="col-lg-12 d-flex justify-content-start">
+			<a href="test-list.html" id="submitButton" class="btn btn-submit me-2">Submit</a>
+			<a href="{% url 'acceptance-add' %}" class="btn btn-cancel">Cancel</a>
+		</div>
+
+	</div>
+</div>
+</div>
+<!-- /add -->
+
+</div>
+</div>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script>
+	$(document).ready(function () {
+		$('#submitButton').click(function (event) {
+
+			event.preventDefault();
+
+			const fields = [
+				document.getElementById('name'),
+				document.getElementById('test_type'),
+				// document.getElementById('min_value'),
+				// document.getElementById('max_value'),
+				// document.getElementById('test_result'),
+				// document.getElementById('unit'),
+				document.getElementById('reevaluation_frequency_value'),
+				document.getElementById('reevaluation_frequency_unit'),
+				// document.getElementById('sampling_plan')
+			];
+
+			// Prevent form submission if any field is invalid
+			let isValid = true;
+			fields.forEach(function (field) {
+				if (field && field.value.trim() === '') {
+					// If field is empty, add a red border and show error message
+					field.style.border = '1px solid red';
+					isValid = false;
+				} else {
+					// Remove the red border if the field is not empty
+					field.style.border = '';
+				}
+			});
+			if (isValid) {
+
+				// Gather form data
+				event.preventDefault(); // Prevent form submission
+
+				// Gather form data
+				var name = $('#name').val();
+				var unit = $('#unit').val();
+				var max_value = $('#max_value').val();
+				var min_value = $('#min_value').val();
+				var test_type = $('#test_type').val();
+				var test_result = $('#test_result').val();
+				var reevaluation_frequency_value = parseInt($('#reevaluation_frequency_value').val(), 10); // Ensure integer conversion
+				var reevaluation_frequency_unit = $('#reevaluation_frequency_unit').val();
+
+				// Handle file upload for sampling_plan
+				// var sampling_plan = $('#sampling_plan')[0].files[0]; // Get the first selected file, if any
+
+				// Create the data object
+				var acceptanceTestData = {
+					name: name,
+					unit: unit, // Include the unit field
+					min_value: min_value, // Include the min_value field
+					max_value: max_value, // Include the max_value field
+					test_type: test_type,
+					test_result: test_result,
+					reevaluation_frequency_value: reevaluation_frequency_value,
+					reevaluation_frequency_unit: reevaluation_frequency_unit,
+				};
+
+				// Create a FormData object to handle the file upload
+				var formData = new FormData();
+
+				// Append JSON data to formData
+				for (var key in acceptanceTestData) {
+					formData.append(key, acceptanceTestData[key]);
+				}
+
+				// Append file data to formData
+				// if (sampling_plan) {
+				// 	formData.append('sampling_plan', sampling_plan);
+				// }
+
+				// Send data as FormData
+				$.ajax({
+					type: 'POST',
+					url: '{% url "acceptance-add" %}', // URL to your Django view
+					data: formData,
+					processData: false,
+					contentType: false,
+					headers: {
+						'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+					},
+					success: function (response) {
+						if (response.success) {
+							window.location.href = "{% url 'acceptance-list' %}"; // Redirect on success
+						} else {
+							$('#error-message').text(response.message).show(); // Show error message
+						}
+					},
+					error: function () {
+						$('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+					}
+				});
+			}
+		});
+	});
+
+	$(document).ready(function () {
+		// Handle dropdown change event
+		$('#test_type').on('change', function () {
+			var selectedValue = $(this).val();
+
+			if (selectedValue === 'quantitative') {
+				$('#quantitative-fields').show();    // Show quantitative fields
+				$('#qualitative-fields').hide();     // Hide qualitative fields
+			} else if (selectedValue === 'qualitative') {
+				$('#qualitative-fields').show();     // Show qualitative fields
+				$('#quantitative-fields').hide();    // Hide quantitative fields
+			} else {
+				$('#quantitative-fields').hide();    // Hide both if no selection
+				$('#qualitative-fields').hide();
+			}
+		});
+	});
+</script>
+
+{% endblock %}
+
+</html>

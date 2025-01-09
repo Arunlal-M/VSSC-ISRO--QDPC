@@ -1,0 +1,190 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Add New Process</h4>
+            </div>
+        </div>
+        <form method="post" action="{% url 'process_create' %}">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-body">
+                    <!-- Basic process details -->
+                    <div class="row">
+                        <div class="col-lg-6 col-12">
+                            <div class="form-group">
+                                <label>Process Title</label>
+                                <textarea name="process_title" required></textarea>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Steps Container -->
+                        <div id="stepsContainer" class="mt-4">
+                            <!-- Dynamic process steps will be added here -->
+                        </div>
+
+                        <!-- Add Step Button -->
+                        <div class="col-lg-12 mt-3">
+                            <button type="button" id="addStepBtn" class="btn btn-primary">Add Step</button>
+                        </div>
+
+                        <!-- Submit and Clear Buttons -->
+                        <div class="col-lg-12 mt-3">
+                            <button type="submit" class="btn btn-submit me-2">Submit</button>
+                            <a href="{% url 'process_create' %}" class="btn btn-cancel">Clear</a>
+                        </div>
+                    </div>
+                </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let stepCounter = 0;
+
+    document.getElementById('addStepBtn').addEventListener('click', function () {
+        stepCounter++;
+        const stepsContainer = document.getElementById('stepsContainer');
+
+        const newStep = `
+            <div class="card mt-4 p-3 border">
+                <h5>Step ${stepCounter}</h5>
+                <div class="row">
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Process Step Description</label>
+                            <textarea name="step_${stepCounter}_description" rows="2" class="form-control" required></textarea>
+                        </div>
+                    </div>
+
+
+             <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Process Step Date</label>
+                            <input type="date" name="step_${stepCounter}_date" class="form-control" required>
+                        </div>
+                    </div>
+
+
+                <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="form-group">
+                        <label>RM(s) Used</label>
+                        <select id="raw_material" name="step_${stepCounter}_raw_material[]" class="form-control">
+                            <option>Choose Rawmaterial</option>
+                            {% for material_status in raw_materials_with_status %}
+                                <option 
+                                    value="{{ material_status.material.id }}" 
+                                    style="color: {% if material_status.is_expired %}red{% else %}green{% endif %};">
+                                    {{ material_status.material.name }} - Expiry Date: {{ material_status.material.calculate_expiry_date|date:"Y-m-d" }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>RM Status</label>
+                            <select name="step_${stepCounter}_rm_status" class="form-select">
+                                <option value="Valid">Valid</option>
+                                <option value="Material Expired">Material Expired</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Equipment(s) Used</label>
+                            <select id="equipment" name="step_${stepCounter}_equipment[]" class="form-control">
+                                <option>Choose equipment</option>
+                                {% for equip_status in equipment_with_status %}
+                                <option 
+                                    value="{{ equip_status.equip.id }}" 
+                                    style="color: {% if equip_status.is_expired %}red{% else %}green{% endif %};">
+                                    {{ equip_status.equip.name }} - Calibration Date: {{ equip_status.equip.calibration_due_date|date:"Y-m-d" }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+                    
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Equipment Status</label>
+                            <select name="step_${stepCounter}_equipment_status" class="form-select">
+                                <option value="Calibration Valid">Calibration Valid</option>
+                                <option value="Calibration Expired">Calibration Expired</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Consumable(s) Used</label>
+                            <select id="consumable" name="step_${stepCounter}_consumable[]" class="form-control">
+                                <option>Choose Consumable</option>
+                                {% for consum_status in consumables_with_status %}
+                                <option 
+                                    value="{{ consum_status.consum.id }}" 
+                                    style="color: {% if consum_status.is_expired %}red{% else %}green{% endif %};">
+                                    {{ consum_status.consum.name }} - Expiry Date: {{ consum_status.consum.calculate_expiry_date|date:"Y-m-d" }}
+                                </option>
+                            {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Component(s) Used</label>
+                            <select id="component" name="step_${stepCounter}_component[]" class="form-control">
+                                <option>Choose Component</option>
+                                 {% for comp_status in component_with_status %}
+                                <option 
+                                    value="{{ comp_status.comp.id }}" 
+                                    style="color: {% if comp_status.is_expired %}red{% else %}green{% endif %};">
+                                    {{ comp_status.comp.name }} - Expiry Date: {{ comp_status.comp.calculate_expiry_date|date:"Y-m-d" }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Process Step Specification</label>
+                            <input type="text" name="step_${stepCounter}_specifications" rows="2" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Measured Value/Observation</label>
+                            <input type="text" name="step_${stepCounter}_measured_value" rows="2" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Remarks</label>
+                            <input type="text" name="step_${stepCounter}_remarks" rows="2" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        stepsContainer.insertAdjacentHTML('beforeend', newStep);
+    });
+</script>
+{% endblock %}

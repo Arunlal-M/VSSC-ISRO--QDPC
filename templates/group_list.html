@@ -1,0 +1,94 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Groups</h4>
+                <h6>List of all groups</h6>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Edit Permissions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for group in groups %}
+                                <tr>
+                                    <td class="clickable-row" data-batch-id="{{ group.id }}">
+                                        <a>{{ group.id }}</a>
+                                    </td>
+                                    <td class="clickable-row" data-batch-id="{{ group.id }}">
+                                        <a>{{ group.name }}</a>
+                                    </td>
+                                    <td class="clickable-row" data-batch-id="{{ group.id }}">
+                                        <a class="me-3" href="{% url 'group-permission-list' group.id %}">
+                                            <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+                                        </a>
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-lg-12">
+                        <form id="create-group-form">
+                            <div class="form-group">
+                                <label for="group_name">Group Name:</label>
+                                <input type="text" class="form-control" id="group_name" name="group_name">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Group</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Use event delegation to attach the click event to dynamically generated rows
+        $(document).on('click', '.clickable-row', function () {
+            var batchId = $(this).data('batch-id'); // Get the batch ID from the row's data attribute
+            var baseUrl = '/groups/'; // Adjust the base URL as needed
+            var detailUrl = baseUrl + batchId + '/permissions/'; // Construct the URL to the detailed view page
+
+            // Redirect to the detailed view page
+            window.location.href = detailUrl;
+        });
+
+        $('#create-group-form').submit(function (e) {
+            e.preventDefault();
+            var groupName = $('#group_name').val();
+            $.ajax({
+                type: 'POST',
+                url: '{% url "group-create" %}',
+                data: { group_name: groupName },
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token header
+                },
+                success: function (data) {
+                    alert('Group created successfully!');
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert('Error creating group');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

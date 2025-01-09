@@ -1,0 +1,484 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+		<div class="page-wrapper">
+			<div class="content">
+
+
+				<div class="page-header">
+					<div class="page-title">
+						<h4>Raw Material Add</h4>
+					</div>
+				</div>
+        <!-- /add -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Raw Material</label>
+							{% for batch in batches %}
+                            <input type="text" name="raw-material" id="raw-material" value="{{ batch.name }}" readonly>
+							{% endfor %}
+						</div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <label for="supplier" class="form-label">Suppliers</label>
+                        <select class="select" id="supplier" name="supplier[]" multiple>
+                            {% for sup in suppliers %}
+                                <option value="{{ sup.id }}">{{ sup.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <label for="sources" class="form-label">Sources</label>
+                        <select class="select" id="sources" name="sources[]" multiple>
+                            {% for sour in sources %}
+                                <option value="{{ sour.id }}">{{ sour.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <label for="acceptance_test" class="form-label">Acceptance Test</label>
+                        <select class="select" id="acceptance_test" name="acceptance_test[]" multiple>
+                            {% for acc in acceptence_test %}
+                                <option value="{{ acc.id }}">{{ acc.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+					<div class="col-lg-3 col-sm-6 col-12">
+						<div class="form-group">
+							<label for="grade">Grade</label>
+							<select class="select" id="grade" name="grade[]" multiple >
+								<option value="">Select Grade</option>
+								{% for grade in grades %}
+							<option value="{{ grade.id }}">{{ grade.name }}</option>
+							{% endfor %}
+						</select>
+						</div>
+					</div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Shelf Life</label>
+                            <input type="text" name="shelf_life_value" id="shelf_life_value">
+                            <div id="shelf_life_error" class="text-danger" style="display:none;"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label for="unit">Shelf Life Period</label>
+                            <select name="unit" id="unit" class="form-control">
+                                <option value="days">Days</option>
+                                <option value="months">Months</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <button type="button" id="submitButton" class="btn btn-submit me-2">Submit</button>
+                        <a href="{% url 'raw-material-add' %}" class="btn btn-cancel">Clear</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /add -->
+			</div>
+
+			<div class="page-header">
+				<div class="page-title">
+					<h4>Material Detail View</h4>
+					<!-- <h6>Manage your products</h6> -->
+				</div>
+			</div>
+
+
+			<!-- /product list -->
+			<div class="card">
+				<div class="card-body">
+					<div class="table-top">
+						<div class="search-set">
+							<div class="search-path">
+								<a class="btn btn-filter" id="filter_search">
+									<img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+									<span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+								</a>
+							</div>
+							<div class="search-input">
+								<a class="btn btn-searchset"><img src="{% static 'assets/img/icons/search-white.svg' %}"
+										alt="img"></a>
+							</div>
+						</div>
+						<div class="wordset">
+							<ul>
+								<li>
+									<a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img
+											src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+								</li>
+								<li>
+									<a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img
+											src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+								</li>
+								<li>
+									<a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img
+											src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
+								</li>
+							</ul>
+						</div>
+					</div>
+					{% if batches %}
+					<div class="table-responsive">
+						<table class="table datanew">
+							<thead>
+								<tr>
+									<th>Raw Material</th>
+									<th>Sources</th>
+									<th>Suppliers</th>
+									<th>Grade</th>
+									<th>Shelf Life</th>
+									<th>Acceptance Test</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for batch in batches %}
+								<tr>
+
+									<td>{{ batch.name }}</td>
+									<td>
+										{% for source in batch.source_names %}
+										{{ source }}{% if not forloop.last %}, {% endif %}
+										{% endfor %}
+									</td>
+									<td>
+										{% for supplier in batch.supplier_names %}
+										{{ supplier }}{% if not forloop.last %}, {% endif %}
+										{% endfor %}
+									</td>
+									<td>
+										{% for grade in batch.grade_names %}
+										{{ grade }}{% if not forloop.last %}, {% endif %}
+									{% endfor %}
+									</td>
+									<td>{{ batch.shelf_life_value }} {{ batch.shelf_life_unit }}</td>
+									<td>
+										{% for test_name in batch.acceptance_test_names %}
+										{{ test_name }}{% if not forloop.last %}, {% endif %}
+										{% endfor %}
+									</td>
+									<td>
+										<!-- <a class="me-3 view-user-btn" href="javascript:void(0);" data-bs-toggle="modal"
+											data-bs-target="#materialpage" data-batch-id="{{ batch.id }}">
+											<i class="fa fa-eye"></i>
+										</a> -->
+										<a class="me-3 view-user-btn" href="javascript:void(0);" data-bs-toggle="modal"
+											data-bs-target="#materialpage" data-batch-id="{{ batch.id }}">
+											<i class="fa fa-edit"></i>
+										</a>
+									</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+					{% else %}
+					<div class="table-responsive">
+						<table class="table datanew">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Raw Material</th>
+									<th>Sources</th>
+									<th>Suppliers</th>
+									<th>Grade</th>
+									<th>Shelf Life</th>
+									<th>Acceptance Test</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Not found</td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<!-- Optionally, display a message or leave it empty -->
+					{% endif %}
+
+
+
+				</div>
+			</div>
+			<!-- /product list -->
+		</div>
+	</div>
+	</div>
+	<!-- /Main Wrapper -->
+
+	<div class="modal fade" id="materialpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Raw Material View</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+				</div>
+				<div class="modal-body">
+
+					<div class="container mt-2">
+						<form class="row">
+
+							<input type="hidden" id="raw_material_id" name="raw_material_id" value="">
+							<div class="col-6 mt-2">
+								<label for="username" class="form-label">Rawmaterial</label>
+								<input type="text" class="form-control" id="raw-material" name="raw-material"
+									placeholder="Rawmaterial">
+							</div>
+							<div class="col-6 mt-2">
+								<label for="sources" class="form-label">Sources</label>
+								<select class="form-select" id="sources" name="sources">
+									<!-- Division options will be populated dynamically -->
+								</select>
+							</div>
+							<div class="col-6 mt-2">
+								<label for="suppliers" class="form-label">Suppliers</label>
+								<select class="form-select" id="suppliers" name="suppliers">
+
+
+								</select>
+							</div>
+							<div class="col-6 mt-2">
+								<label for="grade" class="form-label">Grade</label>
+								<input type="text" class="form-control" id="grade" name="grade" placeholder="grade">
+							</div>
+							<div class="col-6 mt-2">
+								<label for="shelf life" class="form-label">Shelf Life</label>
+								<input type="text" class="form-control" id="shelf_life" name="shelf_life"
+									placeholder="shelf life">
+							</div>
+							<div class="col-6 mt-2">
+								<label for="status" class="form-label">Unit</label>
+								<input type="text" class="form-control" id="unit" name="unit" placeholder="shelf life">
+							</div>
+
+
+							<div class="d-flex justify-content-center mt-3">
+								<button type="button" class="btn btn-primary btn-sm"
+									id="updateRawMaterial">Update</button>
+							</div>
+
+
+						</form>
+					</div>
+
+
+
+
+				</div>
+			</div>
+
+		</div>
+	</div>
+	</div>
+	{% endblock %}
+{% block scripts %}
+<script>
+	$('#add-raw-material').click(function (event) {
+		event.preventDefault(); // Prevent the default action of the link
+		window.location.href = "{% url 'rawmaterial-detiled-view' %}";
+		; // Redirect to /forgot-username on click
+	});
+
+
+
+
+	function populateSourceDropdown(all_sources, selectedSources) {
+		const sourceSelect = $('#sources');
+		sourceSelect.empty(); // Clear existing options
+
+		// Populate the dropdown with all sources
+		all_sources.forEach(source => {
+			sourceSelect.append(`<option value="${source.id}">${source.name}</option>`);
+		});
+
+		// Select the previously selected sources
+		selectedSources.forEach(sourceId => {
+			$(`#sources option[value="${sourceId}"]`).prop('selected', true);
+		});
+
+		// Trigger the change event to update Select2 or any other dropdown plugins
+		sourceSelect.trigger('change');
+	}
+
+	function populateSuppliersDropdown(all_suppliers, selectedSuppliers) {
+		const supplierSelect = $('#suppliers');
+		supplierSelect.empty(); // Clear existing options
+
+		// Populate the dropdown with all suppliers
+		all_suppliers.forEach(supplier => {
+			supplierSelect.append(`<option value="${supplier.id}">${supplier.name}</option>`);
+		});
+
+		// Select the previously selected suppliers
+		selectedSuppliers.forEach(supplierId => {
+			$(`#suppliers option[value="${supplierId}"]`).prop('selected', true);
+		});
+
+		// Trigger the change event to update Select2 or any other dropdown plugins
+		supplierSelect.trigger('change');
+	}
+
+	$('.view-user-btn').on('click', function () {
+		$('#saveUserChanges').show();
+		const baseUrl = '/product/raw-material/';
+		const batchId = $(this).data('batch-id'); // Use 'user-id' to match your data attribute
+		const rawmaterialUpdateUrl = `${baseUrl}${batchId}/`; // Construct the URL
+
+		// Make an AJAX call to fetch the raw material data
+		$.ajax({
+			type: 'GET',
+			url: rawmaterialUpdateUrl,
+			success: function (response) {
+				const rawData = response.data;
+
+				// Populate the form fields in the modal
+				$('#raw-material').val(rawData.name);
+				$('#grade').val(rawData.grade);
+				$('#shelf_life').val(rawData.shelf_life_value);
+				$('#unit').val(rawData.shelf_life_unit);
+				$('#raw_material_id').val(rawData.id);
+
+				// Populate dropdowns
+				populateSourceDropdown(rawData.all_sources, rawData.sources.map(source => source.id));
+				populateSuppliersDropdown(rawData.all_suppliers, rawData.suppliers.map(supplier => supplier.id));
+
+				// Open the modal
+				$('#materialpage').modal('show');
+			},
+			error: function (error) {
+				console.error('Failed to fetch raw material data:', error);
+			}
+		});
+	});
+
+
+	$(document).ready(function () {
+		$('#updateRawMaterial').click(function (event) {
+			alert("clicked")
+			event.preventDefault();
+
+			// Gather form data
+			var rawMaterialId = $('#raw_material_id').val();
+			alert(rawMaterialId)// Ensure you set this value dynamically
+			var name = $('#raw-material').val();
+			var grade = $('#grade').val();
+			var shelf_life_value = parseInt($('#shelf_life').val(), 10); // Ensure integer conversion
+			var shelf_life_unit = $('#unit').val();
+			var user_defined_date = $('#user_defined_date').val();
+			var sources = Array.from(document.getElementById('sources').selectedOptions).map(option => Number(option.value)) || [];
+			var suppliers = Array.from(document.getElementById('suppliers').selectedOptions).map(option => Number(option.value)) || [];
+
+
+			// Create the data object
+			var rawMaterialData = {
+				name: name,
+				grade: grade,
+				shelf_life_value: shelf_life_value,
+				shelf_life_unit: shelf_life_unit,
+				sources: sources,
+				suppliers: suppliers
+			};
+
+			// Debug: Check the data object
+			console.log(rawMaterialData);
+
+			// Send data as JSON
+			$.ajax({
+				type: 'PUT',
+				url: '/product/raw-material/' + rawMaterialId + '/', // Adjust URL as needed
+				data: JSON.stringify(rawMaterialData),
+				contentType: 'application/json',
+				headers: {
+					'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+				},
+				success: function (response) {
+					if (response.isSuccess) {
+						window.location.href = "/success-page/"; // Redirect on success
+					} else {
+						$('#error-message').text(response.message).show(); // Show error message
+					}
+				},
+				error: function () {
+					$('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+				}
+			});
+		});
+	});
+
+
+	$(document).ready(function() {
+    $('#submitButton').click(function(event) {
+        event.preventDefault();
+
+        // Gather form data
+        var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
+        var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
+        var shelf_life_unit = $('#unit').val();
+        
+        // Get selected values from dropdowns
+        var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
+        var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
+        var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
+
+        // Validate shelf life value
+        if (isNaN(shelf_life_value) || shelf_life_value <= 0) {
+            $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
+            return; // Stop form submission if validation fails
+        }
+
+        // Get the current date
+        var currentDate = new Date();
+        var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM -DD
+
+        // Create the data object
+        var rawMaterialData = {
+            grade: grade,
+            shelf_life_value: shelf_life_value,
+            shelf_life_unit: shelf_life_unit,
+            user_defined_date: userDefinedDate, // Autofill current date
+            sources: sources,
+            suppliers: suppliers,
+            acceptance_test: acceptance_test,
+        };
+
+        // Send data as JSON
+        $.ajax({
+            type: 'POST',
+            url: '{% url "raw-material-add" %}', // URL to your Django view
+            data: JSON.stringify(rawMaterialData),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+            },
+            success: function(response) {
+                if (response.success) {
+                    window.location.href = "{% url 'raw-material' %}";
+                } else {
+                    $('#error-message').text(response.message).show(); // Show error message
+                }
+            },
+            error: function() {
+                $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

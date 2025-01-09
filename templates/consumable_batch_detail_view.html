@@ -1,0 +1,230 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+    <div class="content">
+
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Consumable Add</h4>
+            </div>
+        </div>
+
+        <div class="page-header mt-4 mb-3">
+            <div class="page-title">
+                <h4>Consumable Detail View</h4>
+            </div>
+        </div>
+
+        <!-- /product list -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="table-top mb-3">
+                    <div class="search-set">
+                        <div class="search-path">
+                            <a class="btn btn-filter" id="filter_search">
+                                <img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+                                <span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+                            </a>
+                        </div>
+                        <div class="search-input">
+                            <a class="btn btn-searchset"><img src="{% static 'assets/img/icons/search-white.svg' %}"
+                                    alt="img"></a>
+                        </div>
+                    </div>
+                    <div class="wordset">
+                        <ul>
+                            <li>
+                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img
+                                        src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+                            </li>
+                            <li>
+                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img
+                                        src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+                            </li>
+                            <li>
+                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img
+                                        src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered ">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Batch ID:</th>
+                                <th>Consumable:</th>
+                                <th>Procurement Date:</th>
+                                <th>Batch Size Value:</th>
+                                <th>Batch Size Unit:</th>
+                                <th>Packing Details:</th>
+                                <th>Created On:</th>
+                                <th>Created By:</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ batch_detail.batch_id }}</td>
+                                <td>{{ batch_detail.consumable }}</td>
+                                <td>{{ batch_detail.procurement_date }}</td>
+                                <td>{{ batch_detail.batch_size_value }}</td>
+                                <td>{{ batch_detail.batch_size_unit }}</td>
+                                <td>{{ batch_detail.packing_details }}</td>
+                                <td>{{ batch_detail.created_on }}</td>
+                                <td>{{ batch_detail.created_by }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {% for test in batch_detail.acceptance_tests %}
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered ">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th colspan="10" class="text-center">{{ test.acceptance_test }}</th>
+                            </tr>
+                            <tr>
+                                <th>Consumable:</th>
+                                <th>Specification:</th>
+                                <th>Test Value:</th>
+                                <th>Sources:</th>
+                                <th>Suppliers:</th>
+                                <th>Grade:</th>
+                                <th>Status:</th>
+                                <th>Remark:</th>
+                                <th>File:</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ test.consumable }}</td>
+                                <td>{{ test.min_value }}-{{ test.max_value }}</td>
+                                <td>{{ test.test_value }}</td>
+                                <td>{{ test.sources }}</td>
+                                <td>{{ test.suppliers }}</td>
+                                <td>{{ test.grade }}</td>
+                                <td>
+                                    <select class="form-control status-select" id="statusSelect_{{ forloop.counter }}">
+                                        <option value="valid">Specification Met</option>
+                                        <option value="invalid">Specification Not Met</option>
+                                    </select>
+                                </td>
+                                
+                                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                                {% for test in batch_detail.acceptance_tests %}
+                                <script>
+                                    $(document).ready(function() {
+                                        
+                                            // Get the status value from Django and assign it to a JS variable
+                                            var status = '{{ test.status|escapejs }}';
+                                            var statusSelectId = '#statusSelect_{{ forloop.counter }}';  // Unique ID for each select dropdown
+                                    
+                                            // Log status for debugging
+                                            console.log("Status for test {{ forloop.counter }}:", status); 
+                                    
+                                            // Dynamically set the selected option in the select box based on status
+                                            if (status === 'Valid') {
+                                                $(statusSelectId).val('valid');
+                                                $(statusSelectId).css('background-color', '#d4edda'); // Green for valid
+                                                $(statusSelectId).prop('disabled', true);
+                                            } else if (status === 'Invalid') {
+                                                $(statusSelectId).val('invalid');
+                                                $(statusSelectId).css('background-color', '#f8d7da'); // Red for invalid
+                                                $(statusSelectId).prop('disabled', true); // Disable the select field
+                                            } else {
+                                                $(statusSelectId).val('');
+                                                $(statusSelectId).css('background-color', '#ffffff'); // Default white background
+                                            }
+                                        
+                                    });
+                                    </script>
+                                    {% endfor %}
+                                
+                                <td>{{ test.remark }}</td>
+                                <td>
+                                    {% if test.file %}
+                                    <a href="{{ test.file }}">Download</a>
+                                    {% else %}
+                                    No file uploaded
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- /product list -->
+</div>
+</div>
+</div>
+<!-- /Main Wrapper -->
+
+<div class="modal fade" id="consumpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Consumable View</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="container mt-2">
+                    <form class="row">
+
+                        <input type="hidden" id="consumable_id" name="consumable_id" value="">
+                        <div class="col-6 mt-2">
+                            <label for="username" class="form-label">Consumable</label>
+                            <input type="text" class="form-control" id="consumable" name="consumable"
+                                placeholder="consumable">
+                        </div>
+                        <div class="col-6 mt-2">
+                            <label for="sources" class="form-label">Sources</label>
+                            <select class="form-select" id="sources" name="sources">
+                                <!-- Division options will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="col-6 mt-2">
+                            <label for="suppliers" class="form-label">Suppliers</label>
+                            <select class="form-select" id="suppliers" name="suppliers">
+
+
+                            </select>
+                        </div>
+                        <div class="col-6 mt-2">
+                            <label for="grade" class="form-label">Grade</label>
+                            <input type="text" class="form-control" id="grade" name="grade" placeholder="grade">
+                        </div>
+                        <div class="col-6 mt-2">
+                            <label for="shelf life" class="form-label">Shelf Life</label>
+                            <input type="text" class="form-control" id="shelf_life" name="shelf_life"
+                                placeholder="shelf life">
+                        </div>
+                        <div class="col-6 mt-2">
+                            <label for="status" class="form-label">Unit</label>
+                            <input type="text" class="form-control" id="unit" name="unit" placeholder="shelf life">
+                        </div>
+
+
+                        <div class="d-flex justify-content-center mt-3">
+                            <button type="button" class="btn btn-primary btn-sm" id="updateconsumable">Update</button>
+                        </div>
+
+
+                    </form>
+                </div>
+
+
+
+
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+{% endblock %}

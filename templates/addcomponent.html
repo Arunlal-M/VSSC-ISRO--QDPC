@@ -1,0 +1,146 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Add Component</h4>
+            </div>
+        </div>
+        <!-- /add -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Component</label>
+                            <input type="text" name="component" id="component">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <label for="supplier" class="form-label">Suppliers</label>
+                        <select class="select" id="supplier" name="supplier[]" multiple>
+                            {% for sup in suppliers %}
+                                <option value="{{ sup.id }}">{{ sup.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <label for="sources" class="form-label">Sources</label>
+                        <select class="select" id="sources" name="sources[]" multiple>
+                            {% for sour in sources %}
+                                <option value="{{ sour.id }}">{{ sour.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <label for="acceptance_test" class="form-label">Acceptance Test</label>
+                        <select class="select" id="acceptance_test" name="acceptance_test[]" multiple>
+                            {% for acc in acceptence_test %}
+                                <option value="{{ acc.id }}">{{ acc.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+					<div class="col-lg-3 col-sm-6 col-12">
+						<div class="form-group">
+							<label for="grade">Grade</label>
+							<select class="select" id="grade" name="grade[]" multiple >
+								<option value="">Select Grade</option>
+								{% for grade in grades %}
+							<option value="{{ grade.id }}">{{ grade.name }}</option>
+							{% endfor %}
+						</select>
+						</div>
+					</div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Shelf Life</label>
+                            <input type="text" name="shelf_life_value" id="shelf_life_value">
+                            <div id="shelf_life_error" class="text-danger" style="display:none;"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label for="unit">Shelf Life Period</label>
+                            <select name="unit" id="unit" class="form-control">
+                                <option value="days">Days</option>
+                                <option value="months">Months</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <button type="button" id="submitButton" class="btn btn-submit me-2">Submit</button>
+                        <a href="{% url 'component-add' %}" class="btn btn-cancel">Clear</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /add -->
+    </div>
+</div>
+<!-- /Main Wrapper -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#submitButton').click(function(event) {
+        event.preventDefault();
+
+        // Gather form data
+        var name = $('#component').val();
+        var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
+        var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
+        var shelf_life_unit = $('#unit').val();
+        
+        // Get selected values from dropdowns
+        var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
+        var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
+        var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
+
+        // Validate shelf life value
+        if (isNaN(shelf_life_value) || shelf_life_value <= 0) {
+            $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
+            return; // Stop form submission if validation fails
+        }
+
+        // Get the current date
+        var currentDate = new Date();
+        var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM -DD
+
+        // Create the data object
+        var componentData = {
+            name: name,
+            grade: grade,
+            shelf_life_value: shelf_life_value,
+            shelf_life_unit: shelf_life_unit,
+            user_defined_date: userDefinedDate, // Autofill current date
+            sources: sources,
+            suppliers: suppliers,
+            acceptance_test: acceptance_test,
+        };
+
+        // Send data as JSON
+        $.ajax({
+            type: 'POST',
+            url: '{% url "component-add" %}', // URL to your Django view
+            data: JSON.stringify(componentData),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+            },
+            success: function(response) {
+                if (response.success) {
+                    window.location.href = "{% url 'component-list' %}";
+                } else {
+                    $('#error-message').text(response.message).show(); // Show error message
+                }
+            },
+            error: function() {
+                $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

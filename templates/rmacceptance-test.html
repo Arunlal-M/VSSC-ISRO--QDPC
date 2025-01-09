@@ -1,0 +1,302 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+			<div class="page-wrapper">
+				<div class="content">
+					<div class="page-header">
+						<div class="page-title">
+							<h4>Raw Material Acceptance Test</h4>
+							
+						</div>
+					</div>
+					<!-- /add -->
+					<div class="card">
+						<div class="card-body">
+							<div class="row">
+							
+								<!-- <div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Category</label>
+										<select class="select">
+											<option>Choose Category</option>
+											<option>Computers</option>
+										</select>
+									</div>
+								</div> -->
+								<!-- <div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Raw Material</label>
+										<select class="select">
+											<option>Choose Sub Category</option>
+											<option>Fruits</option>
+										</select>
+									</div>
+								</div> -->
+								<div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label for="raw_material">Raw Material</label>
+										<select id="raw_material" name="raw_material" class="form-control">
+											{% for sour in raw_materials %}
+												<option value="{{ sour.id }}">{{ sour.name }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label for="name">Acceptance Test</label>
+										<input type="text" id="name" name="name" class="form-control">
+									</div>
+								</div>
+								<div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label for="specification">Specification</label>
+										<input type="text" id="specification" name="specification" class="form-control">
+									</div>
+								</div>
+								<div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label for="specification">Test Value</label>
+										<input type="text" id="value" name="value" class="form-control">
+									</div>
+								</div>
+								
+								<div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label for="reevaluation_frequency_value">Reevaluation Frequency</label>
+										<input type="number" id="reevaluation_frequency_value" name="reevaluation_frequency_value" class="form-control" min="1">
+									</div>
+								</div>
+						
+								
+								<div class="col-lg-4 col-sm-6 col-12">
+									<div class="form-group">
+										<label for="reevaluation_frequency_unit">Unit</label>
+										<select id="reevaluation_frequency_unit" name="reevaluation_frequency_unit" class="form-control">
+											<option value="months">Months</option>
+											<option value="years">Years</option>
+										</select>
+									</div>
+								</div>
+								
+								
+								<!-- <div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>suppliers</label>
+										<select class="select">
+											<option>Choose Brand</option>
+											<option>Brand</option>
+										</select>
+									</div>
+								</div> -->
+								
+								<!-- <div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>procurement_date</label>
+										<input type="text" >
+									</div>
+								</div>
+                                <div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>sources</label>
+										<select class="select">
+											<option>Choose</option>
+											<option>Color Consistency</option>
+                                            <option>Particle Size</option>
+                                            <option>Moisture Content</option>
+                                            <option>Purity</option>
+										</select>
+									</div>
+								</div>
+                                <div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Shelf life value</label>
+										<input type="text" >
+									</div>
+								</div>
+								<div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Specification</label>
+										<input type="text" >
+									</div>
+								</div> -->
+							
+								<div class="col-lg-4 col-sm-6 col-12" id="inputContainer">
+									<div class="form-group">
+										<label for="sampling_plan">Sampling Plan</label>
+										<input type="file" id="sampling_plan" name="sampling_plan" class="form-control mt-2">
+									</div>
+								</div>
+								 <div class="col-lg-3 col-sm-6 col-12">
+									<button type="button" class="btn btn-sm btn-primary" id="addButton" style="font-size: 20px; padding: 2px 10px; display: block; margin:29px 0px ;">+</button>
+								</div>
+								
+								<script>
+									document.getElementById('addButton').addEventListener('click', function() {
+										// Create a new div to contain the file input and close button
+										var newDiv = document.createElement('div');
+										newDiv.className = 'form-group mt-2 d-flex align-items-center';
+								
+										// Create a new file input field
+										var newFileInput = document.createElement('input');
+										newFileInput.type = 'file';
+										newFileInput.className = 'form-control';
+										newFileInput.multiple = true;
+										newDiv.appendChild(newFileInput);
+								
+										// Create a close button
+										var closeButton = document.createElement('button');
+										closeButton.type = 'button';
+										closeButton.className = 'btn btn-danger btn-sm ml-2';
+										closeButton.innerHTML = '&times;';
+										closeButton.style.fontSize = '20px';
+										newDiv.appendChild(closeButton);
+								
+										// Append the new div to the container
+										document.getElementById('inputContainer').appendChild(newDiv);
+								
+										// Add event listener to remove the file input and close button when clicked
+										closeButton.addEventListener('click', function() {
+											newDiv.remove();
+										});
+									});
+								</script>
+								
+								 
+								
+								
+								<!-- <div class="col-lg-12">
+									<div class="form-group">
+										<label>Description</label>
+										<textarea class="form-control"></textarea>
+									</div>
+								</div> -->
+								<!-- <div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Tax</label>
+										<select class="select">
+											<option>Choose Tax</option>
+											<option>2%</option>
+										</select>
+									</div>
+								</div>
+								<div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Discount Type</label>
+										<select class="select">
+											<option>Percentage</option>
+											<option>10%</option>
+											<option>20%</option>
+										</select>
+									</div>
+								</div>
+								<div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>Price</label>
+										<input type="text" >
+									</div>
+								</div>
+								<div class="col-lg-3 col-sm-6 col-12">
+									<div class="form-group">
+										<label>	Status</label>
+										<select class="select">
+											<option>Closed</option>
+											<option>Open</option>
+										</select>
+									</div>
+								</div> -->
+                                
+								<!-- <div class="col-lg-4">
+									<div class="form-group">
+										<label>Test Result</label>
+										<div class="image-upload">
+											<input type="file" multiple>
+											<div class="image-uploads">
+												<img src="assets/img/icons/upload.svg" alt="img">
+												<h4>Drag and drop a file to upload</h4>
+											</div> 
+										</div>
+									</div>
+								</div> -->
+                                
+								<div class="col-lg-12">
+									<a href="rmtest-list.html" id="submitButton" class="btn btn-submit me-2">Submit</a>
+									<a href="material.html" class="btn btn-cancel">Cancel</a>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- /add -->
+				</div>
+			</div>
+        </div>
+		{% endblock %}
+{% block scripts %}
+	<script>
+		$(document).ready(function() {
+			$('#submitButton').click(function(event) {
+				event.preventDefault();
+				 // Check if this alert shows
+	
+				// Gather form data
+				var raw_material = parseInt($('#raw_material').val(), 10); // Ensure integer conversion
+				var name = $('#name').val();
+				var specification = $('#specification').val();
+				var reevaluation_frequency_value = parseInt($('#reevaluation_frequency_value').val(), 10); // Ensure integer conversion
+				var reevaluation_frequency_unit = $('#reevaluation_frequency_unit').val();
+				var value=$('#value').val();
+	
+				// Handle file upload for sampling_plan
+				var sampling_plan = $('#sampling_plan')[0].files[0]; // Get the first selected file, if any
+	
+				// Create the data object
+				var acceptanceTestData = {
+					raw_material: raw_material,
+					name: name,
+					specification: specification,
+					reevaluation_frequency_value: reevaluation_frequency_value,
+					reevaluation_frequency_unit: reevaluation_frequency_unit,
+					value:value
+				};
+				
+			// Debug: Check the data object
+	
+				// Create a FormData object to handle the file upload
+				var formData = new FormData();
+	
+				// Append JSON data to formData
+				for (var key in acceptanceTestData) {
+					formData.append(key, acceptanceTestData[key]);
+				}
+	
+				// Append file data to formData
+				if (sampling_plan) {
+					formData.append('sampling_plan', sampling_plan);
+				}
+	
+				// Send data as FormData
+				$.ajax({
+					type: 'POST',
+					url: '{% url "raw-material-acceptance-add" %}', // URL to your Django view
+					data: formData,
+					processData: false,
+					contentType: false,
+					headers: {
+						'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+					},
+					success: function(response) {
+						if (response.success) {
+							window.location.href = "{% url 'acceptance-list' %}"; // Redirect on success
+						} else {
+							$('#error-message').text(response.message).show(); // Show error message
+						}
+					},
+					error: function() {
+						$('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+					}
+				});
+			});
+		});
+	</script>
+{% endblock %}

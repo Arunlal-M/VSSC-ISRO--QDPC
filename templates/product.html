@@ -1,0 +1,519 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+		<div class="page-wrapper">
+			<div class="content">
+				<div class="page-header">
+					<div class="page-title">
+						<h4>Product List</h4>
+						<h6>Manage your products</h6>
+					</div>
+					<div class="page-btn">
+						<a href="{% url 'product-add' %}" class="btn btn-added"><img
+								src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add New
+							Product</a>
+					</div>
+				</div>
+
+				<!-- /product list -->
+				<div class="card">
+					<div class="card-body">
+						<div class="table-top">
+							<div class="search-set">
+								<div class="search-path">
+									<a class="btn btn-filter" id="filter_search">
+										<img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+										<span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+									</a>
+								</div>
+								<div class="search-input">
+									<a class="btn btn-searchset"><img
+											src="{% static 'assets/img/icons/search-white.svg' %}" alt="img"></a>
+								</div>
+							</div>
+							<div class="wordset">
+								<ul>
+									<li>
+										<a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img
+												src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+									</li>
+									<li>
+										<a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img
+												src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+									</li>
+									<li>
+										<a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img
+												src="{% static 'assets/img/icons/printer.svg' %}	" alt="img"></a>
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="comp-sec-wrapper">
+							<!-- Tabs -->
+							<section class="comp-section">
+								<div class="section-header">
+									<div class="line"></div>
+								</div>
+								<div class="row">
+									<div class="col-md-12">
+										<div class="card bg-white">
+											<div class="card-header">
+												<h5 class="card-title">Solid justified</h5>
+											</div>
+											<div class="card-body">
+												<ul class="nav nav-tabs nav-tabs-solid nav-justified">
+													<li class="nav-item"><a class="nav-link active"
+															href="#solid-justified-tab1" data-bs-toggle="tab">Active</a>
+													</li>
+													<li class="nav-item"><a class="nav-link"
+															href="#solid-justified-tab2"
+															data-bs-toggle="tab">Inactive</a></li>
+												</ul>
+												<div class="tab-content">
+													<div class="tab-pane show active" id="solid-justified-tab1">
+														<div class="table-responsive">
+															<table class="table datanew">
+																<thead>
+																	<tr>
+																		<th>Name</th>
+																		<th>Category</th>
+																		<th>End Use</th>
+																		<th>Specific Use</th>
+
+																		{% comment %} <th>Drawing number</th>
+																		<th>Method of identification</th>
+																		<th>Batch size</th>
+																		<th>Prefix</th>
+																		<th>Suffix</th> {% endcomment %}
+																		<th>Status</th>
+																		<th>Action</th>
+																	</tr>
+																</thead>
+																<tbody>
+																	{% for prod in product %}
+																	{% if prod.is_active %}
+																	<tr>
+																		<td>{{ prod.name }}</td>
+																		<td>{{ prod.category.name }}</td>
+																		{% comment %} <td>{{ prod.drawing_number }}</td>
+																		<td>{{ prod.identification_method }}</td>
+																		<td>{{ prod.batch_size }}</td>
+																		<td>{{ prod.prefix }}</td>
+																		<td>{{ prod.suffix }}</td> {% endcomment %}
+																		<td>{{ prod.end_uses.name }}</td>
+																		<td>{{ prod.specific_use}}</td>
+	
+																		<td>
+																			<div
+																				class="status-toggle d-flex justify-content-between align-items-center">
+																				<input type="checkbox"
+																					id="{{ prod.name }}"
+																					class="check status-checkbox"
+																					data-id="{{ prod.name }}" {% if
+																					prod.is_active %} checked {% endif
+																					%}>
+																				<label for="{{ prod.name }}"
+																					class="checktoggle">checkbox</label>
+																			</div>
+																		</td>
+																		<td>
+																			<a class="me-3" data-bs-toggle="modal"
+																				data-bs-target="#productpage">
+																				<img src="{% static 'assets/img/icons/eye.svg' %}"
+																					alt="img">
+																			</a>
+																			<a class="me-3" href="editproduct.html">
+																				<img src="{% static 'assets/img/icons/edit.svg' %}"
+																					alt="img">
+																			</a>
+																			<a id="delete-btn"
+																				data-id="{{ prod.name }}">
+																				<img src="{% static 'assets/img/icons/delete.svg' %}"
+																					alt="img">
+																			</a>
+																		</td>
+																	</tr>
+																	{% endif %}
+																	{% endfor %}
+																</tbody>
+															</table>
+														</div>
+													</div>
+													<div class="tab-pane" id="solid-justified-tab2">
+														<div class="table-responsive">
+															<table class="table datanew">
+																<thead>
+																	<tr>
+																		<th>Name</th>
+																		<th>Category</th>
+																		<th>End Use</th>
+																		<th>Specific Use</th>
+
+																		{% comment %} <th>Drawing number</th>
+																		<th>Method of identification</th>
+																		<th>Batch size</th>
+																		<th>Prefix</th>
+																		<th>Suffix</th> {% endcomment %}
+																		<th>Status</th>
+																		<th>Action</th>
+																	</tr>
+																</thead>
+																<tbody>
+																	{% for prod in product %}
+																	{% if not prod.is_active %}
+																	<tr>
+																		<td>{{ prod.name }}</td>
+																		<td>{{ prod.category.name }}</td>
+																		<td>{{ prod.end_uses.name }}</td>
+																		<td>{{ prod.specific_use}}</td>
+	
+																		{% comment %} <td>{{ prod.drawing_number }}</td>
+																		<td>{{ prod.identification_method }}</td>
+																		<td>{{ prod.batch_size }}</td>
+																		<td>{{ prod.prefix }}</td>
+																		<td>{{ prod.suffix }}</td> {% endcomment %}
+																		<td>
+																			<div
+																				class="status-toggle d-flex justify-content-between align-items-center">
+																				<input type="checkbox"
+																					id="{{ prod.name }}"
+																					class="check status-checkbox"
+																					data-id="{{ prod.name }}" {% if not
+																					prod.is_active %} unchecked {% endif
+																					%}>
+																				<label for="{{ prod.name }}"
+																					class="checktoggle">checkbox</label>
+																			</div>
+																		</td>
+																		<td>
+																			<a class="me-3" data-bs-toggle="modal"
+																				data-bs-target="#productpage">
+																				<img src="{% static 'assets/img/icons/eye.svg' %}"
+																					alt="img">
+																			</a>
+																			<a class="me-3" href="editproduct.html">
+																				<img src="{% static 'assets/img/icons/edit.svg' %}"
+																					alt="img">
+																			</a>
+																			<a id="delete-btn"
+																				data-id="{{ prod.name }}">
+																				<img src="{% static 'assets/img/icons/delete.svg' %}"
+																					alt="img">
+																			</a>
+																		</td>
+																	</tr>
+																	{% endif %}
+																	{% endfor %}
+																</tbody>
+															</table>
+														</div>
+													</div>
+
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+							</section>
+							<!-- /Tabs -->
+						</div>
+
+
+					</div>
+				</div>
+				<!-- /product list -->
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="productpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Product List</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+				</div>
+				<!-- <div class="modal-body">
+                        <div class="container mt-5">
+                           
+                           
+                            <div class="mb-3">
+                                <label for="username" class="form-label">User Name</label>
+                                <div id="username" class="form-control">John Doe</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <div id="phone" class="form-control">123-456-7890</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <div id="email" class="form-control">johndoe@example.com</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <div id="role" class="form-control">Admin</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="createdOn" class="form-label">Created On</label>
+                                <div id="createdOn" class="form-control">2024-08-08</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <div id="status" class="form-control">Active</div>
+                            </div>
+                            
+                        </div>
+						
+
+
+                    </div> -->
+				<div class="container mt-5">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="mb-4">
+								<label for="username" class="form-label">Name</label>
+								<div id="username" name="username"></div>
+							</div>
+							<div class="mb-4">
+								<label for="category" class="form-label">Category</label>
+								<div id="category" name="category"></div>
+							</div>
+							<div class="mb-4">
+								<label for="owner" class="form-label">Owner</label>
+								<div id="owner" name="owner"></div>
+							</div>
+							<div class="mb-4">
+								<label for="processing_agencies" class="form-label">Processing Agencies</label>
+								<div id="processing_agencies" name="processing_agencies"></div>
+							</div>
+							{% comment %} <div class="mb-4">
+								<label for="email" class="form-label">Name of Processing Agency</label>
+								<div id="email" class="form-control">johndoe@example.com</div>
+							</div> {% endcomment %}
+							<div class="mb-4">
+								<label for="drawing_number" class="form-label">Drawing number</label>
+								<div id="drawing_number" name="drawing_number"></div>
+							</div>
+							<div class="mb-4">
+								<label for="drawing_status" class="form-label">Drawing status</label>
+								<div id="drawing_status" name="drawing_status"></div>
+							</div>
+							<div class="mb-4">
+								<label for="batch_size" class="form-label">Batch size</label>
+								<div id="batch_size" name="batch_size"></div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Batch identification</label>
+								<div id="batch_identification" name="batch_identification"></div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="mb-4">
+								<label for="role" class="form-label">End Uses</label>
+								<div id="enduses" name="enduses"></div>
+							</div>
+							<div class="mb-4">
+								<label for="createdOn" class="form-label">Use</label>
+								<div id="specificuse" name="specificuse"></div>
+							</div>
+							<div class="mb-4">
+								<label for="status" class="form-label">Shelf life value</label>
+								<div id="shelf_life_value" name="shelf_life_value"></div>
+							</div>
+							<div class="mb-4">
+								<label for="status" class="form-label">Shelf life unit</label>
+								<div id="shelf_life_unit" name="shelf_life_unit"></div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Testing agencies</label>
+								<div id="testingagencies" name="testingagencies"></div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label"> Components</label>
+								<div id="components" name="components"></div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Method of identification</label>
+								<div id="method_of_identification" name="method_of_identification"></div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Prefix </label>
+								<div id="prefix" name="prefix"></div>
+							</div>
+							<div class="mb-4">
+								<label for="email" class="form-label">Suffix </label>
+								<div id="suffix" class="suffix"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div> -->
+			</div>
+		</div>
+	</div>
+
+	        <!-- DELTE CONFIRMATION MODAL -->
+			<div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
+				<div class="modal-dialog modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Confirm Deletion</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body text-center ">
+							<p>Are you sure you want to delete this Product?</p>
+						</div>
+						<div class="modal-footer d-flex justify-content-center">
+							<button type="button" class="btn btn-danger text-right" id="confirm-delete">Delete</button>
+							<button type="button" class="btn btn-secondary text-right" id="cancel-delete"
+								data-dismiss="modal">Cancel</button>
+						</div>
+					</div>
+				</div>
+			</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+$(document).on('click', '#delete-btn', function (e) {
+        e.preventDefault(); // Prevent default link behavior
+
+        var productId = $(this).data('id'); // Get PRODUCT ID from data attribute
+        if (!productId) {
+            alert('Product ID not found.');
+            return;
+        }
+
+        // Store the productId in the modal's confirm button for reference
+        $('#confirm-delete').data('id', productId);
+
+        // Show the confirmation modal
+        $('#confirmDeleteModal').modal('show');
+    });
+
+    // Handle the confirmation of deletion
+    $(document).on('click', '#confirm-delete', function () {
+        var productId = $(this).data('id'); // Retrieve product ID from the modal's confirm button
+
+        if (!productId) {
+            alert('Product ID not found.');
+            return;
+        }
+
+        // Construct the URL dynamically
+        const baseUrl = "{% url 'product-view' %}";
+        const deleteUrl = `${baseUrl}${productId}/`;
+
+        // Perform the AJAX request for deletion
+        $.ajax({
+            url: deleteUrl,
+            type: 'POST',
+            data: JSON.stringify({ 'product_id': productId }),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token header
+            },
+            success: function (response) {
+                if (response.success) {
+                    console.log('Delete successful, reloading page...');
+
+                    // Close the modal after success
+                    $('#confirmDeleteModal').modal('hide');
+
+                    // Reload the page immediately after successful deletion
+                    window.location.reload(true); // Force reload (bypass cache)
+                } else {
+                    alert('Error: ' + response.message);
+                    console.error('Delete failed: ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert('An error occurred: ' + error);
+                console.error('AJAX error:', error);
+            }
+        });
+    });
+
+    // Handle the cancel button to close the modal
+    $(document).on('click', '#cancel-delete, .close', function () {
+        $('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
+    });
+
+
+	$(document).on('click', '.status-checkbox', function () { 
+    var productId = String($(this).data('id')); // Get the product ID
+    var isActive = $(this).is(':checked'); // Get the checkbox state (true/false)
+
+    if (productId) {
+        const baseUrl = "/product/update-product-status/";
+        const updateUrl = `${baseUrl}${productId}/`; // URL for updating product status
+
+        $.ajax({
+            url: updateUrl,
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token
+            },
+            data: {
+                status: isActive // Send the boolean value directly
+            },
+            success: function (response) {
+                if (response.success) {
+                    window.location.reload(); // Reload the page
+                } else {
+                    alert('Failed to update status: ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert('Error updating status: ' + error);
+            }
+        });
+    } else {
+        alert('Product ID not found.');
+    }
+});	
+
+
+	$(document).ready(function () {
+		$('.status-checkbox').change(function () {
+			var productId = $(this).data('id');
+			var status = $(this).is(':checked');
+			const updateUrl = `/update-product-status/${productId}/`;  // Check URL structure
+
+			if (!productId) {
+				alert('Product ID not found.');
+				return;
+			}
+
+			$.ajax({
+				url: updateUrl,
+				type: 'POST',
+				data: {
+					status: status,
+					csrfmiddlewaretoken: '{{ csrf_token }}'  // Ensure CSRF token is properly set
+				},
+				success: function (response) {
+					if (response.success) {
+						alert('Status updated successfully');
+						window.location.reload();
+					} else {
+						alert('Failed to update status');
+					}
+				},
+				// error: function (xhr, status, error) {
+				// 	alert('Error updating status');
+				// }
+			});
+		});
+	});
+
+
+</script>
+{% endblock %}
