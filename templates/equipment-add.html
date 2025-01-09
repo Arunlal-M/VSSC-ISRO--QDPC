@@ -121,16 +121,24 @@
 
 
                                 
-                                <div class="col-lg-4 col-sm-6 col-12" id="inputContainer">
+                                {% comment %} <div class="col-lg-4 col-sm-6 col-12" >
 									<div class="form-group">
-										<label>Upload Calibration Certificate</label>
-										<input type="file" id="calibration_certificate" name="calibration_certificate"class="form-control mt-2" multiple>
+										<label for="calibration_certificate_button">Upload Calibration Certificate</label>
+										<button type="button" id="calibration_certificate" name="calibration_certificate"class="btn btn-outline-primary" data-active="false">
 									</div>
 								</div>
 								
-                                
+                                {% endcomment %}
 							
-								
+								<div class="col-md-6 col-lg-4">
+                                    <div class="form-group">
+                                        <label for="calibration_certificate" class="form-label">Upload Calibration Certificate</label>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="calibration_certificate" name="precertified">
+                                            <label class="form-check-label" for="calibration_certificate">Check if Calibration Certificate</label>
+                                        </div>
+                                    </div>
+                                </div>
                                 
 								<div class="col-lg-12">
 									<a href="equipment-list.html" id="submit-btn" class="btn btn-submit me-2">Submit</a>
@@ -142,12 +150,115 @@
 					<!-- /add -->
 				</div>
 			</div>
+
+<!-- Add Document Modal -->
+<div class="modal fade" id="addEquipmentDocumentModal" tabindex="-1" aria-labelledby="addDocumentLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="addDocumentForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addDocumentLabel">Add Equipment Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Hidden field for Raw Material -->
+                    <input type="hidden" id="equipmentField" name="equipment">
+
+                    <!-- Title Field -->
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title"
+                            placeholder="Enter document title" required>
+                    </div>
+
+                    <!-- Category Dropdown -->
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option>Choose Document Type</option>
+                            {% for doc_type in document_types %}
+                            <option value="{{ doc_type.id }}">{{ doc_type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!-- Issue Number Field -->
+                    <div class="mb-3">
+                        <label for="issue_no" class="form-label">Issue Number</label>
+                        <input type="text" class="form-control" id="issue_no" name="issue_no"
+                            placeholder="Enter issue number" required>
+                    </div>
+
+                    <!-- Revision Number Field -->
+                    <div class="mb-3">
+                        <label for="revision_no" class="form-label">Revision Number</label>
+                        <input type="text" class="form-control" id="revision_no" name="revision_no"
+                            placeholder="Enter revision number" required>
+                    </div>
+
+                    <!-- Release Date Field -->
+                    <div class="mb-3">
+                        <label for="release_date" class="form-label">Release Date</label>
+                        <input type="date" class="form-control" id="release_date" name="release_date" required>
+                    </div>
+
+                    <!-- Approved By Field -->
+                    <div class="mb-3">
+                        <label for="approved_by" class="form-label">Approved By</label>
+                        <input type="text" class="form-control" id="approved_by" name="approved_by"
+                            placeholder="Enter approver's name" required>
+                    </div>
+
+                    <!-- Document Upload Field -->
+                    <div class="mb-3">
+                        <label for="document" class="form-label">Upload Document</label>
+                        <input type="file" class="form-control" id="document" name="document" required>
+                    </div>
+
+                    <!-- Validity Field -->
+                    <div class="mb-3">
+                        <label for="validity" class="form-label">Validity (Years)</label>
+                        <input type="number" class="form-control" id="validity" name="validity"
+                            placeholder="Enter validity in years" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save Document</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
         </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
         $(document).ready(function() {
+
+ // Handle the checkbox click
+
+
+        // Handle checkbox click to show modal
+        $('#calibration_certificate').change(function() {
+            if ($(this).prop('checked')) {
+                // Open the modal when checked
+                $('#addEquipmentDocumentModal').modal('show');
+            }
+        });
+ 
+
+
+
+
+
+
+
+
+            
             $('#submit-btn').click(function(event) {
                 //alert("Test")
                 //alert("button   clicked")
@@ -166,8 +277,10 @@
                 formData.append('calibration_validity_duration_value', $('#calibration_validity_duration_value').val());
                 formData.append('calibration_due_date', $('#calibration_due_date').val());
         
-                // Handle file upload
-                formData.append('calibration_certificate', $('#calibration_certificate')[0].files[0]);
+               // Check if calibration_certificate checkbox is checked
+var calibrationCertificateChecked = $('#calibration_certificate').is(':checked');
+formData.append('calibration_certificate', calibrationCertificateChecked ? 'checked' : 'not_checked');
+
         
                 $.ajax({
                     type: 'POST',
@@ -187,7 +300,71 @@
                     }
                 });
             });
+
+
+
+
+
+
+             // Populate Category Dropdown Dynamically (Optional if already done in the template)
+       // Populate Category Dropdown Dynamically (Optional if already done in the template)
+        //const categoryChoices = [
+            //{ value: "", label: "Select a Value" },
+            //{ value: "DOC/DOCX", label: ".doc/.docx" },
+           // { value: "PDF", label: ".pdf" },
+           // { value: "TXT", label: ".txt" },
+           // { value: "XLS/XLSX", label: ".xls/.xlsx" },
+           // { value: "CSV", label: ".csv" },
+           // { value: "PPT/PPTX", label: ".ppt/.pptx" },
+           // { value: "ODP", label: ".odp" },
+          //  { value: "JPG/JPEG", label: ".jpg/.jpeg" },
+           // { value: "PNG", label: ".png" },
+           // { value: "ZIP", label: ".zip" },
+           // { value: "RAR", label: ".rar" }
+        //];
+
+        //const categoryDropdown = $('#category');
+       // categoryChoices.forEach(choice => {
+       //     categoryDropdown.append(new Option(choice.label, choice.value));
+       // });
+       
+    // Submit Document Form
+    $('#addDocumentForm').submit(function (e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        var equipment = $('#name').val();
+
+        formData.append('equipment', equipment);
+
+        for (var pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+
+        }
+
+        $.ajax({
+            url: '{% url "add-equipment-document" %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function (response) {
+                if (response.success) {
+                    // alert(response.message);
+                    $('#addEquipmentDocumentModal').modal('hide');
+                } else {
+                    // alert(response.message);
+                }
+            },
+            error: function () {
+                // alert('Error adding document. Please try again.');
+            }
         });
+    });
+});
+ 
         
     </script>
 {% endblock %}

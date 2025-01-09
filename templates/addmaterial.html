@@ -47,12 +47,13 @@
                     </div>
                     <div class="col-md-6 col-lg-4">
                         <label for="acceptance_test" class="form-label">Acceptance Test</label>
-                        <select class="select" id="acceptance_test" name="acceptance_test[]" multiple>
+                        <select class="select" id="acceptance_test" name="acceptance_test[]" multiple onchange="handleSelection()">
                             {% for acc in acceptence_test %}
                             <option value="{{ acc.id }}">{{ acc.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                    
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                             <label for="grade">Grade</label>
@@ -63,22 +64,38 @@
                             </select>
                         </div>
                     </div>
+
+                    
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
-                            <label>Shelf Life</label>
-                            <input type="text" name="shelf_life_value" id="shelf_life_value">
-                            <div id="shelf_life_error" class="text-danger" style="display:none;"></div>
+                            <label for="shelf_life_type">Shelf Life</label>
+                            <select id="shelf_life_type" name="shelf_life_type" class="form-control">
+                                <option value="">Choose Type</option>
+                                <option value="tbd">TBD (To Be Decided)</option>
+                                <option value="not_applicable">Not Applicable</option>
+                                <option value="add_duration">Add Duration</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-4">
+                    
+                    <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
+                        <div class="form-group">
+                            <label for="shelf_life_value">Shelf Life Duration</label>
+                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control" placeholder="Enter duration">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
                         <div class="form-group">
                             <label for="unit">Shelf Life Period</label>
-                            <select name="unit" id="unit" class="form-control">
+                            <select id="unit" name="unit" class="form-control">
                                 <option value="days">Days</option>
                                 <option value="months">Months</option>
                             </select>
                         </div>
                     </div>
+
+
                     <div class="col-lg-12">
                         <button type="button" id="submitButton" class="btn btn-submit me-2">Submit</button>
                         <a href="{% url 'raw-material-add' %}" class="btn btn-cancel">Clear</a>
@@ -88,7 +105,122 @@
         </div>
         <!-- /add -->
     </div>
-</div>
+
+    {% load static %}
+
+        <div class="content" id="acceptance_test_table" style="display: none;">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>Acceptance Test</h4>
+                </div>
+                {% comment %} 
+                <div class="page-btn">
+                    <a href="addmaterial.html" class="btn btn-added" id="add-consumable">
+                        <img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Consumable
+                    </a>
+                </div>
+                {% endcomment %}
+            </div>
+    
+            <!-- Filter and Search -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-top">
+                        <div class="search-set">
+                            <div class="search-path">
+                                <a class="btn btn-filter" id="filter_search">
+                                    <img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+                                    <span>
+                                        <img src="{% static 'assets/img/icons/closes.svg' %}" alt="img">
+                                    </span>
+                                </a>
+                            </div>
+                            <div class="search-input">
+                                <a class="btn btn-searchset">
+                                    <img src="{% static 'assets/img/icons/search-white.svg' %}" alt="img">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Tabs Section -->
+                    {% comment %}
+                    <div class="comp-sec-wrapper">
+                        <section class="comp-section">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card bg-white">
+                                        <div class="card-body">
+                                            <ul class="nav nav-tabs nav-tabs-solid nav-justified">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" href="#solid-justified-tab1" data-bs-toggle="tab">Active</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#solid-justified-tab2" data-bs-toggle="tab">Inactive</a>
+                                                </li>
+                                            </ul>
+                                            <div class="tab-content">
+                                                <div class="tab-pane show active" id="solid-justified-tab1">
+                    {% endcomment %}
+    
+                    <!-- Table Section -->
+                    <div class="table-responsive">
+                        <table class="table datanew">
+                            <thead>
+                                <tr>
+                                    <th>Acceptance Test</th>
+                                    <th>Specification</th>
+                                    <th>Re-evaluation Frequency</th>
+                                    {% comment %} <th>Procurement Date</th> {% endcomment %}
+                                    {% comment %}
+                                    <th>Packing Details</th>
+                                    <th>Action</th>
+                                    {% endcomment %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                    {% for test in acceptance_tests %}
+                <tr>
+                    <td>{{ test.name }}</td>
+                    <td>
+                        {% if test.min_value and test.max_value and test.unit_name %}
+                            {{ test.min_value }} - {{ test.max_value }} {{ test.unit_name }}
+                        {% elif test.color %}
+                        {{ test.color }}
+                        {% else %}
+                            N/D
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if test.reevaluation_frequency_value %}
+                            {{ test.reevaluation_frequency_value }} {{ test.reevaluation_frequency_unit }}
+                        {% else %}
+                            N/D
+                        {% endif %}
+                    </td>
+                {% comment %} <td>
+                        {% if test.sampling_plan_url %}
+                            <a href="{{ test.sampling_plan_url }}" target="_blank">View Sampling Plan</a>
+                            <!-- Optionally embed the PDF directly -->
+                            <!-- <iframe src="{{ test.sampling_plan_url }}" width="600" height="400" style="border: none;"></iframe> -->
+                        {% else %}
+                            No file available
+                        {% endif %}
+                    </td> {% endcomment %}
+            
+                    
+                </tr>
+                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+   
+    
+
 <!-- /Main Wrapper -->
 
 <!-- Add Document Modal -->
@@ -116,11 +248,20 @@
                     <div class="mb-3">
                         <label for="category" class="form-label">Category</label>
                         <select class="form-select" id="category" name="category" required>
+                            <option>Choose Document Type</option>
+                            {% for doc_type in document_types %}
+                            <option value="{{ doc_type.id }}">{{ doc_type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% comment %} <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
                             {% for choice, label in RawMaterialDocument.CATEGORY_NAME_CHOICES %}
                             <option value="{{ choice }}">{{ label }}</option>
                             {% endfor %}
                         </select>
-                    </div>
+                    </div> {% endcomment %}
 
                     <!-- Issue Number Field -->
                     <div class="mb-3">
@@ -171,16 +312,55 @@
     </div>
 </div>
 
+
+
 {% endblock %}
 
 {% block scripts %}
 <script>
+
+    function handleSelection() {
+        const dropdown = document.getElementById("acceptance_test");
+        const selectedValues = Array.from(dropdown.selectedOptions).map(option => option.value);
+
+        // Show alert with selected values
+        alert(selectedValues);
+
+        // Get the table container
+        const tableContainer = document.getElementById("acceptance_test_table");
+
+        // Check if there is at least one selection and toggle visibility
+        if (selectedValues.length > 0) {
+            tableContainer.style.display = "block"; // Show the table
+        } else {
+            tableContainer.style.display = "none"; // Hide the table
+        }
+    }
+
     $(document).ready(function () {
+        $('#shelf_life_duration_group').hide();
+        $('#shelf_life_period_group').hide();
+            
+
+        $('#shelf_life_type').change(function () {
+            const selectedOption = $(this).val();
+    
+            if (selectedOption === 'add_duration') {
+                // Show duration and period inputs
+                $('#shelf_life_duration_group').show();
+                $('#shelf_life_period_group').show();
+            } else {
+                // Hide duration and period inputs
+                $('#shelf_life_duration_group').hide();
+                $('#shelf_life_period_group').hide();
+            }
+        });
+
         // Show Add Document Modal only if Precertified is checked
         $('#precertified').change(function () {
             const rawMaterial = $('#raw-material').val().trim(); // Get Raw Material value
             const rawMaterialInput = $('#raw-material'); // Raw Material input field
-            const acceptanceInput = $('#acceptance'); // Acceptance input field
+            const acceptanceInput = $('#acceptance_test'); // Acceptance input field
 
             if (!rawMaterial) {
                 rawMaterialInput.addClass('is-invalid'); // Add invalid styling
@@ -210,35 +390,46 @@
         $('#submitButton').click(function (event) {
             event.preventDefault();
 
-            var name = $('#raw-material').val();
-            var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
-            var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
-            var shelf_life_unit = $('#unit').val();
-            var precertified = $('#precertified').is(':checked');
-            var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
-            var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
-            var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
+        var name = $('#raw-material').val().trim();
+        var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
+        var shelf_life_type = $('#shelf_life_type').val();
+        var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
+        var shelf_life_unit = $('#unit').val();
+        var precertified = $('#precertified').is(':checked');
+        var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
+        var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
+        var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
 
-            if (isNaN(shelf_life_value) || shelf_life_value <= 0) {
-                $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
-                return;
-            }
+            // Validation for shelf life value
+        if (shelf_life_type === 'add_duration' && (isNaN(shelf_life_value) || shelf_life_value <= 0)) {
+            $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
+            return;
+        }
 
-       // Get the current date
-       var currentDate = new Date();
-        var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM -DD
+             // Handle case for 'TBD' or 'Not Applicable'
+        if (shelf_life_type === 'tbd' || shelf_life_type === 'not_applicable') {
+            shelf_life_value = null;  // Set shelf_life_value to null for these options
+            shelf_life_unit = null;   // Reset shelf_life_unit as well
+        }
 
-        // Create the data object
-        var rawMaterialData = {
-            name: name,
-            grade: grade,
-            shelf_life_value: shelf_life_value,
-            shelf_life_unit: shelf_life_unit,
-            user_defined_date: userDefinedDate, // Autofill current date
-            sources: sources,
-            suppliers: suppliers,
-            acceptance_test: acceptance_test,
-        };
+
+            // Get the current date
+            var currentDate = new Date();
+            var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
+
+            // Create the data object with all the fields
+            var rawMaterialData = {
+                name: name,
+                grade: grade,
+                shelf_life_type: shelf_life_type,
+                shelf_life_value: shelf_life_value,
+                shelf_life_unit: shelf_life_unit,
+                user_defined_date: userDefinedDate, // Autofill current date
+                precertified: precertified,
+                sources: sources,
+                suppliers: suppliers,
+                acceptance_test: acceptance_test,
+            };
 
             $.ajax({
                 type: 'POST',
@@ -262,25 +453,25 @@
         });
 
         // Populate Category Dropdown Dynamically (Optional if already done in the template)
-        const categoryChoices = [
-            { value: "", label: "Select a Value" },
-            { value: "DOC/DOCX", label: ".doc/.docx" },
-            { value: "PDF", label: ".pdf" },
-            { value: "TXT", label: ".txt" },
-            { value: "XLS/XLSX", label: ".xls/.xlsx" },
-            { value: "CSV", label: ".csv" },
-            { value: "PPT/PPTX", label: ".ppt/.pptx" },
-            { value: "ODP", label: ".odp" },
-            { value: "JPG/JPEG", label: ".jpg/.jpeg" },
-            { value: "PNG", label: ".png" },
-            { value: "ZIP", label: ".zip" },
-            { value: "RAR", label: ".rar" }
-        ];
+        //const categoryChoices = [
+            //{ value: "", label: "Select a Value" },
+            //{ value: "DOC/DOCX", label: ".doc/.docx" },
+           // { value: "PDF", label: ".pdf" },
+           // { value: "TXT", label: ".txt" },
+           // { value: "XLS/XLSX", label: ".xls/.xlsx" },
+           // { value: "CSV", label: ".csv" },
+           // { value: "PPT/PPTX", label: ".ppt/.pptx" },
+           // { value: "ODP", label: ".odp" },
+          //  { value: "JPG/JPEG", label: ".jpg/.jpeg" },
+           // { value: "PNG", label: ".png" },
+           // { value: "ZIP", label: ".zip" },
+           // { value: "RAR", label: ".rar" }
+        //];
 
-        const categoryDropdown = $('#category');
-        categoryChoices.forEach(choice => {
-            categoryDropdown.append(new Option(choice.label, choice.value));
-        });
+        //const categoryDropdown = $('#category');
+       // categoryChoices.forEach(choice => {
+       //     categoryDropdown.append(new Option(choice.label, choice.value));
+       // });
 
         // Submit Document Form
         $('#addDocumentForm').submit(function (e) {

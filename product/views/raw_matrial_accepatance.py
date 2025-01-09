@@ -47,12 +47,19 @@ class AcceptanceTestList(BaseModelViewSet):
     """ Raw Material Acceptance Test List API """
 
     def get(self, request):
-        # Get the most recent entry for each AcceptanceTest based on the name
-        acceptance_tests = AcceptanceTest.objects.values('name').annotate(latest_id=Max('id'))
-        
-        # Filter the AcceptanceTest objects to get only the most recent ones
-        latest_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
-        
+        # Extract the ID from query parameters (if provided)
+        test_id = request.GET.get('id', None)
+
+        if test_id:
+            # If an ID is provided, filter directly by that ID
+            latest_tests = AcceptanceTest.objects.filter(id=test_id)
+        else:
+            # Get the most recent entry for each AcceptanceTest based on the name
+            acceptance_tests = AcceptanceTest.objects.values('name').annotate(latest_id=Max('id'))
+            
+            # Filter the AcceptanceTest objects to get only the most recent ones
+            latest_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
+
         # Serialize the filtered results
         test_serializer = AcceptanceTestSerializer(latest_tests, many=True)
 
@@ -61,4 +68,5 @@ class AcceptanceTestList(BaseModelViewSet):
         }
         print(context)
         return render(request, 'rmtest-list.html', context)
+
 

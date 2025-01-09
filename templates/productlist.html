@@ -101,20 +101,33 @@
                     </div>
                     <div class="col-lg-4 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Shelf Life Value</label>
-                            <input type="text" id="shelf_life_value" name="shelf_life_value">
+                            <label for="shelf_life_type">Shelf Life</label>
+                            <select id="shelf_life_type" name="shelf_life_type" class="form-control">
+                                <option value="">Choose Type</option>
+                                <option value="tbd">TBD (To Be Decided)</option>
+                                <option value="not_applicable">Not Applicable</option>
+                                <option value="add_duration">Add Duration</option>
+                            </select>  
+                                              </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
+                        <div class="form-group">
+                            <label for="shelf_life_value">Shelf Life Duration</label>
+                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control" placeholder="Enter duration">
                         </div>
                     </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+
+                    <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
                         <div class="form-group">
-                            <label>Shelf Life Unit</label>
-                            <select id="shelf_life_unit" name="shelf_life_unit" class="form-control">
-                                <option value="">Select a unit</option>
+                            <label for="unit">Shelf Life Period</label>
+                            <select id="unit" name="unit" class="form-control">
                                 <option value="days">Days</option>
                                 <option value="months">Months</option>
                             </select>
                         </div>
                     </div>
+
 
 
                  <!-- Section-5: Drawing Applicable, Drawing Number, Drawing Status -->
@@ -262,11 +275,14 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="form-group">
-                            <label>Add Documents</label>
-                            <input type="file"id="product_document" name="product_document" class="form-control" multiple>
-
+                            <label for="document_category"class="form-label">Add Documents</label>
+                            <div class="form-check">
+                            <input type="checkbox" class="form-check-input"id="document_category" name="document_category" >
+                            <label class="form-check-label" for="document_category">Check if Product Document</label>
                         </div>
                     </div>
+                    </div>
+                    
 
                     <!-- Submit and Cancel Buttons -->
                     <div class="col-lg-12 mt-4 mb-4">
@@ -278,51 +294,171 @@
         </div>
     </div>
 </div>
+
+<!-- Add Document Modal -->
+<div class="modal fade" id="addProductDocumentModal" tabindex="-1" aria-labelledby="addDocumentLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="addDocumentForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addDocumentLabel">Add Product Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Hidden field for Product -->
+                    <input type="hidden" id="productField" name="product">
+                    <!-- Title Field -->
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title"
+                            placeholder="Enter document title" required>
+                    </div>
+
+                    <!-- Category Dropdown -->
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option>Choose Document Type</option>
+                            {% for doc_type in document_types %}
+                            <option value="{{ doc_type.id }}">{{ doc_type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Issue Number Field -->
+                    <div class="mb-3">
+                        <label for="issue_no" class="form-label">Issue Number</label>
+                        <input type="text" class="form-control" id="issue_no" name="issue_no"
+                            placeholder="Enter issue number" required>
+                    </div>
+
+                    <!-- Revision Number Field -->
+                    <div class="mb-3">
+                        <label for="revision_no" class="form-label">Revision Number</label>
+                        <input type="text" class="form-control" id="revision_no" name="revision_no"
+                            placeholder="Enter revision number" required>
+                    </div>
+
+                    <!-- Release Date Field -->
+                    <div class="mb-3">
+                        <label for="release_date" class="form-label">Release Date</label>
+                        <input type="date" class="form-control" id="release_date" name="release_date" required>
+                    </div>
+
+                    <!-- Approved By Field -->
+                    <div class="mb-3">
+                        <label for="approved_by" class="form-label">Approved By</label>
+                        <input type="text" class="form-control" id="approved_by" name="approved_by"
+                            placeholder="Enter approver's name" required>
+                    </div>
+
+                    <!-- Document Upload Field -->
+                    <div class="mb-3">
+                        <label for="document" class="form-label">Upload Document</label>
+                        <input type="file" class="form-control" id="document" name="document" required>
+                    </div>
+
+                    <!-- Validity Field -->
+                    <div class="mb-3">
+                        <label for="validity" class="form-label">Validity (Years)</label>
+                        <input type="number" class="form-control" id="validity" name="validity"
+                            placeholder="Enter validity in years" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save Document</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
+
 
 {% block scripts %}
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
+        // Handle checkbox click to show modal
+        $('#document_category').change(function () {
+            if ($(this).prop('checked')) {
+                // Open the modal when checked
+                $('#addProductDocumentModal').modal('show');
+            }
+        });
+
+        $('#shelf_life_duration_group').hide();
+        $('#shelf_life_period_group').hide();
+
+        $('#shelf_life_type').change(function () {
+            const selectedOption = $(this).val();
+
+            if (selectedOption === 'add_duration') {
+                // Show duration and period inputs
+                $('#shelf_life_duration_group').show();
+                $('#shelf_life_period_group').show();
+            } else {
+                // Hide duration and period inputs
+                $('#shelf_life_duration_group').hide();
+                $('#shelf_life_period_group').hide();
+            }
+        });
+
         // Initially hide all drawing-related fields
-    $('#drawing-number-container').hide();
-    $('#drawing-title-container').hide();
-    $('#drawing-status-container').hide();
-    $('#drawing-document-container').hide();
+        $('#drawing-number-container').hide();
+        $('#drawing-title-container').hide();
+        $('#drawing-status-container').hide();
+        $('#drawing-document-container').hide();
 
-    // Show/hide Drawing Number and Drawing Status based on Drawing Applicable selection
-    $('input[name="drawing_applicable"]').change(function() {
-        if ($(this).is(':checked')) {  // Check if the checkbox is checked
-            $('#drawing-number-container').show();  // Show fields
-            $('#drawing-title-container').show();
-            $('#drawing-status-container').show();
-            $('#drawing-document-container').show();
-        } else {
-            $('#drawing-number-container').hide();  // Hide fields
-            $('#drawing-title-container').hide();
-            $('#drawing-status-container').hide();
-            $('#drawing-document-container').hide();
-            $('#drawing_number').val('');  // Clear input
-            $('#drawing_title').val('');
-            $('#drawing_status').val('');  // Reset select
-            $('#drawing_document').val('');
+        // Show/hide Drawing Number and Drawing Status based on Drawing Applicable selection
+        $('input[name="drawing_applicable"]').change(function () {
+            if ($(this).is(':checked')) {  // Check if the checkbox is checked
+                $('#drawing-number-container').show();
+                $('#drawing-title-container').show();
+                $('#drawing-status-container').show();
+                $('#drawing-document-container').show();
+            } else {
+                $('#drawing-number-container').hide();
+                $('#drawing-title-container').hide();
+                $('#drawing-status-container').hide();
+                $('#drawing-document-container').hide();
+                $('#drawing_number').val('');
+                $('#drawing_title').val('');
+                $('#drawing_status').val('');
+                $('#drawing_document').val('');
+            }
+        });
+
+        // Function to get CSRF token from cookies
+        function getCSRFToken() {
+            let csrfToken = null;
+            if (document.cookie) {
+                document.cookie.split(';').forEach(function (cookie) {
+                    const [key, value] = cookie.trim().split('=');
+                    if (key === 'csrftoken') {
+                        csrfToken = value;
+                    }
+                });
+            }
+            return csrfToken;
         }
-    });
-    
 
-        $('#submit-btn').click(function(event) {
+        // Handle product form submission
+        $('#submit-btn').click(function (event) {
             event.preventDefault();
 
-            // Create a FormData object
-            var productData = new FormData();
+            const productData = new FormData();
             productData.append('name', $('#name').val());
-            productData.append('category', parseInt($('#category').val()));
-            productData.append('product_owner', parseInt($('#product_owner').val()));
+            productData.append('category', $('#category').val());
+            productData.append('product_owner', $('#product_owner').val());
             productData.append('end_uses', $('#end_uses').val());
             productData.append('specific_use', $('#specific_use').val());
-            productData.append('shelf_life_value', parseInt($('#shelf_life_value').val()));
-            productData.append('shelf_life_unit', $('#shelf_life_unit').val());
-            productData.append('processing_agencies', parseInt($('#processing_agencies').val()));
-            productData.append('testing_agencies', parseInt($('#testing_agencies').val()));
+            productData.append('shelf_life_value', $('#shelf_life_value').val());
+            productData.append('shelf_life_unit', $('#unit').val());
+            productData.append('shelf_life_type', $('#shelf_life_type').val());
+            productData.append('processing_agencies', $('#processing_agencies').val());
+            productData.append('testing_agencies', $('#testing_agencies').val());
             productData.append('components', $('#components').val());
             productData.append('raw_material', $('#raw_material').val());
             productData.append('consumable', $('#consumable').val());
@@ -331,131 +467,68 @@
             productData.append('drawing_title', $('#drawing_title').val());
             productData.append('drawing_status', $('#drawing_status').val());
             productData.append('drawing_applicable', $('input[name="drawing_applicable"]:checked').val());
-            
-            // Append the drawing_document file
-            var drawingDocument = $('#drawing_document')[0].files[0];
+            productData.append('identification_method', $('#identification_method').val());  
+            productData.append('prefix', $('#prefix').val());
+            productData.append('suffix', $('#suffix').val());
+
+
+            const drawingDocument = $('#drawing_document')[0].files[0];
             if (drawingDocument) {
                 productData.append('drawing_document', drawingDocument);
             }
 
-            productData.append('identification_method', $('#identification_method').val());
-            productData.append('batch_size', $('#batch_size').val());
-            productData.append('prefix', $('#prefix').val());
-            productData.append('suffix', $('#suffix').val());
-
-            // Append the product_document file
-            var productdocument = $('#product_document')[0].files[0];
-            if (productdocument) {
-                 productData.append('product_document', productdocument);
-           }
-                        
-                        
-
-            console.log(productData);
-
+            const csrfToken = getCSRFToken();
             $.ajax({
                 url: '{% url "product-add" %}',
                 type: 'POST',
                 data: productData,
-                contentType: false, // Important for file uploads
-                processData: false, // Important for file uploads
+                contentType: false,
+                processData: false,
                 headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for security
+                    'X-CSRFToken': csrfToken
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         window.location.href = "{% url 'product-view' %}";
                     } else {
-                        $('#error-message').text(response.message).show(); // Show error message
+                        $('#error-message').text(response.message).show();
                     }
                 },
-                error: function(error) {
+                error: function (error) {
                     alert('Error adding product: ' + error.responseText);
                 }
             });
         });
+
+        // Handle document form submission
+        $('#addDocumentForm').submit(function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('product', $('#name').val());
+
+            const csrfToken = getCSRFToken();
+            $.ajax({
+                url: '{% url "add-product-document" %}',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $('#addProductDocumentModal').modal('hide');
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function () {
+                    alert('Error adding document. Please try again.');
+                }
+            });
+        });
     });
-
-    function populateDivisionDropdown(allDivisions, selectedDivisions, userId) {
-    const divisionSelect = $('#division');
-    divisionSelect.empty(); // Clear existing options
-
-    // Populate the division dropdown
-    allDivisions.forEach(division => {
-        divisionSelect.append(`<option value="${division.id}">${division.name}</option>`);
-    });
-
-    selectedDivisions.forEach(divisionId => {
-        $(`#division option[value="${divisionId}"]`).prop('selected', true);
-    });
-
-    // Set the user ID in the hidden input field
-    $('#userId').val(userId);
-
-    // Trigger the change event to update Select2 if you're using it
-    
-}
-
-
-function populateCenterDropdown(allCentres,selectedCentres) {
-      
-      const centerSelect = $('#center');
-      centerSelect.empty(); // Clear existing options
-
-      allCentres.forEach(center => {
-          centerSelect.append(`<option value="${center.id}">${center.name}</option>`);
-      });
-
-      selectedCentres.forEach(centerId => {
-          $(`#center option[value="${centerId}"]`).prop('selected', true);
-      });
-     
-      // Trigger the change event to update Select2
-     
-  }
-  function populateRoleTypeDropdown(allRoles, selectedRoles) {
-    const roleSelect = $('#role');
-    roleSelect.empty(); // Clear existing options
-
-    // Populate the container with checkboxes
-    allRoles.forEach(role => {
-        const isChecked = selectedRoles.includes(role.id) ? 'checked' : '';
-        roleSelect.append(`
-            <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" value="${role.id}" ${isChecked}>
-                ${role.name}
-            </label><br>
-        `);
-    });
-}
-
-
-function populateUserTypeDropdown(allUsertypes, selectedusertype) {
-
-const usertypeSelect = $('#usertype');
-usertypeSelect.empty(); // Clear existing options
-
-// Populate the dropdown
-allUsertypes.forEach(usertype => {
-    usertypeSelect.append(`<option value="${usertype.id}">${usertype.name}</option>`);
-});
-
-// Ensure selectedusertype is an array
-if (!Array.isArray(selectedusertype)) {
-    selectedusertype = [selectedusertype];
-}
-
-usertypeSelect.val(selectedusertype); // Use .val() to set selected values
-
-// Trigger the change event to upda  usertypeSelect.trigger('change');
-}
-
-
-
-
-
-
-
-		</script>
-		
+</script>
 {% endblock %}
+

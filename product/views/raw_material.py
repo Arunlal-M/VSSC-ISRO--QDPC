@@ -14,6 +14,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response  
 from django.db.models import Max
 from qdpc_core_models.models.grade import Grade
+from qdpc_core_models.models.document_type import DocumentType
+
 
 class RawMatrialListFetchView(BaseModelViewSet):
   
@@ -43,6 +45,7 @@ class RawMatrialListFetchView(BaseModelViewSet):
         all_suppliers = Suppliers.objects.all().values('id', 'name')
         all_grades = Grade.objects.all().values('id', 'name','abbreviation')
 
+
         raw_materials_data = {
             'id': material.id,
             'name': material.name,
@@ -50,6 +53,7 @@ class RawMatrialListFetchView(BaseModelViewSet):
             'suppliers': [{'id': supplier.id, 'name': supplier.name} for supplier in material.suppliers.all()],
             'grade': [{'id': grade.id, 'name': grade.name,'abbreviation':grade.abbreviation} for grade in material.grade.all()],                  
             'acceptance_test': [{'id': acceptance_test.id, 'name': acceptance_test.name,'min':acceptance_test.min_value,'max':acceptance_test.max_value, 'unit': str(acceptance_test.unit)} for acceptance_test in material.acceptance_test.all()],
+            'shelf_life_type': material.shelf_life_type,
             'shelf_life_value': material.shelf_life_value,
             'shelf_life_unit': material.shelf_life_unit,
             'user_defined_date': material.user_defined_date,
@@ -57,6 +61,7 @@ class RawMatrialListFetchView(BaseModelViewSet):
             'all_sources': list(all_sources),  # Include all available sources
             'all_suppliers': list(all_suppliers),  # Include all available suppliers
             'all_grades': list(all_grades),  # Include all available grades
+            
         }
 
         return raw_materials_data
@@ -87,12 +92,14 @@ class RawMaterialAdd(BaseModelViewSet):
         grades = self.get_all_obj(model_name=Grade)
         # Filter the AcceptanceTest objects to get only the most recent ones
         latest_acceptance_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
-        
+        document_types = DocumentType.objects.all()  # Add this line to fetch document types
+
         context = {
             'sources': sources,
             'suppliers': suppliers,
             'acceptence_test':latest_acceptance_tests,
             'grades' : grades,
+            'document_types': document_types,  # Pass document types to the template
         }
         return render(request, 'addmaterial.html',context)
     
@@ -290,10 +297,14 @@ class UpdateRawmaterialStatusView(BaseModelViewSet):
 
     
 class AddRawMaterialDocumentView(BaseModelViewSet):
+    
+     
+    
     def post(self, request, format=None):
         try:
             raw_material_id = request.data.get('raw_material')
-            if not raw_material_id:
+            category_id = request.data.get('category')  # Get the category ID
+            if not raw_material_id or not category_id:
                 return Response({
                     'success': False,
                     'message': 'Raw Material is required'
@@ -306,12 +317,14 @@ class AddRawMaterialDocumentView(BaseModelViewSet):
             #         'success': False,
             #         'message': 'Raw Material not found'
             #     }, status=status.HTTP_404_NOT_FOUND)
-
+            
+            category = DocumentType.objects.get(id=category_id)
             # Create the document
+            
             document = RawMaterialDocument.objects.create(
                 raw_material=raw_material_id,
                 title=request.data.get('title'),
-                category=request.data.get('category'),
+                category=category,  # Assign the DocumentType instance here
                 issue_no=request.data.get('issue_no'),
                 revision_no=request.data.get('revision_no'),
                 release_date=request.data.get('release_date'),

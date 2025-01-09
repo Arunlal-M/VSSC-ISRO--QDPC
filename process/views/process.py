@@ -1,6 +1,7 @@
 from qdpc.core.modelviewset import BaseModelViewSet
 from rest_framework.response import Response
 from django.shortcuts import render, get_object_or_404, redirect
+from process.serializers.process_serializer import ProcessStepSerializer
 from qdpc_core_models.models.process import Process, ProcessStep
 from qdpc_core_models.models.equipment import Equipment
 from qdpc_core_models.models.consumable import Consumable
@@ -8,6 +9,7 @@ from qdpc_core_models.models.raw_material import RawMaterial
 from qdpc_core_models.models.component import Component
 from rest_framework import status
 from qdpc.core import constants
+from django.utils.timezone import now
 
 
 class ProcessListView(BaseModelViewSet):
@@ -76,12 +78,39 @@ class ProcessCreateView(BaseModelViewSet):
         equipment = Equipment.objects.all()
         consumables = Consumable.objects.all()
         component = Component.objects.all()
+        today = now().date()
+
+        # Add expiry status to each raw material
+        raw_materials_with_status = [
+            {
+                'material': material,
+                'is_expired': material.calculate_expiry_date < today
+            }
+            for material in raw_materials
+        ]
+        consumables_with_status = [
+            {
+                'consum': consum,
+                'is_expired': consum.calculate_expiry_date < today
+            }
+            for consum in consumables
+        ]
+        equipment_with_status = [
+            {
+                'equip': equip,
+                'is_expired': equip.calibration_due_date < today
+            }
+            for equip in equipment
+        ]
 
         return render(request, self.template_name, {
-            'raw_materials': raw_materials,
+            'raw_materials_with_status': raw_materials_with_status,
+            'consumables_with_status': consumables_with_status,
+            'equipment_with_status': equipment_with_status,
             'equipment': equipment,
             'consumables': consumables,
             'component': component,
+            'today': today,
         })
 
     def post(self, request):
@@ -142,6 +171,24 @@ class ProcessCreateView(BaseModelViewSet):
             step_counter += 1
 
         return redirect('process_list')
+    
+class EditProcessStepView(BaseModelViewSet):
+    """
+    View to handle editing of a Process Step using the PUT method.
+    """
+    def put(self, request, batch_id):
+        try:
+            processstep = ProcessStep.objects.get(id=batch_id)
+        except ProcessStep.DoesNotExist:
+            return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ProcessStepSerializer(processstep, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
     
 class DeleteProcessStepView(BaseModelViewSet):
     """

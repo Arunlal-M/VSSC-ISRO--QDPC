@@ -411,16 +411,6 @@
         });
     });
 
-    //REDIRECT JQUERY
-
-    // $(document).on('click', '.clickable-row', function () {
-    //     var batchId = $(this).data('batch-id'); // Get the batch ID from the row's data attribute
-    //     var baseUrl = '/product/rawmaterial-detiled-view/'; // Adjust the base URL as needed
-    //     var detailUrl = baseUrl + batchId + '/'; // Construct the URL to the detailed view page
-
-    //     // Redirect to the detailed view page
-    //     window.location.href = detailUrl;
-    // });
 
     $(document).on('click', '#delete-btn', function (e) {
         e.preventDefault(); // Prevent default link behavior
@@ -478,7 +468,7 @@
                 alert('An error occurred: ' + error);
                 console.error('AJAX error:', error);
             }
-        });
+        }); 
     });
 
     // Handle the cancel button to close the modal

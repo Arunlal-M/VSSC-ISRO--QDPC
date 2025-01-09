@@ -95,12 +95,18 @@
             </tr>
         </thead>
         <tbody>
+			
             {% for grade in grades %}
             <tr>
                
                 <td>{{ grade.name }}</td>
                 <td>{{ grade.abbreviation }}</td>
                 <td>
+
+					<a class="me-3 view-user-btn" data-bs-toggle="modal"
+										data-bs-target="#updateGradeModal" data-id="{{ grade.id }}">
+										<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+									</a>
                     <a id="delete-grade-btn" data-id="{{ grade.id }}">
                         <img src="{% static 'assets/img/icons/delete.svg' %}" alt="delete">
                     </a>
@@ -115,45 +121,60 @@
                 </td>
             </tr>
             {% endfor %}
+			
         </tbody>
     </table>
 </div>
-{% else %}
-
-<div class="table-responsive">
-	<table class="table datanew">
-		<thead>
-			<tr>
-				<th>
-					
-				</th>
-				
-                <th>Grade Name</th>
-                <th>Grade Abbreviation</th>
-                <th>Actions</th>
-			</tr>
-		</thead>
-        <tbody>
-			<tr>
-				<td colspan="4" class="text-center">No Data Availabile in the Table</td>
-				<td></td>
-				<td></td>
-				<td></td>
-				
-			</tr>
-		</tbody>
-	</table>
-    </div>
-    <!-- Optionally, display a message or leave it empty -->
 {% endif %}
+    <!-- Optionally, display a message or leave it empty -->
 
 
+</div>
+</div>
 
+<!-- Modal for Updating grade -->
+<div class="modal fade" id="updateGradeModal" tabindex="-1" aria-labelledby="updateGradeModal"
+aria-hidden="true">
+<div class="modal-dialog modal-lg">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h5 class="modal-title" id="updateGradeModalLabel">Update Grade</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+		<div class="modal-body">
+			<form id="updateGradeForm" class="row">
+				<input type="hidden" id="grade_id" name="grade_id" value="">
 
-
-					</div>
+				<!-- Fields for grade data -->
+				<div class="col-6 mt-2">
+					<label for="grade_n" class="form-label">Grade Name</label>
+					<input type="text" class="form-control" id="grade_n" name="grade_n"
+						placeholder="grade Name"></input>
 				</div>
-			</div>
+
+				<!-- Populate dropdowns dynamically -->
+				
+
+				<div class="col-6 mt-2">
+					<label for="grade_abb" class="form-label">Abbreviation</label>
+					<input type="text" class="form-control" id="grade_abb"
+						name="grade_abb00000"></input>
+				</div>
+
+				<div class="d-flex justify-content-center mt-3">
+					<button type="button" class="btn btn-primary btn-sm" id="updateGrade">Update</button>
+				</div>
+
+			</form>
+		</div>
+	</div>
+</div>
+</div>
+
+
+			
 			<!-- /Main Wrapper -->
 <!-- DELTE CONFIRMATION MODAL -->
 <div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
@@ -211,6 +232,76 @@
 		});
 	});
 
+// Open edit modal and populate fields
+$('.view-user-btn').on('click', function () {
+	const gradeId = $(this).data('id');
+	const editUrl = `/grade/view/${gradeId}/`;
+
+	$.ajax({
+		type: 'GET',
+		url: editUrl,
+		success: function (response) {
+			if (response && response.data) {
+				$('#grade_id').val(response.data.id);
+				$('#grade_n').val(response.data.name);
+				$('#grade_abb').val(response.data.abbreviation);  // Populate abbreviation
+
+				
+
+				// Clear any previous error messages
+				$('#error-message').hide().text('');
+
+				$('#updateGradeModal').modal('show');
+			} else {
+				alert('Failed to load data: ' + response.message);
+			}
+		},
+		error: function () {
+			alert('Failed to load data. Please try again.');
+		}
+	});
+
+
+	// Handle update submission
+	$('#updateGrade').off('click').on('click', function () {
+		const gradeId = $('#grade_id').val();
+		const updateUrl = `/grade/edit/${gradeId}/`;
+
+		const updatedData = {
+			name: $('#grade_n').val(),
+			abbreviation: $('#grade_abb').val(),
+			
+		};
+
+		$.ajax({
+			type: 'PUT',
+			url: updateUrl,
+			data: JSON.stringify(updatedData),
+			contentType: 'application/json',
+			headers: {
+				'X-CSRFToken': '{{ csrf_token }}'
+			},
+			success: function (response) {
+				if (response.success) {
+					location.reload(); // Reload the page on success
+				} else {
+					alert('Update failed: ' + response.message);
+				}
+			},
+			error: function () {
+				alert('An error occurred. Please try again.');
+			}
+		});
+	});
+});
+
+
+
+
+
+
+
+
 
 	$(document).ready(function () {
 	$(document).on('click', '#delete-grade-btn', function (e) {
@@ -226,6 +317,8 @@
 			// Show the confirmation modal
 			$('#confirmDeleteModal').modal('show');
 		});
+
+		
 // Handle the confirmation of deletion
 $(document).on('click', '#confirm-delete', function () {
 	var gradeId = $(this).data('id'); // Retrieve center ID from the modal's confirm button

@@ -1,0 +1,384 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+
+		<div class="page-wrapper">
+			<div class="content">
+				<div class="page-header">
+					<div class="page-title">
+						<h4>Document Type Add</h4>
+						<h6>Create new Document Type</h6>
+					</div>
+				</div>
+				<!-- /add -->
+				<div class="card">
+					<div class="card-body">
+						<div class="row">
+
+							<div class="col-lg-3 col-sm-6 col-12">
+								<div class="form-group">
+									<label> Name</label>
+									<input type="text" id="documenttype_name" name="documenttype_name" class="form-control">
+								</div>
+							</div>
+
+
+							<div class="col-lg-12">
+								<a href="documenttype.html" id="submit-btn" class="btn btn-submit me-2">Submit</a>
+								<a href="{% url 'documenttype-list' %}" class="btn btn-cancel">Cancel</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- /add -->
+
+
+				<div class="page-header">
+					<div class="page-title">
+						<h4>DocumentType List View</h4>
+						<!-- <h6>Manage your products</h6> -->
+					</div>
+				</div>
+
+
+				<!-- /product list -->
+				<div class="card">
+					<div class="card-body">
+						<div class="table-top">
+							<div class="search-set">
+								<div class="search-path">
+									<a class="btn btn-filter" id="filter_search">
+										<img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+										<span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+									</a>
+								</div>
+								<div class="search-input">
+									<a class="btn btn-searchset"><img
+											src="{% static 'assets/img/icons/search-white.svg' %}" alt="img"></a>
+								</div>
+							</div>
+							<div class="wordset">
+								<ul>
+									<li>
+										<a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img
+												src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+									</li>
+									<li>
+										<a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img
+												src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+									</li>
+									<li>
+										<a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img
+												src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<!-- table iterations -->
+						{% if documenttype %}
+<div class="table-responsive">
+    <table class="table datanew">
+        <thead>
+            <tr>
+                
+                <th>Category Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for document in documenttype %}
+            <tr>
+               
+                <td>{{ document.name }}</td>
+                <td>
+
+					<a class="me-3 view-user-btn" data-bs-toggle="modal"
+					data-bs-target="#updateDocumenttypeModal" data-id="{{ document.id }}">
+					<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+				</a>
+                    <a id="delete-documenttype-btn" data-id="{{ document.id }}">
+                        <img src="{% static 'assets/img/icons/delete.svg' %}" alt="delete">
+                    </a>
+                    {% comment %} <a class="me-3 view-user-btn" href="javascript:void(0);" data-bs-toggle="modal"
+                        data-bs-target="#consumpage" data-batch-id="{{ end.id }}">
+                        <i class="fa fa-eye"></i>
+                    </a> {% endcomment %}
+                    {% comment %} <a class="me-3 view-user-btn" href="javascript:void(0);" data-bs-toggle="modal"
+                        data-bs-target="#consumpage" data-batch-id="{{ end.id }}">
+                        <i class="fa fa-edit"></i>
+                    </a> {% endcomment %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+
+<div class="table-responsive">
+	<table class="table datanew">
+		<thead>
+			<tr>
+				<th>
+					
+				</th>
+				
+                <th>Category Name</th>
+                <th>Actions</th>
+			</tr>
+		</thead>
+        <tbody>
+			<tr>
+				<td colspan="4" class="text-center">No Data Availabile in the Table</td>
+				<td></td>
+				<td></td>
+				
+			</tr>
+		</tbody>
+	</table>
+    </div>
+    <!-- Optionally, display a message or leave it empty -->
+{% endif %}
+
+
+
+
+
+					</div>
+				</div>
+			</div>
+
+
+
+
+
+			<!-- Modal for Updating enduse -->
+<div class="modal fade" id="updateDocumenttypeModal" tabindex="-1" aria-labelledby="updateDocumenttypeModal"
+aria-hidden="true">
+<div class="modal-dialog modal-lg">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h5 class="modal-title" id="updateDocumenttypeModalLabel">Update Documenttype</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+		<div class="modal-body">
+			<form id="updateDocumenttypeForm" class="row">
+				<input type="hidden" id="documenttype_id" name="documenttype_id" value="">
+
+				<!-- Fields for documenttype data -->
+				<div class="col-6 mt-2">
+					<label for="documenttype_n" class="form-label">Documenttype Name</label>
+					<input type="text" class="form-control" id="documenttype_n" name="documenttype_n"
+						placeholder="Documenttype Name"></input>
+				</div>
+
+				
+				
+
+				
+
+				<div class="d-flex justify-content-center mt-3">
+					<button type="button" class="btn btn-primary btn-sm" id="updateDocumenttype">Update</button>
+				</div>
+
+			</form>
+		</div>
+	</div>
+</div>
+</div>
+			<!-- /Main Wrapper -->
+<!-- DELTE CONFIRMATION MODAL -->
+<div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Confirm Deletion</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body text-center ">
+				<p>Are you sure you want to delete this Category?</p>
+			</div>
+			<div class="modal-footer d-flex justify-content-center">
+				<button type="button" class="btn btn-danger text-right" id="confirm-delete">Delete</button>
+				<button type="button" class="btn btn-secondary text-right" id="cancel-delete"
+					data-dismiss="modal">Cancel</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+
+<script>
+	$(document).ready(function () {
+        $('#submit-btn').click(function (event) {
+            event.preventDefault(); // Prevent the default form submission
+            
+            // Get the value from the input field
+            var name = $('#documenttype_name').val();
+
+            // Check if the name is empty before making the request
+            if (!name.trim()) {
+                alert("Document type name is required.");
+                return;
+            }
+			$.ajax({
+				type: 'POST',
+				url: '{% url "documenttype-list" %}', //  Replace with your Django URL for adding a supplier
+				data: {
+
+					'name': name,	
+					'csrfmiddlewaretoken': '{{ csrf_token }}'
+				},
+				success: function (response) {
+
+					if (response.success) {
+						window.location.reload()
+					} else {
+						$('#error-message').text(response.message).show(); // Show error message
+					}
+				},
+				error: function () {
+					$('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+				}
+			});
+		});
+	});
+
+
+// Open edit modal and populate fields
+$('.view-user-btn').on('click', function () {
+	const documenttypeId = $(this).data('id');
+	const editUrl = `/documenttype/view/${documenttypeId}/`;
+
+	$.ajax({
+		type: 'GET',
+		url: editUrl,
+		success: function (response) {
+			if (response && response.data) {
+				$('#documenttype_id').val(response.data.id);
+				$('#documenttype_n').val(response.data.name);
+				
+
+				
+
+				// Clear any previous error messages
+				$('#error-message').hide().text('');
+
+				$('#updateDocumenttypeModal').modal('show');
+			} else {
+				alert('Failed to load data: ' + response.message);
+			}
+		},
+		error: function () {
+			alert('Failed to load data. Please try again.');
+		}
+	});
+
+
+	// Handle update submission
+	$('#updateDocumenttype').off('click').on('click', function () {
+		const documenttypeId = $('#documenttype_id').val();
+		const updateUrl = `/documenttype/edit/${documenttypeId}/`;
+
+		const updatedData = {
+			name: $('#documenttype_n').val(),
+			
+		};
+
+		$.ajax({
+			type: 'PUT',
+			url: updateUrl,
+			data: JSON.stringify(updatedData),
+			contentType: 'application/json',
+			headers: {
+				'X-CSRFToken': '{{ csrf_token }}'
+			},
+			success: function (response) {
+				if (response.success) {
+					location.reload(); // Reload the page on success
+				} else {
+					alert('Update failed: ' + response.message);
+				}
+			},
+			error: function () {
+				alert('An error occurred. Please try again.');
+			}
+		});
+	});
+});
+
+
+
+
+
+
+
+	$(document).ready(function () {
+	$(document).on('click', '#delete-documenttype-btn', function (e) {
+		e.preventDefault(); // Prevent default link behavior
+		var documenttypeId = $(this).data('id'); // Get the supplier ID from the button's data attribute
+        //console.log("enduse ID to delete:", enduseId); // Debug log
+		if (!documenttypeId) {
+			alert('documenttype Id not found.');
+				return;
+			}
+			$('#confirm-delete').data('id',documenttypeId);
+	
+			// Show the confirmation modal
+			$('#confirmDeleteModal').modal('show');
+		});
+// Handle the confirmation of deletion
+$(document).on('click', '#confirm-delete', function () {
+	var documenttypeId = $(this).data('id'); // Retrieve center ID from the modal's confirm button
+
+	if (!documenttypeId) {
+		alert('documenttype Id not found.');
+		return;
+	}
+
+
+
+			const baseUrl = '/documenttype/';
+			const deleteUrl = `${baseUrl}${documenttypeId}/`; // URL for deleting enduse
+	
+			$.ajax({
+				url: deleteUrl,
+				type: 'POST', // Use POST for deleting supplier
+				headers: {
+					'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token in the headers
+				},
+				success: function (response) {
+					if (response.success) {
+
+				// Close the modal after success
+				$('#confirmDeleteModal').modal('hide');
+
+
+
+					window.location.reload(true); // Reload the page on success
+					} else {
+					alert('Error: ' + response.message);
+					}
+				},
+				error: function (xhr, status, error) {
+					alert('An error occurred: ' + error);
+				}
+			});
+		
+	});
+	// Handle the cancel button to close the modal
+	$(document).on('click', '#cancel-delete, .close', function () {
+		$('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
+	});
+});
+
+</script>
+{% endblock %}

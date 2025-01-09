@@ -1,5 +1,6 @@
 {% extends 'index.html' %}
 {% block content %}
+{% load static %}
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -58,74 +59,88 @@
     </div>
 </div>
 
-<!-- THE UPDATE VIEW MODAL  -->
-<div class="modal fade" id="materialpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Modal for Updating Process Step -->
+<div class="modal fade" id="updateProcessStepModal" tabindex="-1" aria-labelledby="updateProcessStepModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Raw Material View</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+                <h5 class="modal-title" id="updateProcessStepModalLabel">Update Process Step</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="container mt-2">
-                    <form class="row">
-                        <input type="hidden" id="raw_material_id" name="raw_material_id" value="">
-                        <div class="col-6 mt-2">
-                            <label for="username" class="form-label">Rawmaterial</label>
-                            <input type="text" class="form-control" id="raw-material" name="raw-material"
-                                placeholder="Rawmaterial" readonly>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="sources" class="form-label">Sources</label>
-                            <select class="select" id="sources" name="sources[]" multiple>
-                                {% for sour in all_sources %}
-                                    <option value="{{ sour.id }}">{{ sour.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="suppliers" class="form-label">Suppliers</label>
-                            <select class="select" id="suppliers" name="suppliers[]" multiple>
-                                {% for sup in all_suppliers %}
-                                    <option value="{{ sup.id }}">{{ sup.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="grade" class="form-label">Grade</label>
-                            <select class="select" id="grade" name="grade[]" multiple>
-                                {% for grade in all_grades %}
-                                    <option value="{{ grade.id }}">{{ grade.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="acceptance" class="form-label">Acceptance test</label>
-                            <select class="select" id="acceptance" name="acceptance_test[]" multiple>
-                                {% for accep in acceptance_test %}
-                                    <option value="{{ accep.id }}">{{ accep.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="shelf life" class="form-label">Shelf Life</label>
-                            <input type="text" class="form-control" id="shelf_life" name="shelf_life"
-                                placeholder="shelf life">
-                        </div>
-                        <div class="col-6 mt-2">
-                            <label for="status" class="form-label">Shelf Life Period</label>
-                            <select name="unit" id="unit" class="form-control">
-                                <option value="days">Days</option>
-                                <option value="months">Months</option>
-                            </select>
-                        </div>
+                <form id="updateProcessStepForm" class="row">
+                    <input type="hidden" id="step_id" name="step_id" value="">
 
-                        <div class="d-flex justify-content-center mt-3">
-                            <button type="button" class="btn btn-primary btn-sm"
-                                id="updateRawMaterial">Update</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="col-6 mt-2">
+                        <label for="process_description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="process_description" name="process_description" placeholder="Description">
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="raw_materials" class="form-label">Raw Materials</label>
+                        <select class="select" id="raw_materials" name="raw_materials[]" multiple>
+                            {% for material in all_raw_materials %}
+                                <option value="{{ material.id }}">{{ material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="rm_status" class="form-label">Raw Material Status</label>
+                        <input type="text" class="form-control" id="rm_status" name="rm_status" placeholder="Raw Material Status">
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="equipment" class="form-label">Equipment</label>
+                        <select class="select" id="equipment" name="equipment[]" multiple>
+                            {% for equip in all_equipment %}
+                                <option value="{{ equip.id }}">{{ equip.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="equipment_status" class="form-label">Equipment Status</label>
+                        <input type="text" class="form-control" id="equipment_status" name="equipment_status" placeholder="Equipment Status">
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="consumables" class="form-label">Consumables</label>
+                        <select class="select" id="consumables" name="consumables[]" multiple>
+                            {% for consumable in all_consumables %}
+                                <option value="{{ consumable.id }}">{{ consumable.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="components" class="form-label">Components</label>
+                        <select class="select" id="components" name="components[]" multiple>
+                            {% for component in all_components %}
+                                <option value="{{ component.id }}">{{ component.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="process_step_spec" class="form-label">Specifications</label>
+                        <input type="text" class="form-control" id="process_step_spec" name="process_step_spec" placeholder="Specifications">
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="measured_value_observation" class="form-label">Test Value</label>
+                        <input type="text" class="form-control" id="measured_value_observation" name="measured_value_observation" placeholder="Test Value">
+                    </div>
+
+                    <div class="col-6 mt-2">
+                        <label for="remarks" class="form-label">Remarks</label>
+                        <textarea class="form-control" id="remarks" name="remarks" rows="3" placeholder="Remarks"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-3">
+                        <button type="button" class="btn btn-primary btn-sm" id="updateProcessStep">Update</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -133,7 +148,8 @@
 
 
 
-<!-- DELTE CONFIRMATION MODAL -->
+
+<!-- DELETE CONFIRMATION MODAL -->
 <div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -160,129 +176,87 @@
 
 {% block scripts %}
 <script>
-    $('#add-raw-material').click(function (event) {
-        event.preventDefault(); 
-        window.location.href = "{% url 'raw-material-add' %}";
-    });
-
-    function populateSourceDropdown(all_sources, selectedSources) {
-        const sourceSelect = $('#sources');
-        sourceSelect.empty(); 
-        all_sources.forEach(source => {
-            sourceSelect.append(`<option value="${source.id}">${source.name}</option>`);
+$(document).ready(function () {
+    // Function to populate dropdown options and select the current values
+    function populateDropdown(selectElementId, allOptions, selectedOptions) {
+        const dropdown = $(`#${selectElementId}`);
+        dropdown.empty(); // Clear existing options
+        allOptions.forEach(option => {
+            dropdown.append(`<option value="${option.id}">${option.name}</option>`);
         });
-        selectedSources.forEach(sourceId => {
-            $(`#sources option[value="${sourceId}"]`).prop('selected', true);
+        selectedOptions.forEach(optionId => {
+            $(`#${selectElementId} option[value="${optionId}"]`).prop('selected', true);
         });
-        sourceSelect.trigger('change');
+        dropdown.trigger('change'); // Trigger change event if using plugins like Select2
     }
 
-    function populateSuppliersDropdown(all_suppliers, selectedSuppliers) {
-        const supplierSelect = $('#suppliers');
-        supplierSelect.empty(); 
-        all_suppliers.forEach(supplier => {
-            supplierSelect.append(`<option value="${supplier.id}">${supplier.name}</option>`);
-        });
-        selectedSuppliers.forEach(supplierId => {
-            $(`#suppliers option[value="${supplierId}"]`).prop('selected', true);
-        });
-        supplierSelect.trigger('change');
-    }
-
-    function populateGradeDropdown(all_grades, selectedGrades) {
-        const gradeSelect = $('#grade');
-        gradeSelect.empty(); 
-        all_grades.forEach(grade => {
-            gradeSelect.append(`<option value="${grade.id}">${grade.name}</option>`);
-        });
-        selectedGrades.forEach(gradeId => {
-            $(`#grade option[value="${gradeId}"]`).prop('selected', true);
-        });
-        gradeSelect.trigger('change');
-    }
-    function populateAcceptanceDropdown(all_acceptance_tests, selectedAcceptanceTests) {
-    const acceptanceSelect = $('#acceptance');
-    acceptanceSelect.empty(); 
-    all_acceptance_tests.forEach(test => {
-        acceptanceSelect.append(`<option value="${test.id}">${test.name}</option>`);
-    });
-    selectedAcceptanceTests.forEach(testId => {
-        $(`#acceptance option[value="${testId}"]`).prop('selected', true);
-    });
-    acceptanceSelect.trigger('change');
-}
-
+    // Handle edit button click
     $('.view-user-btn').on('click', function () {
-        $('#saveUserChanges').show();
-        const baseUrl = '/product/raw-material/';
-        const batchId = $(this).data('batch-id'); 
-        const rawmaterialUpdateUrl = `${baseUrl}${batchId}/`; 
+        const stepId = $(this).data('step-id');
+        const editUrl = `/process/get-step/${stepId}/`;
 
         $.ajax({
             type: 'GET',
-            url: rawmaterialUpdateUrl,
+            url: editUrl,
             success: function (response) {
-                const rawData = response.data;
-                $('#raw-material').val(rawData.name);
-                $('#shelf_life').val(rawData.shelf_life_value);
-                $('#unit').val(rawData.shelf_life_unit);
-                $('#raw_material_id').val(rawData.id);
+                const stepData = response.data;
 
-                populateSourceDropdown(rawData.all_sources, rawData.sources.map(source => source.id));
-                populateSuppliersDropdown(rawData.all_suppliers, rawData.suppliers.map(supplier => supplier.id));
-                populateGradeDropdown(rawData.all_grades, rawData.grades.map(grade => grade.id));
-                populateAcceptanceDropdown(rawData.all_acceptance_tests, rawData.acceptance_test.map(test => test.id)); 
-               
-                $('#materialpage').modal('show');
+                // Populate fields
+                $('#edit-step-id').val(stepData.id);
+                $('#edit-process-description').val(stepData.process_description);
+                $('#edit-rm-status').val(stepData.rm_status);
+                $('#edit-equipment-status').val(stepData.equipment_status);
+                $('#edit-remarks').val(stepData.remarks);
+
+                // Populate dropdowns
+                populateDropdown('edit-raw-materials', stepData.all_raw_materials, stepData.raw_materials.map(item => item.id));
+                populateDropdown('edit-equipment', stepData.all_equipment, stepData.equipment.map(item => item.id));
+
+                // Show the modal
+                $('#editProcessStepModal').modal('show');
             },
             error: function (error) {
-                console.error('Failed to fetch raw material data:', error);
+                console.error('Failed to fetch step data:', error);
             }
         });
     });
 
-    $(document).ready(function () {
-        $('#updateRawMaterial').click(function (event) {
-            event.preventDefault();
+    // Handle save button click
+    $('#save-process-step').on('click', function () {
+        const stepId = $('#edit-step-id').val();
+        const updateUrl = `/process/update-step/${stepId}/`;
 
-            var rawMaterialId = $('#raw_material_id').val();
-            var name = $('#raw-material').val();
-            var grades = Array.from(document.getElementById('grade').selectedOptions).map(option => Number(option.value)) || [];
-            var shelf_life_value = parseInt($('#shelf_life').val(), 10);
-            var shelf_life_unit = $('#unit').val();
-            var sources = Array.from(document.getElementById('sources').selectedOptions).map(option => Number(option.value)) || [];
-            var suppliers = Array.from(document.getElementById('suppliers').selectedOptions).map(option => Number(option.value)) || [];
+        const updatedData = {
+            description: $('#edit-process-description').val(),
+            rm_status: $('#edit-rm-status').val(),
+            equipment_status: $('#edit-equipment-status').val(),
+            remarks: $('#edit-remarks').val(),
+            raw_materials: $('#edit-raw-materials').val(),
+            equipment: $('#edit-equipment').val(),
+        };
 
-            const rawMaterialData = {
-                'name': name,
-                'grades': grades,
-                'shelf_life_value': shelf_life_value,
-                'shelf_life_unit': shelf_life_unit,
-                'sources': sources,
-                'suppliers': suppliers,
-            };
-
-            $.ajax({
-                type: 'PUT',
-                url: '/product/raw-material/' + rawMaterialId + '/',
-                data: JSON.stringify(rawMaterialData),
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                success: function (response) {
-                    if (response.isSuccess) {
-                        window.location.href = "/success-page/";
-                    } else {
-                        $('#error-message').text(response.message).show();
-                    }
-                },
-                error: function () {
-                    $('#error-message').text('An error occurred. Please try again.').show();
+        $.ajax({
+            type: 'POST',
+            url: updateUrl,
+            data: JSON.stringify(updatedData),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function (response) {
+                if (response.success) {
+                    location.reload(); // Reload the page on success
+                } else {
+                    alert('Update failed: ' + response.message);
                 }
-            });
+            },
+            error: function () {
+                alert('An error occurred. Please try again.');
+            }
         });
     });
+});
+
 
 
     $(document).on('click', '#delete-btn', function (e) {

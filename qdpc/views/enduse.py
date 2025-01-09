@@ -74,3 +74,49 @@ class DeleteEnduseView(BaseModelViewSet):
                 'success': False,
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
+
+class EditEnduseView(BaseModelViewSet):
+    """
+    View to handle editing of enduse using the PUT method.
+    """
+    
+    def get(self, request, enduseId):
+        try:
+            enduse = EndUse.objects.get(id=enduseId)  # Using filter to allow multiple results
+            
+
+            # Create a dictionary to store the data
+            data = {
+                
+                'id': enduse.id,
+                'name': enduse.name,
+                
+                
+            }
+            
+            return Response({'data': data}, status=status.HTTP_200_OK)  # Return serialized data
+        
+        except EndUse.DoesNotExist:
+            return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+    def put(self, request, enduseId):
+            try:
+                enduse = EndUse.objects.get(id=enduseId)
+            except EndUse.DoesNotExist:
+                return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = EnduseSerializer(enduse, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    'success': True,
+                    'message': 'Enduse updated successfully.',
+                    'data': serializer.data
+                }, status=status.HTTP_200_OK)
+            
+            return Response({
+                'success': False,
+                'message': 'Validation failed.',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+                     

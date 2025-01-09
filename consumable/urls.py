@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .views.consumable import ConsumableAdd
-from.views.consumable import ConsumableListFetchView,ConsumableDetailView,DeleteConsumableView,UpdateConsumableStatusView
+from.views.consumable import ConsumableListFetchView,ConsumableDetailView,DeleteConsumableView,UpdateConsumableStatusView,AddConsumableDocumentView
 from .views.consumable_batch import ConsumableBatchFetchView,ConsumableBatchAddView,ConsumableBatchDetailView
 ## from .views.raw_material_batch import RawMaterialAcceptanceTest
 # from .views.consumable_accepatance import ConAcceptanceTestList,ConAcceptanceTestAdd
@@ -19,6 +19,7 @@ path('consumable-add/', ConsumableAdd.as_view(), name='consumable-add'),
 path('consumable-list/<int:batch_id>/', ConsumableListFetchView.as_view(), name='consumable-update'),
 path('update-consumable-status/<str:consumableId>/', UpdateConsumableStatusView.as_view(), name='update-consumable-status'),
 path('consumable-list/delete/<int:consumableId>/',DeleteConsumableView.as_view(), name='consumable-delete'),
+path('consumable-document/add/',AddConsumableDocumentView.as_view(), name='add-consumable-document'),
 
 
 
@@ -39,6 +40,8 @@ path('consumable-batch-test-add/',ConsumableBatchAcceptenceTest.as_view(),name='
 
 # path('con-acceptance-add/',ConAcceptanceTestAdd.as_view(),name='con-acceptance-add'),
 # path('con-acceptance-list/',ConAcceptanceTestList.as_view(),name='con-acceptance-list'),
+
+
 
 # BATCH LIST DETAILED VIEW
 

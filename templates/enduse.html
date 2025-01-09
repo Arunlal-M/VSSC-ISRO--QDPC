@@ -93,6 +93,11 @@
                
                 <td>{{ end.name }}</td>
                 <td>
+
+					<a class="me-3 view-user-btn" data-bs-toggle="modal"
+										data-bs-target="#updateEnduseModal" data-id="{{ end.id }}">
+										<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+									</a>
                     <a id="delete-enduse-btn" data-id="{{ end.id }}">
                         <img src="{% static 'assets/img/icons/delete.svg' %}" alt="delete">
                     </a>
@@ -144,6 +149,45 @@
 					</div>
 				</div>
 			</div>
+
+
+<!-- Modal for Updating enduse -->
+<div class="modal fade" id="updateEnduseModal" tabindex="-1" aria-labelledby="updateEnduseModal"
+aria-hidden="true">
+<div class="modal-dialog modal-lg">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h5 class="modal-title" id="updateEnduseModalLabel">Update Enduse</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+		<div class="modal-body">
+			<form id="updateEnduseForm" class="row">
+				<input type="hidden" id="enduse_id" name="enduse_id" value="">
+
+				<!-- Fields for enduse data -->
+				<div class="col-6 mt-2">
+					<label for="enduse_n" class="form-label">Enduse Name</label>
+					<input type="text" class="form-control" id="enduse_n" name="enduse_n"
+						placeholder="enduse Name"></input>
+				</div>
+
+				
+				
+
+				
+
+				<div class="d-flex justify-content-center mt-3">
+					<button type="button" class="btn btn-primary btn-sm" id="updateEnduse">Update</button>
+				</div>
+
+			</form>
+		</div>
+	</div>
+</div>
+</div>
+
 			<!-- /Main Wrapper -->
 <!-- DELTE CONFIRMATION MODAL -->
 <div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
@@ -198,6 +242,78 @@
 			});
 		});
 	});
+
+
+// Open edit modal and populate fields
+$('.view-user-btn').on('click', function () {
+	const enduseId = $(this).data('id');
+	const editUrl = `/enduse/view/${enduseId}/`;
+
+	$.ajax({
+		type: 'GET',
+		url: editUrl,
+		success: function (response) {
+			if (response && response.data) {
+				$('#enduse_id').val(response.data.id);
+				$('#enduse_n').val(response.data.name);
+				
+
+				
+
+				// Clear any previous error messages
+				$('#error-message').hide().text('');
+
+				$('#updateEnduseModal').modal('show');
+			} else {
+				alert('Failed to load data: ' + response.message);
+			}
+		},
+		error: function () {
+			alert('Failed to load data. Please try again.');
+		}
+	});
+
+
+	// Handle update submission
+	$('#updateEnduse').off('click').on('click', function () {
+		const enduseId = $('#enduse_id').val();
+		const updateUrl = `/enduse/edit/${enduseId}/`;
+
+		const updatedData = {
+			name: $('#enduse_n').val(),
+			
+		};
+
+		$.ajax({
+			type: 'PUT',
+			url: updateUrl,
+			data: JSON.stringify(updatedData),
+			contentType: 'application/json',
+			headers: {
+				'X-CSRFToken': '{{ csrf_token }}'
+			},
+			success: function (response) {
+				if (response.success) {
+					location.reload(); // Reload the page on success
+				} else {
+					alert('Update failed: ' + response.message);
+				}
+			},
+			error: function () {
+				alert('An error occurred. Please try again.');
+			}
+		});
+	});
+});
+
+
+
+
+
+
+
+
+
 
 
 	$(document).ready(function () {
