@@ -66,8 +66,6 @@
                     </div>
 
                     
-
-                    
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                             <label for="shelf_life_type">Shelf Life</label>
@@ -84,37 +82,18 @@
                         <div class="form-group">
                             <label for="shelf_life_value">Shelf Life Duration</label>
                             <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control" placeholder="Enter duration">
-                            <label for="shelf_life_type">Shelf Life</label>
-                            <select id="shelf_life_type" name="shelf_life_type" class="form-control">
-                                <option value="">Choose Type</option>
-                                <option value="tbd">TBD (To Be Decided)</option>
-                                <option value="not_applicable">Not Applicable</option>
-                                <option value="add_duration">Add Duration</option>
-                            </select>
                         </div>
                     </div>
-                    
-                    <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
-                        <div class="form-group">
-                            <label for="shelf_life_value">Shelf Life Duration</label>
-                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control" placeholder="Enter duration">
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
                     
                     <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
                         <div class="form-group">
                             <label for="unit">Shelf Life Period</label>
-                            <select id="unit" name="unit" class="form-control">
                             <select id="unit" name="unit" class="form-control">
                                 <option value="days">Days</option>
                                 <option value="months">Months</option>
                             </select>
                         </div>
                     </div>
-
-
 
 
                     <div class="col-lg-12">
@@ -411,33 +390,29 @@
         $('#submitButton').click(function (event) {
             event.preventDefault();
 
-            var name = $('#raw-material').val().trim();
-            var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
-            var shelf_life_type = $('#shelf_life_type').val();
-            var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
-            var shelf_life_unit = $('#unit').val();
-            var precertified = $('#precertified').is(':checked');
-            var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
-            var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
-            var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
+        var name = $('#raw-material').val().trim();
+        var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
+        var shelf_life_type = $('#shelf_life_type').val();
+        var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
+        var shelf_life_unit = $('#unit').val();
+        var precertified = $('#precertified').is(':checked');
+        var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
+        var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
+        var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
 
             // Validation for shelf life value
-            if (shelf_life_type === 'add_duration' && (isNaN(shelf_life_value) || shelf_life_value <= 0)) {
-                $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
-                return;
-            }
+        if (shelf_life_type === 'add_duration' && (isNaN(shelf_life_value) || shelf_life_value <= 0)) {
+            $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
+            return;
+        }
 
-            // Check if shelf_life_type is 'tbd' or 'not applicable' and reset values to null
-            else if (shelf_life_type === 'tbd' || shelf_life_type === 'not applicable') {
-                shelf_life_value = null;
-                shelf_life_unit = null;
-                return
-            }
+             // Handle case for 'TBD' or 'Not Applicable'
+        if (shelf_life_type === 'tbd' || shelf_life_type === 'not_applicable') {
+            shelf_life_value = null;  // Set shelf_life_value to null for these options
+            shelf_life_unit = null;   // Reset shelf_life_unit as well
+        }
 
 
-            // Get the current date
-            var currentDate = new Date();
-            var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
             // Get the current date
             var currentDate = new Date();
             var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
