@@ -1,5 +1,5 @@
 
-from qdpc.core.modelviewset import BaseModelViewSet
+from qdpc.core.modelviewset import BaseModelViewSet,BaseViewSet
 from rest_framework import status
 from rest_framework.response import Response
 from qdpc.core import constants
@@ -13,9 +13,9 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
 
-class UserDashboard(BaseModelViewSet):
+class UserDashboard(BaseViewSet):
     """User Dashborad for the logged in user"""
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication]
     
 
     def get(self, request):

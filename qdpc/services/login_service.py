@@ -44,10 +44,10 @@ def send_reset_password_email(email, reset_url,username):
 
 class LoginService:
     @classmethod
-    def login_username(cls,username, password):
+    def login_username(cls,username, password,request):
         if username and password:
             user_authenticator = UserAuthenticator()
-            success, status_code, data, message = user_authenticator.user_login(username, password)
+            success, status_code, data, message = user_authenticator.user_login(username, password,request)
         else:
             print("enered else")
             message = constants.USERNAME_PASSWORD_REQUIRED

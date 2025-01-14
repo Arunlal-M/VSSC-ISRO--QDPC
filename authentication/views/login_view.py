@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from qdpc.core.modelviewset import BaseModelViewSet
+from qdpc.core.modelviewset import BaseModelViewSet,BaseViewSet
 from rest_framework import status
 from rest_framework.response import Response
 from qdpc.core import constants
@@ -9,7 +9,7 @@ from qdpc.services.login_service import LoginService
 from django.shortcuts import render, redirect
 
 from qdpc_core_models.models.user import User
-class Login(BaseModelViewSet):
+class Login(BaseViewSet):
     """ Login Api for qdpc application"""
 
     def get(self,request):
@@ -25,7 +25,7 @@ class Login(BaseModelViewSet):
             if serializer.is_valid():
                 username = serializer.validated_data.get('username')
                 password = serializer.validated_data.get('password')
-                success, status_code, data, message = LoginService.login_username(username=username,password=password)
+                success, status_code, data, message = LoginService.login_username(username=username,password=password,request=request)
             else:
                 pass
         
