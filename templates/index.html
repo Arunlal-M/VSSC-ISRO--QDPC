@@ -1,74 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-        <meta name="description" content="POS - Bootstrap Admin Template">
-        <meta name="keywords" content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern,  html5, responsive">
-        <meta name="author" content="Dreamguys - Bootstrap Admin Template">
-        <meta name="robots" content="noindex, nofollow">
-        {% load static %}
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUa1zYzBSlzLlNZOSfBu4cuZX3PB1z7xO1pqb4hlrjjoC1lzI3LOWjBlBi8M" crossorigin="anonymous">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <meta name="description" content="POS - Bootstrap Admin Template">
+    <meta name="keywords"
+        content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern,  html5, responsive">
+    <meta name="author" content="Dreamguys - Bootstrap Admin Template">
+    <meta name="robots" content="noindex, nofollow">
+    {% load static %}
 
-<!-- jQuery (required for Select2) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUa1zYzBSlzLlNZOSfBu4cuZX3PB1z7xO1pqb4hlrjjoC1lzI3LOWjBlBi8M" crossorigin="anonymous">
 
-<!-- Favicon -->
-<link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicon.png' %}">
+    <!-- jQuery (required for Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicon.png' %}">
 
-<!-- animation CSS -->
-<link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
 
-<!-- Datatable CSS -->
-<link rel="stylesheet" href="{% static 'assets/css/dataTables.bootstrap4.min.css' %}">
+    <!-- animation CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
 
-<!-- Select2 CSS -->
-<link rel="stylesheet" href="{% static 'assets/plugins/select2/css/select2.min.css' %}">
+    <!-- Datatable CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/dataTables.bootstrap4.min.css' %}">
 
-<!-- Fontawesome CSS -->
-<link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
-<link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
+    <!-- Select2 CSS -->
+    <link rel="stylesheet" href="{% static 'assets/plugins/select2/css/select2.min.css' %}">
 
-<!-- Main CSS -->
-<link rel="stylesheet" href="{% static 'assets/css/style2.css' %}">
+    <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
 
-<!-- Include Select2 CSS from CDN -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/style2.css' %}">
+
+    <!-- Include Select2 CSS from CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 
-    </head>
+</head>
 
-    <body>
-        <div id="global-loader" >
-            <div class="whirly-loader"> </div>
-        </div>
-        <!-- Main Wrapper -->
-        <div class="main-wrapper">
+<body>
+    <div id="global-loader">
+        <div class="whirly-loader"> </div>
+    </div>
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
 
-            <!-- Header -->
+        <!-- Header -->
         <div class="header">
-        
+
             <!-- Logo -->
-             <div class="header-left active">
+            <div class="header-left active">
                 <a href="index.html" class="logo logo-normal">
-                    <img src="{% static 'assets/img/neww.png' %}"  alt="">
+                    <img src="{% static 'assets/img/neww.png' %}" alt="">
                 </a>
                 <a href="index.html" class="logo logo-white">
-                    <img src="{% static 'assets/img/logo-white.png' %}"  alt="">
+                    <img src="{% static 'assets/img/logo-white.png' %}" alt="">
                 </a>
                 <a href="index.html" class="logo-small">
-                    <img src="{% static 'assets/img/logo-small.png' %}"  alt="">
+                    <img src="{% static 'assets/img/logo-small.png' %}" alt="">
                 </a>
                 <a id="toggle_btn" href="javascript:void(0);">
                     <i data-feather="chevrons-left" class="feather-16"></i>
                 </a>
             </div>
             <!-- /Logo -->
-            
+
             <a id="mobile_btn" class="mobile_btn" href="#sidebar">
                 <span class="bar-icon">
                     <span></span>
@@ -76,14 +79,14 @@
                     <span></span>
                 </span>
             </a>
-            
+
             <!-- Header Menu -->
             <ul class="nav user-menu">
-            
+
                 <!-- Search -->
                 <li class="nav-item nav-searchinputs">
                     <div class="top-nav-search">
-                        
+
                         <a href="javascript:void(0);" class="responsive-search">
                             <i class="fa fa-search"></i>
                         </a>
@@ -99,10 +102,11 @@
                     </div>
                 </li>
                 <!-- /Search -->
-            
+
                 <!-- Flag -->
                 <li class="nav-item dropdown has-arrow flag-nav nav-item-box">
-                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);" role="button">
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);"
+                        role="button">
                         <i data-feather="globe"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right">
@@ -152,8 +156,11 @@
                                                 <img alt="" src="{% static 'assets/img/profiles/avatar-02.jpg' %}">
                                             </span>
                                             <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">John Doe</span> added new task <span class="noti-title">Patient appointment booking</span></p>
-                                                <p class="noti-time"><span class="notification-time">4 mins ago</span></p>
+                                                <p class="noti-details"><span class="noti-title">John Doe</span> added
+                                                    new task <span class="noti-title">Patient appointment booking</span>
+                                                </p>
+                                                <p class="noti-time"><span class="notification-time">4 mins ago</span>
+                                                </p>
                                             </div>
                                         </div>
                                     </a>
@@ -165,8 +172,11 @@
                                                 <img alt="" src="{% static 'assets/img/profiles/avatar-03.jpg' %}">
                                             </span>
                                             <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Tarah Shropshire</span> changed the task name <span class="noti-title">Appointment booking with payment gateway</span></p>
-                                                <p class="noti-time"><span class="notification-time">6 mins ago</span></p>
+                                                <p class="noti-details"><span class="noti-title">Tarah Shropshire</span>
+                                                    changed the task name <span class="noti-title">Appointment booking
+                                                        with payment gateway</span></p>
+                                                <p class="noti-time"><span class="notification-time">6 mins ago</span>
+                                                </p>
                                             </div>
                                         </div>
                                     </a>
@@ -178,8 +188,12 @@
                                                 <img alt="" src="{% static 'assets/img/profiles/avatar-06.jpg' %}">
                                             </span>
                                             <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Misty Tison</span> added <span class="noti-title">Domenic Houston</span> and <span class="noti-title">Claire Mapes</span> to project <span class="noti-title">Doctor available module</span></p>
-                                                <p class="noti-time"><span class="notification-time">8 mins ago</span></p>
+                                                <p class="noti-details"><span class="noti-title">Misty Tison</span>
+                                                    added <span class="noti-title">Domenic Houston</span> and <span
+                                                        class="noti-title">Claire Mapes</span> to project <span
+                                                        class="noti-title">Doctor available module</span></p>
+                                                <p class="noti-time"><span class="notification-time">8 mins ago</span>
+                                                </p>
                                             </div>
                                         </div>
                                     </a>
@@ -191,8 +205,11 @@
                                                 <img alt="" src="{% static 'assets/img/profiles/avatar-17.jpg' %}">
                                             </span>
                                             <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Rolland Webber</span> completed task <span class="noti-title">Patient and Doctor video conferencing</span></p>
-                                                <p class="noti-time"><span class="notification-time">12 mins ago</span></p>
+                                                <p class="noti-details"><span class="noti-title">Rolland Webber</span>
+                                                    completed task <span class="noti-title">Patient and Doctor video
+                                                        conferencing</span></p>
+                                                <p class="noti-time"><span class="notification-time">12 mins ago</span>
+                                                </p>
                                             </div>
                                         </div>
                                     </a>
@@ -204,8 +221,11 @@
                                                 <img alt="" src="{% static 'assets/img/profiles/avatar-13.jpg' %}">
                                             </span>
                                             <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Bernardo Galaviz</span> added new task <span class="noti-title">Private chat module</span></p>
-                                                <p class="noti-time"><span class="notification-time">2 days ago</span></p>
+                                                <p class="noti-details"><span class="noti-title">Bernardo Galaviz</span>
+                                                    added new task <span class="noti-title">Private chat module</span>
+                                                </p>
+                                                <p class="noti-time"><span class="notification-time">2 days ago</span>
+                                                </p>
                                             </div>
                                         </div>
                                     </a>
@@ -218,7 +238,7 @@
                     </div>
                 </li>
                 <!-- /Notifications -->
-                
+
                 <li class="nav-item nav-item-box">
                     <a href="generalsettings.html"><i data-feather="settings"></i></a>
                 </li>
@@ -233,7 +253,7 @@
                                     <span class="user-name">Test User</span>
                                     <span class="user-role">Super Admin</span>
                                 </span>
-                            
+
                             </span>
                         </span>
                     </a>
@@ -241,7 +261,7 @@
                         <div class="profilename">
                             <div class="profileset">
                                 <span class="user-img"><img src="{% static 'assets/img/profiles/avator1.jpg' %}" alt="">
-                                <span class="status online"></span></span>
+                                    <span class="status online"></span></span>
                                 <div class="profilesets">
                                     <div class="profilesets">
                                         <h6>Test User</h6>
@@ -250,92 +270,141 @@
                                 </div>
                             </div>
                             <hr class="m-0">
-                            <a class="dropdown-item" href="profile.html"> <i class="me-2"  data-feather="user"></i> My Profile</a>
-                            <a class="dropdown-item" href="generalsettings.html"><i class="me-2" data-feather="settings"></i>Settings</a>
+                            <a class="dropdown-item" href="profile.html"> <i class="me-2" data-feather="user"></i> My
+                                Profile</a>
+                            <a class="dropdown-item" href="generalsettings.html"><i class="me-2"
+                                    data-feather="settings"></i>Settings</a>
                             <hr class="m-0">
-                            <a class="dropdown-item logout pb-0" id="log-out">
-                                <img src="{% static 'assets/img/icons/log-out.svg' %}"  href="{% url 'login_view' %}" class="me-2" alt="img">Logout
+                            <a class="dropdown-item logout pb-0" id="log-out" href="#">
+                                <img src="{% static 'assets/img/icons/log-out.svg' %}" class="me-2" alt="img">Logout
                             </a>
+
                         </div>
                     </div>
                 </li>
             </ul>
             <!-- /Header Menu -->
-            
+
             <!-- Mobile Menu -->
             <div class="dropdown mobile-user-menu">
-                <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
+                <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+                    aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
                 <div class="dropdown-menu dropdown-menu-right">
                     <a class="dropdown-item" href="profile.html">My Profile</a>
                     <a class="dropdown-item" href="generalsettings.html">Settings</a>
                     <a class="dropdown-item logout pb-0" id="log-out">
-                        <img src="{% static 'assets/img/icons/log-out.svg' %}"  href="{% url 'login_view' %}" class="me-2" alt="img">Logout
+                        <img src="{% static 'assets/img/icons/log-out.svg' %}" href="{% url 'logout_view' %}"
+                            class="me-2" alt="img">Logout
                     </a>
                 </div>
             </div>
             <!-- /Mobile Menu -->
         </div>
         <!-- Header -->
-        
-			 <!-- Sidebar -->
-              
-             {% include 'sidebar.html' %}
 
-            <!-- /Sidebar -->
+        <!-- Sidebar -->
 
-            {% block content %}
-            {% endblock %}
-           
-  <!-- JS Libraries -->
+        {% include 'sidebar.html' %}
 
-<!-- jQuery (required for Select2) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <!-- /Sidebar -->
 
-<!-- Popper.js -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+        {% block content %}
+        {% endblock %}
 
-<!-- Bootstrap Core JS -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
-<script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+        <!-- JS Libraries -->
 
-<!-- Feather Icon JS -->
-<script src="{% static 'assets/js/feather.min.js' %}"></script>
+        <!-- jQuery (required for Select2) -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Slimscroll JS -->
-<script src="{% static 'assets/js/jquery.slimscroll.min.js' %}"></script>
+        <!-- Popper.js -->
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 
-<!-- Datatable JS -->
-<script src="{% static 'assets/js/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'assets/js/dataTables.bootstrap4.min.js' %}"></script>
+        <!-- Bootstrap Core JS -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+        <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
 
-<!-- Select2 JS -->
-<script src="{% static 'assets/plugins/select2/js/select2.min.js' %}"></script>
+        <!-- Feather Icon JS -->
+        <script src="{% static 'assets/js/feather.min.js' %}"></script>
 
-<!-- Sweetalert 2 -->
-<script src="{% static 'assets/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
-<script src="{% static 'assets/plugins/sweetalert/sweetalerts.min.js' %}"></script>
+        <!-- Slimscroll JS -->
+        <script src="{% static 'assets/js/jquery.slimscroll.min.js' %}"></script>
 
-<!-- Apexcharts -->
-<script src="{% static 'assets/plugins/apexchart/apexcharts.min.js' %}"></script>
-<script src="{% static 'assets/plugins/apexchart/chart-data.js' %}"></script>
+        <!-- Datatable JS -->
+        <script src="{% static 'assets/js/jquery.dataTables.min.js' %}"></script>
+        <script src="{% static 'assets/js/dataTables.bootstrap4.min.js' %}"></script>
 
-<!-- Custom JS -->
-<script src="{% static 'assets/js/script.js' %}"></script>
+        <!-- Select2 JS -->
+        <script src="{% static 'assets/plugins/select2/js/select2.min.js' %}"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqxarZxrWEsBhDbE6z3nmKaLQ0fvbXtKp752kRr9i9dtK5vf5RkM2R5iJoKtu" crossorigin="anonymous"></script>
+        <!-- Sweetalert 2 -->
+        <script src="{% static 'assets/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+        <script src="{% static 'assets/plugins/sweetalert/sweetalerts.min.js' %}"></script>
+
+        <!-- Apexcharts -->
+        <script src="{% static 'assets/plugins/apexchart/apexcharts.min.js' %}"></script>
+        <script src="{% static 'assets/plugins/apexchart/chart-data.js' %}"></script>
+
+        <!-- Custom JS -->
+        <script src="{% static 'assets/js/script.js' %}"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-w76AqxarZxrWEsBhDbE6z3nmKaLQ0fvbXtKp752kRr9i9dtK5vf5RkM2R5iJoKtu"
+            crossorigin="anonymous"></script>
 
 
-    </body>
-  
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('log-out').addEventListener('click', function(event) {
-                event.preventDefault(); // Prevent the default anchor behavior
-                // Use the Django URL template tag to get the URL for login_view
-                window.location.href = '{% url "login_view" %}';
-            });
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('log-out').addEventListener('click', function (event) {
+            event.preventDefault(); // Prevent the default anchor behavior
+            // Use the Django URL template tag to get the URL for login_view
+            window.location.href = '{% url "login_view" %}';
         });
-    </script>
+    });
+
+
+    document.getElementById('log-out').addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent default link behavior
+
+        fetch('/logout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'), // CSRF token for security
+            },
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Redirect or show success message
+                    window.location.href = '/login/';
+                } else {
+                    console.error('Logout failed:', response);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === name + '=') {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+</script>
 
 {% block scripts %} {% endblock %}
 

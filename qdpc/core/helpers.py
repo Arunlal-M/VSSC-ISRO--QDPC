@@ -8,6 +8,7 @@ from django.contrib.auth.models import  Group
 from qdpc_core_models.models.role import Role
 from django.utils.html import strip_tags
 from django.core.mail import send_mail
+from django.contrib.auth import login, authenticate
 from django.conf import settings
 from django.template.loader import render_to_string
 
@@ -33,7 +34,7 @@ class ResponseInfo(object):
 
 class UserAuthenticator:
     """ Login for user"""
-    def user_login(self, username, password):
+    def user_login(self, username, password,request):
         print("enterd userlogin")
         """
         This function will process login function and
@@ -42,8 +43,10 @@ class UserAuthenticator:
         response_data = {}
         user_data = User.objects.filter(username__iexact=username).first()
         user_exist, user_status = self.check_user_exist(user_data, password)
-
+        usertest = authenticate(request, username=username, password=password)
+        print(usertest)
         if user_exist and user_status:
+            login(request, usertest)
             response_data =  LogininfoSerializer(user_data).data
             print(response_data,"response data")
             success = True
