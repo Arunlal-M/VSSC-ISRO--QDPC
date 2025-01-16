@@ -20,6 +20,8 @@
 								<div class="form-group">
 									<label> Name</label>
 									<input type="text" id="enduse_name" name="enduse_name" class="form-control">
+									<div id="name-error" style="color: red; display: none;"></div>
+
 								</div>
 							</div>
 
@@ -230,14 +232,20 @@ aria-hidden="true">
 				},
 				success: function (response) {
 
+					$('#name-error').hide().text('');
+
 					if (response.success) {
 						window.location.reload()
 					} else {
-						$('#error-message').text(response.message).show(); // Show error message
+						//$('#error-message').text(response.message).show(); // Show error message
+						$('#name-error').text(response.result[0].name).show();
+
 					}
 				},
 				error: function () {
-					$('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+					//$('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+					$('#name-error').text('An error occurred. Please try again.').show(); // Show error message
+
 				}
 			});
 		});
