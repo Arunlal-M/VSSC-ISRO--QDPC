@@ -21,6 +21,7 @@ urlpatterns = [
     path('process/',include('process.urls')),
     path('consumable/',include('consumable.urls')),
     path('component/',include('component.urls')),
+    path('report/',include('report.urls')),
 
     path('sources/', SourceListView.as_view(), name='source-list'),
     path('sources/view/<int:sourceId>/', EditSourceView.as_view(), name='source-view'),

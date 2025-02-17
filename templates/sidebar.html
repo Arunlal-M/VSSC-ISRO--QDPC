@@ -9,7 +9,7 @@
                         <li>
                             <a href="{% url 'user-dashboard' %}"><i data-feather="grid"></i><span>Dashboard</span></a>
                         </li>
-                        
+
                         <li>
                             <a href="{% url 'equipment-list' %}"><i data-feather="grid"></i><span>Equipments</span></a>
                         </li>
@@ -25,27 +25,31 @@
                         </li>
                         <li>
                             <a href="{% url 'raw-material-batch-fetch' %}"><i data-feather="grid"></i><span>Rawmaterial
-                                    batch</span></a>
+                                    Batch</span></a>
                         </li>
                         <li>
                             <a href="{% url 'consumable-list' %}"><i data-feather="grid"></i><span>Consumable</span></a>
                         </li>
                         <li>
                             <a href="{% url 'consumable-batch-fetch' %}"><i data-feather="grid"></i><span>Consumable
-                                    batch</span></a>
+                                    Batch</span></a>
                         </li>
                         <li>
                             <a href="{% url 'component-list' %}"><i data-feather="grid"></i><span>Component</span></a>
                         </li>
                         <li>
                             <a href="{% url 'component-batch-fetch' %}"><i data-feather="grid"></i><span>Component
-                                    batch</span></a>
+                                    Batch</span></a>
+                        </li>
+                        <li>
+                            <a href="{% url 'process_list' %}"><i data-feather="grid"></i><span>Process</span></a>
                         </li>
                         <li>
                             <a href="{% url 'product-view' %}"><i data-feather="grid"></i><span>Product</span></a>
                         </li>
                         <li>
-                            <a href="{% url 'process_list' %}"><i data-feather="grid"></i><span>Process</span></a>
+                            <a href="{% url 'product-batch-list' %}"><i data-feather="grid"></i><span>Product
+                                    Batch</span></a>
                         </li>
 
 
@@ -64,13 +68,14 @@
                         <li>
                             <a href="{% url 'grade-list' %}"><i data-feather="grid"></i><span>Grade</span></a>
                         </li>
-                        
+
                         <li>
                             <a href="{% url 'enduse-list' %}"><i data-feather="grid"></i><span>Enduse</span></a>
                         </li>
 
                         <li>
-                            <a href="{% url 'documenttype-list' %}"><i data-feather="grid"></i><span>Document Type</span></a>
+                            <a href="{% url 'documenttype-list' %}"><i data-feather="grid"></i><span>Document
+                                    Type</span></a>
                         </li>
 
                         <li>
@@ -83,9 +88,25 @@
                         <li>
                             <a href="{% url 'source-list' %}"><i data-feather="grid"></i><span>Source</span></a>
                         </li>
-                        
+
                         <li>
                             <a href="{% url 'supplier-list' %}"><i data-feather="grid"></i><span>Supplier</span></a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="submenu-open">
+                    <h6 class="submenu-hdr">Report Generation</h6>
+                    <ul>
+                        <li>
+                            <a href="#"><i data-feather="grid"></i><span>Process Log-Sheet</span></a>
+                        </li>
+                        <li>
+                            <a href="#"><i data-feather="grid"></i><span>Stage Clearance</span></a>
+                        </li>
+                        <li>
+                            <a href="{% url 'generate_qar' %}"><i data-feather="grid"></i><span>Q.A.R-Report</span></a>
+                            {% comment %} {% url 'generate_qar' %} {% endcomment %}
                         </li>
                     </ul>
                 </li>
@@ -99,7 +120,7 @@
                     </ul>
                 </li>
 
-                
+
             </ul>
         </div>
     </div>

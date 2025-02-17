@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Assessment Report</title>
+    {% load static %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .page {
+            width: 100%;
+            page-break-before: always;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .font-large {
+            font-size: 16px;
+        }
+
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .br-none {
+            border-right: none;
+        }
+
+        .bl-none {
+            border-left: none;
+        }
+
+        .text-end {
+            text-align: end;
+        }
+
+        .title {
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .bold {
+            font-weight: 600;
+        }
+
+        .min-w {
+            width: 150px;
+        }
+
+        .min-w-50 {
+            width: 250px;
+        }
+
+        .m-0 {
+            margin: 0;
+        }
+
+        .mt-1 {
+            margin-top: 1em;
+        }
+
+        .max-width-50 {
+            max-width: 50px;
+            width: 50px;
+        }
+
+        .pl-1 {
+            padding-left: 1em;
+        }
+
+        .pl-15 {
+            padding-left: 1.5em !important;
+        }
+
+        .mw-adjust {
+            margin-left: 1.5em;
+            width: 97%;
+        }
+
+        .p-0 {
+            padding: 0;
+        }
+
+        .line-height-1 {
+            line-height: 1.8;
+        }
+
+        .br-solid-5 {
+            border: 5px solid;
+        }
+
+        .footer-line {
+            border-top: 1px solid skyblue;
+            padding-top: 0.3em;
+            margin-top: 2em;
+        }
+        .container-br{
+            padding: 0 1em 1em;
+            border: 1px solid;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page container-br">
+            <table>
+                <tr>
+                    <th class="br-none">Report No: VSSC/QDPC/AK/F1691/2024/Rec.: 2451</th>
+                    <th class="bl-none text-end">Date: 25-10-2024</th>
+                </tr>
+            </table>
+            <p class="title">गुणवत्ता प्रभाग नोदक एवं रसायन / QUALITY DIVISION PROPELLANTS & CHEMICALS<br />
+                क्यू.आर.पी.जी/ एस.आर.एस / QRPG/SRS<br />
+                विक्रम साराभाई अंतरिक्ष केंद्र / VIKRAM SARABHAI SPACE CENTRE<br />
+                तिरुवनंतपुरम-६९५०२२ / THIRUVANANTHAPURAM – 695022<br />
+            </p>
+            <div class="image-container">
+                <img src="{% static 'assets/images/logo.png' %}" alt="Header Image" width="auto" height="120px">
+            </div>
+            <table>
+                <tr>
+                    <th colspan="2" class="text-center">Quality Assessment Report</th>
+                </tr>
+                <tr>
+                    <td class="bold">Product</td>
+                    <td class="bold">Product-A</td>
+                </tr>
+                <tr>
+                    <td class="bold">Batch Nos.</td>
+                    <td class="bold">Div-1/Product-A/0116/2024 to <br />Div-1/Product-A/0120/2024 (5 batches)</td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td class="text-center">प्रस्तुतकर्ता <br>Prepared by </td>
+                    <td class="text-center min-w-50">Engineer-1 <br>Engineer-2 </td>
+                    <td class="min-w"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">समीक्षाकर्ता  <br>Reviewed by </td>
+                    <td class="text-center min-w-50">Section Head</td>
+                    <td class="min-w"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">अनुमोदनकर्ता  <br>Approved by </td>
+                    <td class="text-center min-w-50">Division Head</td>
+                    <td class="min-w"></td>
+                </tr>
+            </table>
+            <p class="m-0 mt-1 bold">Circulation List: </p>
+            <table class="m-0">
+                <tr>
+                    <td class="max-width-50">To</td>
+                    <td colspan="2">Person-1 </td>
+                </tr>
+                <tr>
+                    <td class="max-width-50" rowspan="2">Cc</td>
+                    <td>Person-2</td>
+                    <td>Person-4</td>
+                </tr>
+                <tr>
+                    <td>Person-3</td>
+                    <td>Person-5</td>
+                </tr>
+            </table>
+            <div class="footer text-end footer-line">Page | 1</div>
+        </div>
+        <div class="page container-br mt-1">
+            <p class="m-0 mt-1 bold font-large">1. Product Identification </p>
+            <p class="m-0 mt-1 bold pl-15">Product Name: Product-A</p>
+            <table class="mw-adjust">
+                <tr>
+                    <th>B. No.</th>
+                    <th>D.O.M</th>
+                    <th>D.O.E</th>
+                    <th>Batch Size, g</th>
+                </tr>
+                <tr>
+                    <td>Div-1/Product-A/0116/2024</td>
+                    <td>27.07.2024</td>
+                    <td>26.07.2025</td>
+                    <td>2250</td>
+                </tr>
+                <tr>
+                    <td>Div-1/Product-A/0117/2024</td>
+                    <td>27.07.2024</td>
+                    <td>26.07.2025</td>
+                    <td>2310</td>
+                </tr>
+                <tr>
+                    <td>Div-1/Product-A/0118/2024</td>
+                    <td>27.07.2024</td>
+                    <td>26.07.2025</td>
+                    <td>2260</td>
+                </tr>
+                <tr>
+                    <td>Div-1/Product-A/0119/2024</td>
+                    <td>25.08.2024</td>
+                    <td>24.08.2025</td>
+                    <td>2225</td>
+                </tr>
+                <tr>
+                    <td>Div-1/Product-A/0120/2024</td>
+                    <td>25.08.2024</td>
+                    <td>24.08.2025</td>
+                    <td>2230</td>
+                </tr>
+            </table>
+            <p class="m-0 mt-1 bold font-large">2. References</p>
+            <p class="m-0 mt-1 pl-15"><strong>2.1.</strong> Process document for product-A, Document No:
+                ABCD/DiV2/PD/01/2021 dated July 2021</p>
+            <p class="m-0 mt-1 pl-15"><strong>2.2.</strong> Log sheets from Div-1 </p>
+            <p class="m-0 mt-1 bold font-large">3. End use: For PSLV launch vehicle (Specific use)</p>
+            <p class="m-0 mt-1 bold font-large">4. Assessment by review forums</p>
+            <p class="m-0 mt-1 pl-15"><strong>4.1.</strong> Remark-1</p>
+            <p class="m-0 mt-1 pl-15"><strong>4.2.</strong> Remark-2</p>
+            <p class="m-0 mt-1 pl-15"><strong>4.3.</strong> ---</p>
+            <p class="m-0 mt-1 pl-15"><strong>4.4.</strong> ---</p>
+            <p class="m-0 mt-1 bold font-large">5. QA observation and remarks</p>
+            <p class="m-0 mt-1 pl-15"><strong>5.1.</strong> Raw materials used in the processing product-A were analysed
+                as per Ref. 2.1. Properties of all the raw materials meet the specification. (Ref. Annexure-I)</p>
+            <p class="m-0 mt-1 pl-15"><strong>5.2.</strong> Processing of all the batches was carried out at as per Ref
+                2.1.</p>
+            <p class="m-0 mt-1 pl-15"><strong>5.3.</strong> Acceptance of the product were carried and the test results
+                meet the specification (Ref AnnexureIIIA).</p>
+            <p class="m-0 mt-1 pl-15"><strong>5.4.</strong> Comments regarding and NCs and NC management, if any</p>
+            <p class="m-0 mt-1 pl-15"><strong>5.5.</strong> Remark-1</p>
+            <p class="m-0 mt-1 pl-15"><strong>5.6.</strong> Remark-2</p>
+            <p class="m-0 mt-1 bold font-large">6. Non-conformances: </p>
+            <p class="m-0 mt-1 pl-15"><strong>6.1.</strong> NC-1</p>
+            <p class="m-0 mt-1 pl-15"><strong>6.2.</strong> NC-2</p>
+            <p class="m-0 mt-1 bold font-large">7. Storage Condition: </p>
+            <p class="m-0 mt-1 pl-15"><strong>7.1.</strong> As the product is moisture sensitive, it is to be stored in
+                airtight containers under dry nitrogen/dry argon blanket and kept in ambient condition.</p>
+
+            <div class="footer text-end footer-line">Page | 2</div>
+
+        </div>
+
+        <div class="page container-br mt-1">
+
+            <p class="m-0 mt-1 bold font-large">8. QA Recommendation</p>
+            <p class="m-0 mt-1 pl-15">o Recommendation-1</p>
+            <p class="m-0 mt-1 pl-15">o Recommendation-2</p>
+
+            <p class="m-0 mt-1 bold font-large">9. Pending actions</p>
+            <p class="m-0 mt-1 pl-15">o Actions-1</p>
+            <p class="m-0 mt-1 pl-15">o Actions-2</p>
+
+            <p class="m-0 mt-1 bold font-large">10. Disposition</p>
+
+            <table>
+                <tr>
+                    <td colspan="2" class="pl-15 line-height-1 br-solid-5">• <strong>Product-1 with batch nos.</strong>
+                        Div-1/Product-A/0116/2024 <strong>to</strong> Div-1/Product-A/0116/2024
+                        <strong>(5 batches) <br /><span class="pl-15">are cleared for further use.</span></strong>
+                        <br />• <strong>The following points are to be noted:
+                            <ul class="m-0 p-0 pl-15">
+                                <li>Note-1 </li>
+                                <li>Note-2 </li>
+                                <li>Note-3 </li>
+                            </ul>
+                        </strong>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="footer text-end footer-line">Page | 3</div>
+
+        </div>
+
+        <div class="page container-br mt-1">
+            <p class="text-end bold font-large m-0 mt-1"><u>Annexure-I</u></p>
+            <p class="text-center font-large m-0 bold">Acceptance test of raw materials</p>
+
+            <table>
+                <tr>
+                    <th>Sl. No.</th>
+                    <th class="text-center">Parameters</th>
+                    <th class="text-center">Specification</th>
+                    <th class="text-center">Test Results</th>
+                    <th class="text-center">Test report reference No.</th>
+                </tr>
+                <tr>
+                    <td rowspan="4" class="text-center"><strong>1</strong></td>
+                    <td colspan="4"><strong>RM-1</strong></td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-1</td>
+                    <td>Colourless liquid</td>
+                    <td>Colourless liquid</td>
+                    <td class="text-center">---------</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-2</td>
+                    <td>60 - 70</td>
+                    <td>58.7</td>
+                    <td rowspan="2" class="text-center">4S89XCV, Dt: 29.07.2024</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-3</td>
+                    <td>
+                        < 0.5 </td>
+                    <td>0.08</td>
+                </tr>
+                <tr>
+                    <td rowspan="4" class="text-center"><strong>2</strong></td>
+                    <td colspan="4"><strong>RM-2</strong></td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-1</td>
+                    <td>Colourless viscous solid</td>
+                    <td>Colourless viscous solid</td>
+                    <td class="text-center">---------</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-2</td>
+                    <td>1300 - 1500</td>
+                    <td>1437</td>
+                    <td rowspan="2" class="text-center">5S90XCV, Dt:29.04.2024</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-3</td>
+                    <td>
+                        < 1.0 </td>
+                    <td>0.19</td>
+                </tr>
+                <tr>
+                    <td rowspan="3" class="text-center"><strong>3</strong></td>
+                    <td colspan="4"><strong>RM-3</strong></td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-1</td>
+                    <td>Colourless solid </td>
+                    <td>Colourless solid</td>
+                    <td class="text-center">---------</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-2</td>
+                    <td>1220 - 1260 </td>
+                    <td>1230</td>
+                    <td class="text-center">8X62FGH, Dt: 30.08.2024</td>
+                </tr>
+                <tr>
+                    <td rowspan="6" class="text-center"><strong>4</strong></td>
+                    <td colspan="5"><strong>RM-4</strong></td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-1</td>
+                    <td>Colourless to pale yellow liquid</td>
+                    <td>Colourless liquid</td>
+                    <td class="text-center">---------</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-2</td>
+                    <td>≥98</td>
+                    <td>99.4</td>
+                    <td class="text-center">146129, Dt: 29.05.2024</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-3</td>
+                    <td>1.21 – 1.24</td>
+                    <td>1.22</td>
+                    <td class="text-center">146128, Dt: 03.06.2024</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-4</td>
+                    <td>1.5660-1.5680</td>
+                    <td>1.5657</td>
+                    <td class="text-center">149713, Dt: 05.09.2024</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-5</td>
+                    <td>80±2% <br /> 20±2% </td>
+                    <td>78.7 <br /> 21.3 </td>
+                    <td class="text-center">QSDF/1258924, Dt:17.06.2022</td>
+                </tr>
+                <tr>
+                    <td rowspan="4" class="text-center"><strong>5</strong></td>
+                    <td colspan="4"><strong>RM-5</strong></td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-1</td>
+                    <td>Colourless to pale yellow liquid</td>
+                    <td>Colourless liquid</td>
+                    <td class="text-center">---------</td>
+                </tr>
+                <tr>
+                    <td>Acceptance test-2</td>
+                    <td>≥ 99</td>
+                    <td>99.8</td>
+                    <td class="text-center" style="min-width: 180px;">145799, Dt: 27.05.2024</td>
+                </tr>
+                <tr>
+                    <td style="min-width: 130px;">Specific gravity@25 °C</td>
+                    <td>1.06 – 1.09</td>
+                    <td>1.06</td>
+                    <td class="text-center">145802, Dt: 09.05.2024</td>
+                </tr>
+
+            </table>
+            <div class="footer text-end footer-line">Page | 4</div>
+        </div>
+        <div class="page container-br mt-1">
+            <p class="text-end bold font-large"> <u>Annexure-IIIA</u> </p>
+            <p class="font-large m-0 bold"><u>Acceptance test of products Properties</u></p>
+
+            <table>
+                <tr>
+                    <th rowspan="2" class="text-center">Sl. No.</th>
+                    <th class="text-center" rowspan="2">Batch No. </th>
+                    <th class="text-center" colspan="2">Test Results (Measured in-house)</th>
+                </tr>
+                <tr>
+                    <th class="text-center">Acceptance test-A, Spec.: <1 x 106 Ω/□ </th>
+                    <th class="text-center">Acceptance test-B (Spec.:20 – 24 Sec) </th>
+                </tr>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">105, 105, 105 </td>
+                    <td class="text-center">23.37,21.60,21.73 </td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">105, 105, 105 </td>
+                    <td class="text-center">23.37,21.60,21.73 </td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">105, 105, 105 </td>
+                    <td class="text-center">23.37,21.60,21.73 </td>
+                </tr>
+                <tr>
+                    <td class="text-center">4</td>
+                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">105, 105, 105 </td>
+                    <td class="text-center">23.37,21.60,21.73 </td>
+                </tr>
+                <tr>
+                    <td class="text-center">5</td>
+                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">105, 105, 105 </td>
+                    <td class="text-center">23.37,21.60,21.73 </td>
+                </tr>
+                <tr>
+                    <td class="text-center">6</td>
+                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">105, 105, 105 </td>
+                    <td class="text-center">23.37,21.60,21.73 </td>
+                </tr>
+            </table>
+
+            <p class="text-end bold font-large"> <u>Annexure-IIIB</u> </p>
+
+            <table>
+                <tr>
+                    <th class="text-center">Sl. No.</th>
+                    <th class="text-center">Batch No. </th>
+                    <th class="text-center">Acceptance test-C Spec.: 0.55±0.05</th>
+                    <th class="text-center">Test Report Ref. No.</th>
+                    <th class="text-center">Acceptance test-D Spec.: 0.55±0.05 Spec.: 0.8(min)</th>
+                    <th class="text-center">Test Report Ref. No. </th>
+                </tr>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td>Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">0.56, 0.58 </td>
+                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
+                    <td class="text-center">0.90, 0.89</td>
+                    <td class="text-center" colspan="6" rowspan="6">DIV-10/Emi/2223/2024 Dtd.10.11.2024</td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td>Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">0.56, 0.58 </td>
+                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
+                    <td class="text-center">0.90, 0.89</td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td>Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">0.56, 0.58 </td>
+                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
+                    <td class="text-center">0.90, 0.89</td>
+                </tr>
+                <tr>
+                    <td class="text-center">4</td>
+                    <td>Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">0.56, 0.58 </td>
+                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
+                    <td class="text-center">0.90, 0.89</td>
+                </tr>
+                <tr>
+                    <td class="text-center">5</td>
+                    <td>Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">0.56, 0.58 </td>
+                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
+                    <td class="text-center">0.90, 0.89</td>
+                </tr>
+                <tr>
+                    <td class="text-center">6</td>
+                    <td>Div-1/Product-A/0116/2024 </td>
+                    <td class="text-center">0.56, 0.58 </td>
+                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
+                    <td class="text-center">0.90, 0.89</td>
+                </tr>
+            </table>
+            <div class="footer text-end footer-line">Page | 5</div>
+        </div>
+    </div>
+</body>
+
+</html>
