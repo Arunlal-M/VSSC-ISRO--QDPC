@@ -8,6 +8,7 @@ class Equipment(models.Model):
     CALIBRATION_VALIDITY_CHOICES = [
         ('days', 'Days'),
         ('months', 'Months'),
+        ('years', 'Years'),
     ]
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
@@ -27,6 +28,8 @@ class Equipment(models.Model):
             self.calibration_due_date = self.last_calibration_date + timedelta(days=self.calibration_validity_duration_value)
         elif self.calibration_validity_duration_type == 'months':
             self.calibration_due_date = self.last_calibration_date + timedelta(days=self.calibration_validity_duration_value * 30)
+        elif self.calibration_validity_duration_type == 'years':
+            self.calibration_due_date = self.last_calibration_date + timedelta(days=self.calibration_validity_duration_value * 365)
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -21,8 +21,8 @@ class EquipmentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Calibration validity duration must be a positive value.")
         
         # Ensure validity type is either 'days' or 'months'
-        if data['calibration_validity_duration_type'] not in ['days', 'months']:
-            raise serializers.ValidationError("Invalid calibration validity duration type. Must be 'days' or 'months'.")
+        if data['calibration_validity_duration_type'] not in ['days', 'months','years']:
+            raise serializers.ValidationError("Invalid calibration validity duration type. Must be 'days' or 'months' or 'years'.")
         
         return data
 
@@ -37,6 +37,8 @@ class EquipmentSerializer(serializers.ModelSerializer):
             due_date = last_calibration_date + timedelta(days=validity_value)
         elif validity_type == 'months':
             due_date = last_calibration_date + relativedelta(months=validity_value)
+        elif validity_type == 'years':
+            due_date = last_calibration_date + relativedelta(years=validity_value)
         else:
             raise serializers.ValidationError("Invalid calibration validity duration type.")  # Fallback safeguard
 
