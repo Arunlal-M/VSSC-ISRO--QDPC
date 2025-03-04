@@ -9,7 +9,7 @@
                 <h4>Product Add</h4>
             </div>
         </div>
-        
+
         <div class="card">
             <div class="card-body">
                 <div class="row">
@@ -29,7 +29,7 @@
                             <select id="category" name="category" class="form-control">
                                 <option>Choose Category</option>
                                 {% for cat in category %}
-                                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -40,7 +40,7 @@
                             <select id="product_owner" name="product_owner" class="form-control">
                                 <option>Choose owner</option>
                                 {% for own in owner %}
-                                    <option value="{{ own.id }}">{{ own.name }}</option>
+                                <option value="{{ own.id }}">{{ own.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -56,7 +56,7 @@
                             <select id="end_uses" name="end_uses" class="form-control">
                                 <option>Choose end use</option>
                                 {% for end in enduse %}
-                                    <option value="{{ end.id }}">{{ end.name }}</option>
+                                <option value="{{ end.id }}">{{ end.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -78,7 +78,7 @@
                             <select id="processing_agencies" name="processing_agencies" class="form-control">
                                 <option>Choose Processing Agencies</option>
                                 {% for pg in processingagency %}
-                                    <option value="{{ pg.id }}">{{ pg.name }}</option>
+                                <option value="{{ pg.id }}">{{ pg.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -89,7 +89,7 @@
                             <select id="testing_agencies" name="testing_agencies" class="form-control">
                                 <option>Choose Testing Agencies</option>
                                 {% for tg in testingagency %}
-                                    <option value="{{ tg.id }}">{{ tg.name }}</option>
+                                <option value="{{ tg.id }}">{{ tg.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -107,14 +107,15 @@
                                 <option value="tbd">TBD (To Be Decided)</option>
                                 <option value="not_applicable">Not Applicable</option>
                                 <option value="add_duration">Add Duration</option>
-                            </select>  
-                                              </div>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
                         <div class="form-group">
                             <label for="shelf_life_value">Shelf Life Duration</label>
-                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control" placeholder="Enter duration">
+                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control"
+                                placeholder="Enter duration">
                         </div>
                     </div>
 
@@ -129,58 +130,70 @@
                     </div>
 
 
-                 <!-- Section-5: Drawing Applicable, Drawing Number, Drawing Status -->
-<div class="col-lg-12 mt-4 mb-4">
-    <h5>Section-5</h5>
-</div>
-<div class="col-lg-3 col-sm-6 col-12">
-    <div class="form-group">
-        <label>Drawing Applicable</label>
-        <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="drawing_applicable_yes" name="drawing_applicable" value="yes"> 
-            <label class="form-check-label" for="drawing_applicable_yes">Check if Applicable</label>
-            {% comment %} <label>
-                <input type="radio" id="drawing_applicable_no" name="drawing_applicable" value="no"> No
-            </label> {% endcomment %}
-        </div>
-    </div>
-</div>
+                    <!-- Section-5: Drawing Applicable, Drawing Number, Drawing Status -->
+                    <div class="col-lg-12 mt-4 mb-4">
+                        <h5>Section-5</h5>
+                    </div>
 
-<!-- Container for Drawing Number -->
-<div class="col-lg-4 col-sm-6 col-12" id="drawing-number-container" style="display: none;">
-    <div class="form-group">
-        <label>Drawing Number</label>
-        <input type="text" id="drawing_number" name="drawing_number">
-    </div>
-</div>
+                    <!-- Drawing Applicable Checkbox -->
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Drawing Applicable</label>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="drawing_applicable"
+                                    name="drawing_applicable" value="yes">
+                                <label class="form-check-label" for="drawing_applicable">Check if Applicable</label>
+                            </div>
+                        </div>
+                    </div>
 
-<!-- Container for Drawing Title -->
-<div class="col-lg-4 col-sm-6 col-12" id="drawing-title-container" style="display: none;">
-    <div class="form-group">
-        <label>Drawing Title</label>
-        <input type="text" id="drawing_title" name="drawing_title">
-    </div>
-</div>
+                    <!-- Container for Drawing Sections -->
 
-<!-- Container for Drawing Status -->
-<div class="col-lg-4 col-sm-6 col-12" id="drawing-status-container" style="display: none;">
-    <div class="form-group">
-        <label>Drawing Status</label>
-        <select id="drawing_status" name="drawing_status" class="form-control">
-            <option>Choose Status</option>
-            <option value="Provisional">Provisional</option>
-            <option value="CCB approved">CCB approved</option>
-        </select>
-    </div>
-</div>
+                    <div id="drawing-sections-container" style="display: none;">
+                        <div class="drawing-section">
+                            <hr>
+                            <div class="row">
+                                <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label>Drawing Number</label>
+                                        <input type="text" name="drawing_number[]" class="form-control">
+                                    </div>
+                                </div>
 
-<!-- Container for Drawing Document -->
-<div class="col-lg-4 col-sm-6 col-12" id="drawing-document-container">
-    <div class="form-group">
-        <label>Upload Drawing Document</label>
-        <input type="file" id="drawing_document" name="drawing_document" class="form-control mt-2">
-    </div>
-</div>
+                                <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label>Drawing Title</label>
+                                        <input type="text" name="drawing_title[]" class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label>Drawing Status</label>
+                                        <select name="drawing_status[]" class="form-control">
+                                            <option>Choose Status</option>
+                                            <option value="Provisional">Provisional</option>
+                                            <option value="CCB approved">CCB approved</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label>Upload Drawing Document</label>
+                                        <input type="file" name="drawing_document[]" class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4 col-sm-6 col-12 mt-1 d-flex align-items-center">
+                                    <button type="button" class="btn btn-success add-drawing-step me-3">+</button>
+                                    <button type="button" class="btn btn-danger remove-drawing-step ">-</button>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+                    </div>
+
 
 
 
@@ -199,7 +212,7 @@
                             <select id="components" name="components" class="form-control">
                                 <option>Choose components</option>
                                 {% for comp in components %}
-                                    <option value="{{ comp.id }}">{{ comp.component_name }}</option>
+                                <option value="{{ comp.id }}">{{ comp.component_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -211,7 +224,7 @@
                             <select id="raw_material" name="raw_material" class="form-control">
                                 <option>Choose rawmaterials</option>
                                 {% for rwm in rawmaterial %}
-                                    <option value="{{ rwm.id }}">{{ rwm.name }}</option>
+                                <option value="{{ rwm.id }}">{{ rwm.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -223,7 +236,7 @@
                             <select id="consumable" name="consumable" class="form-control">
                                 <option>Choose consumables</option>
                                 {% for con in consumable %}
-                                    <option value="{{ con.id }}">{{ con.name }}</option>
+                                <option value="{{ con.id }}">{{ con.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -235,7 +248,7 @@
                             <select id="equipment" name="equipment" class="form-control">
                                 <option>Choose equipment</option>
                                 {% for equ in equipment %}
-                                    <option value="{{ equ.id }}">{{ equ.name }}</option>
+                                <option value="{{ equ.id }}">{{ equ.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -274,14 +287,16 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="form-group">
-                            <label for="document_category"class="form-label">Add Documents</label>
+                            <label for="document_category" class="form-label">Add Documents</label>
                             <div class="form-check">
-                            <input type="checkbox" class="form-check-input"id="document_category" name="document_category" >
-                            <label class="form-check-label" for="document_category">Check if Product Document</label>
+                                <input type="checkbox" class="form-check-input" id="document_category"
+                                    name="document_category">
+                                <label class="form-check-label" for="document_category">Check if Product
+                                    Document</label>
+                            </div>
                         </div>
                     </div>
-                    </div>
-                    
+
 
                     <!-- Submit and Cancel Buttons -->
                     <div class="col-lg-12 mt-4 mb-4">
@@ -404,28 +419,28 @@
             }
         });
 
-        // Initially hide all drawing-related fields
-        $('#drawing-number-container').hide();
-        $('#drawing-title-container').hide();
-        $('#drawing-status-container').hide();
-        $('#drawing-document-container').hide();
-
-        // Show/hide Drawing Number and Drawing Status based on Drawing Applicable selection
-        $('input[name="drawing_applicable"]').change(function () {
-            if ($(this).is(':checked')) {  // Check if the checkbox is checked
-                $('#drawing-number-container').show();
-                $('#drawing-title-container').show();
-                $('#drawing-status-container').show();
-                $('#drawing-document-container').show();
+        $('#drawing_applicable').change(function () {
+            if ($(this).is(':checked')) {
+                $('#drawing-sections-container').show();
             } else {
-                $('#drawing-number-container').hide();
-                $('#drawing-title-container').hide();
-                $('#drawing-status-container').hide();
-                $('#drawing-document-container').hide();
-                $('#drawing_number').val('');
-                $('#drawing_title').val('');
-                $('#drawing_status').val('');
-                $('#drawing_document').val('');
+                $('#drawing-sections-container').hide();
+                $('#drawing-sections-container').find('input, select').val('');
+            }
+        });
+
+        // Add new drawing step when clicking the "Add Step" inside a section
+        $(document).on('click', '.add-drawing-step', function () {
+            let newSection = $('.drawing-section:first').clone();
+            newSection.find('input, select').val('');
+            $('#drawing-sections-container').append(newSection);
+        });
+
+        // Remove a drawing step
+        $(document).on('click', '.remove-drawing-step', function () {
+            if ($('.drawing-section').length > 1) {
+                $(this).closest('.drawing-section').remove();
+            } else {
+                alert('At least one drawing section is required.');
             }
         });
 
@@ -462,19 +477,21 @@
             productData.append('raw_material', $('#raw_material').val());
             productData.append('consumable', $('#consumable').val());
             productData.append('equipment', $('#equipment').val());
-            productData.append('drawing_number', $('#drawing_number').val());
-            productData.append('drawing_title', $('#drawing_title').val());
-            productData.append('drawing_status', $('#drawing_status').val());
             productData.append('drawing_applicable', $('input[name="drawing_applicable"]:checked').val());
-            productData.append('identification_method', $('#identification_method').val());  
+            productData.append('identification_method', $('#identification_method').val());
             productData.append('prefix', $('#prefix').val());
             productData.append('suffix', $('#suffix').val());
 
-
-            const drawingDocument = $('#drawing_document')[0].files[0];
-            if (drawingDocument) {
-                productData.append('drawing_document', drawingDocument);
-            }
+            // Handle multiple drawing sections
+            $('.drawing-section').each(function (index, section) {
+                productData.append('drawing_number[]', $(section).find('input[name="drawing_number[]"]').val());
+                productData.append('drawing_title[]', $(section).find('input[name="drawing_title[]"]').val());
+                productData.append('drawing_status[]', $(section).find('select[name="drawing_status[]"]').val());
+                const drawingDocument = $(section).find('input[name="drawing_document[]"]')[0].files[0];
+                if (drawingDocument) {
+                    productData.append('drawing_document[]', drawingDocument);
+                }
+            });
 
             const csrfToken = getCSRFToken();
             $.ajax({
@@ -530,4 +547,3 @@
     });
 </script>
 {% endblock %}
-
