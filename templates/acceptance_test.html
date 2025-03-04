@@ -6,7 +6,7 @@
 		<div class="page-header">
 			<div class="page-title">
 				<h4>Acceptance Test Add</h4>
-				<h6>Create new Test</h6>
+				<h6>Acceptance Test Configuration</h6>
 			</div>
 		</div>
 
@@ -238,13 +238,16 @@
 					},
 					success: function (response) {
 						if (response.success) {
-							window.location.href = "{% url 'acceptance-list' %}"; // Redirect on success
+							showAlert('Data Submitted Successfully !', 'success');
+							setTimeout(function () {
+								window.location.href = "{% url 'acceptance-list' %}"; // Redirect on success
+							}, 3000);
 						} else {
-							$('#error-message').text(response.message).show(); // Show error message
+							showAlert('Data Submission Unsuccessful! Please try again.', 'error');
 						}
 					},
 					error: function () {
-						$('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+						showAlert('An error occurred: ' + error, 'error'); // Show error message in case of failure
 					}
 				});
 			}

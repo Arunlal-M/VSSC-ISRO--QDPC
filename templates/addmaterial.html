@@ -1,12 +1,13 @@
 {% extends 'index.html' %}
 {% block content %}
+{% load static %}
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
                 <h4>Add Raw Material</h4>
+                <h6>Raw Material Configuration</h6>
             </div>
-            <a href="{% url 'raw-material' %}" class="btn btn-added">Back to List</a>
         </div>
         <!-- /add -->
         <div class="card">
@@ -441,13 +442,20 @@
                 },
                 success: function (response) {
                     if (response.success) {
-                        window.location.href = "{% url 'raw-material' %}";
+                        showAlert('Data Submitted Successfully !', 'success');
+                        setTimeout(function () {
+                            window.location.href = "{% url 'raw-material' %}";
+                        }, 3000);
                     } else {
-                        // alert(response.message);
+                        //  $('#error-message').text(response.message).show(); // Show error message
+                        showAlert('Data Submission Unsuccessful! Please try again.', 'error');
+
                     }
                 },
                 error: function () {
-                    // alert('An error occurred. Please try again.');
+                    //   $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+                    showAlert('An error occurred: ' + error, 'error'); // Show error message in case of failure
+
                 }
             });
         });

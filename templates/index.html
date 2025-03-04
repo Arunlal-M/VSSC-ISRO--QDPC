@@ -38,6 +38,9 @@
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="{% static 'assets/css/style2.css' %}">
+    
+    <!-- Alert CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/alert.css' %}">
 
     <!-- Include Select2 CSS from CDN -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -351,6 +354,8 @@
             integrity="sha384-w76AqxarZxrWEsBhDbE6z3nmKaLQ0fvbXtKp752kRr9i9dtK5vf5RkM2R5iJoKtu"
             crossorigin="anonymous"></script>
 
+        <div id="alertBox" class="alert"></div>
+
 
 </body>
 
@@ -404,6 +409,23 @@
         return cookieValue;
     }
 
+    function showAlert(message, type) {
+        let alertBox = $('#alertBox');
+        alertBox.text(message).removeClass('success error').addClass(type).fadeIn();
+        setTimeout(function () {
+            alertBox.fadeOut();
+        }, 2700); // Disappear after 3 seconds
+    }
+
+    $(document).ready(function () {
+        $('#successBtn').click(function () {
+            showAlert('Data submitted successfully!', 'success');
+        });
+
+        $('#errorBtn').click(function () {
+            showAlert('Data submission failed!', 'error');
+        });
+    });
 </script>
 
 {% block scripts %} {% endblock %}

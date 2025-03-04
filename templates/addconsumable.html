@@ -1,17 +1,19 @@
 {% extends 'index.html' %}
 {% block content %}
+{% load static %}
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
                 <h4>Add Consumable</h4>
+                <h6>Consumable Configuration</h6>
             </div>
         </div>
         <!-- /add -->
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                             <label>Consumable</label>
                             <input type="text" name="consumable" id="consumable">
@@ -294,13 +296,20 @@
                 },
                 success: function (response) {
                     if (response.success) {
+                        showAlert('Data Submitted Successfully !', 'success');
+                        setTimeout(function () {
                         window.location.href = "{% url 'consumable-list' %}";
+                    }, 3000);
                     } else {
                         //  $('#error-message').text(response.message).show(); // Show error message
+                        showAlert('Data Submission Unsuccessful! Please try again.', 'error');
+
                     }
                 },
                 error: function () {
                     //   $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+                    showAlert('An error occurred: ' + error, 'error'); // Show error message in case of failure
+
                 }
             });
         });

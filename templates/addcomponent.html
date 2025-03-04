@@ -1,10 +1,13 @@
 {% extends 'index.html' %}
 {% block content %}
+{% load static %}
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
                 <h4>Add Component</h4>
+                <h6>Component Configuration</h6>
+
             </div>
         </div>
         <!-- /add -->
@@ -32,7 +35,7 @@
                         <label for="supplier" class="form-label">Suppliers</label>
                         <select class="select" id="supplier" name="supplier[]" multiple>
                             {% for sup in suppliers %}
-                                <option value="{{ sup.id }}">{{ sup.name }}</option>
+                            <option value="{{ sup.id }}">{{ sup.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -40,7 +43,7 @@
                         <label for="sources" class="form-label">Sources</label>
                         <select class="select" id="sources" name="sources[]" multiple>
                             {% for sour in sources %}
-                                <option value="{{ sour.id }}">{{ sour.name }}</option>
+                            <option value="{{ sour.id }}">{{ sour.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -48,20 +51,20 @@
                         <label for="acceptance_test" class="form-label">Acceptance Test</label>
                         <select class="select" id="acceptance_test" name="acceptance_test[]" multiple>
                             {% for acc in acceptence_test %}
-                                <option value="{{ acc.id }}">{{ acc.name }}</option>
+                            <option value="{{ acc.id }}">{{ acc.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-					<div class="col-md-6 col-lg-4">
-						<div class="form-group">
-							<label for="grade">Grade</label>
-							<select class="select" id="grade" name="grade[]" multiple >
-								{% for grade in grades %}
-							<option value="{{ grade.id }}">{{ grade.name }}</option>
-							{% endfor %}
-						</select>
-						</div>
-					</div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                            <label for="grade">Grade</label>
+                            <select class="select" id="grade" name="grade[]" multiple>
+                                {% for grade in grades %}
+                                <option value="{{ grade.id }}">{{ grade.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                             <label for="shelf_life_type">Shelf Life</label>
@@ -73,14 +76,15 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
                         <div class="form-group">
                             <label for="shelf_life_value">Shelf Life Duration</label>
-                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control" placeholder="Enter duration">
+                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control"
+                                placeholder="Enter duration">
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
                         <div class="form-group">
                             <label for="unit">Shelf Life Period</label>
@@ -187,14 +191,14 @@
 
 {% block scripts %}
 <script>
-$(document).ready(function() {
-    $('#shelf_life_duration_group').hide();
+    $(document).ready(function () {
+        $('#shelf_life_duration_group').hide();
         $('#shelf_life_period_group').hide();
-            
+
 
         $('#shelf_life_type').change(function () {
             const selectedOption = $(this).val();
-    
+
             if (selectedOption === 'add_duration') {
                 // Show duration and period inputs
                 $('#shelf_life_duration_group').show();
@@ -225,141 +229,147 @@ $(document).ready(function() {
                 // Set the component name in the modal's hidden input field
                 $('#componentField').val(component);
 
-         // Show the modal
-        $('#addComponentDocumentModal').modal('show');
-            // Disable the acceptance input field if precertified is checked
-            if ($(this).is(':checked')) {
-                acceptanceInput.prop('disabled', true);
-            } else {
-                acceptanceInput.prop('disabled', false);
-            }
-            }
-        });
-    $('#submitButton').click(function(event) {
-        event.preventDefault();
-
-        // Gather form data
-        var name = $('#component').val();
-        var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
-        var shelf_life_type = $('#shelf_life_type').val();
-        var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
-        var shelf_life_unit = $('#unit').val();
-        var precertified = $('#precertified').is(':checked');
-
-        // Get selected values from dropdowns
-        var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
-        var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
-        var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
-
-         // Validation for shelf life value
-         if (shelf_life_type === 'add_duration' && (isNaN(shelf_life_value) || shelf_life_value <= 0)) {
-            $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
-            return;
-        }
-
-             // Handle case for 'TBD' or 'Not Applicable'
-        if (shelf_life_type === 'tbd' || shelf_life_type === 'not_applicable') {
-            shelf_life_value = null;  // Set shelf_life_value to null for these options
-            shelf_life_unit = null;   // Reset shelf_life_unit as well
-        }
-
-        // Get the current date
-        var currentDate = new Date();
-        var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM -DD
-
-        // Create the data object
-        var componentData = {
-            name: name,
-            grade: grade,
-            shelf_life_type: shelf_life_type,
-            shelf_life_value: shelf_life_value,
-            shelf_life_unit: shelf_life_unit,
-            user_defined_date: userDefinedDate, // Autofill current date
-            precertified: precertified,
-            sources: sources,
-            suppliers: suppliers,
-            acceptance_test: acceptance_test,
-        };
-
-        // Send data as JSON
-        $.ajax({
-            type: 'POST',
-            url: '{% url "component-add" %}', // URL to your Django view
-            data: JSON.stringify(componentData),
-            contentType: 'application/json',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
-            },
-            success: function(response) {
-                if (response.success) {
-                    window.location.href = "{% url 'component-list' %}";
+                // Show the modal
+                $('#addComponentDocumentModal').modal('show');
+                // Disable the acceptance input field if precertified is checked
+                if ($(this).is(':checked')) {
+                    acceptanceInput.prop('disabled', true);
                 } else {
-                    //$('#error-message').text(response.message).show(); // Show error message
+                    acceptanceInput.prop('disabled', false);
                 }
-            },
-            error: function() {
-               // $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
             }
         });
-    });
-    // Populate Category Dropdown Dynamically (Optional if already done in the template)
+        $('#submitButton').click(function (event) {
+            event.preventDefault();
+
+            // Gather form data
+            var name = $('#component').val();
+            var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
+            var shelf_life_type = $('#shelf_life_type').val();
+            var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
+            var shelf_life_unit = $('#unit').val();
+            var precertified = $('#precertified').is(':checked');
+
+            // Get selected values from dropdowns
+            var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
+            var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
+            var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
+
+            // Validation for shelf life value
+            if (shelf_life_type === 'add_duration' && (isNaN(shelf_life_value) || shelf_life_value <= 0)) {
+                $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
+                return;
+            }
+
+            // Handle case for 'TBD' or 'Not Applicable'
+            if (shelf_life_type === 'tbd' || shelf_life_type === 'not_applicable') {
+                shelf_life_value = null;  // Set shelf_life_value to null for these options
+                shelf_life_unit = null;   // Reset shelf_life_unit as well
+            }
+
+            // Get the current date
+            var currentDate = new Date();
+            var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM -DD
+
+            // Create the data object
+            var componentData = {
+                name: name,
+                grade: grade,
+                shelf_life_type: shelf_life_type,
+                shelf_life_value: shelf_life_value,
+                shelf_life_unit: shelf_life_unit,
+                user_defined_date: userDefinedDate, // Autofill current date
+                precertified: precertified,
+                sources: sources,
+                suppliers: suppliers,
+                acceptance_test: acceptance_test,
+            };
+
+            // Send data as JSON
+            $.ajax({
+                type: 'POST',
+                url: '{% url "component-add" %}', // URL to your Django view
+                data: JSON.stringify(componentData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+                },
+                success: function (response) {
+                    if (response.success) {
+                        showAlert('Data Submitted Successfully !', 'success');
+                        setTimeout(function () {
+                            window.location.href = "{% url 'component-list' %}";
+                        }, 3000);
+                    } else {
+                        //$('#error-message').text(response.message).show(); // Show error message
+                        showAlert('Data Submission Unsuccessful! Please try again.', 'error');
+                    }
+                },
+                error: function () {
+                    // $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+                    showAlert('An error occurred: ' + error, 'error'); // Show error message in case of failure
+
+                }
+            });
+        });
+        // Populate Category Dropdown Dynamically (Optional if already done in the template)
         //const categoryChoices = [
-            //{ value: "", label: "Select a Value" },
-            //{ value: "DOC/DOCX", label: ".doc/.docx" },
-           // { value: "PDF", label: ".pdf" },
-           // { value: "TXT", label: ".txt" },
-           // { value: "XLS/XLSX", label: ".xls/.xlsx" },
-           // { value: "CSV", label: ".csv" },
-           // { value: "PPT/PPTX", label: ".ppt/.pptx" },
-           // { value: "ODP", label: ".odp" },
-          //  { value: "JPG/JPEG", label: ".jpg/.jpeg" },
-           // { value: "PNG", label: ".png" },
-           // { value: "ZIP", label: ".zip" },
-           // { value: "RAR", label: ".rar" }
+        //{ value: "", label: "Select a Value" },
+        //{ value: "DOC/DOCX", label: ".doc/.docx" },
+        // { value: "PDF", label: ".pdf" },
+        // { value: "TXT", label: ".txt" },
+        // { value: "XLS/XLSX", label: ".xls/.xlsx" },
+        // { value: "CSV", label: ".csv" },
+        // { value: "PPT/PPTX", label: ".ppt/.pptx" },
+        // { value: "ODP", label: ".odp" },
+        //  { value: "JPG/JPEG", label: ".jpg/.jpeg" },
+        // { value: "PNG", label: ".png" },
+        // { value: "ZIP", label: ".zip" },
+        // { value: "RAR", label: ".rar" }
         //];
 
         //const categoryDropdown = $('#category');
-       // categoryChoices.forEach(choice => {
-       //     categoryDropdown.append(new Option(choice.label, choice.value));
-       // });
+        // categoryChoices.forEach(choice => {
+        //     categoryDropdown.append(new Option(choice.label, choice.value));
+        // });
 
 
- // Submit Document Form
- $('#addDocumentForm').submit(function (e) {
-     e.preventDefault();
-     var formData = new FormData(this);
-     var component = $('#component').val();
+        // Submit Document Form
+        $('#addDocumentForm').submit(function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            var component = $('#component').val();
 
-     formData.append('componentl', component);
+            formData.append('componentl', component);
 
-     for (var pair of formData.entries()) {
-         console.log(pair[0] + ': ' + pair[1]);
+            for (var pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
 
-     }
+            }
 
-     $.ajax({
-         url: '{% url "add-component-document" %}',
-         type: 'POST',
-         data: formData,
-         processData: false,
-         contentType: false,
-         headers: {
-             'X-CSRFToken': '{{ csrf_token }}'
-         },
-         success: function (response) {
-             if (response.success) {
-                 // alert(response.message);
-                 $('#addComponentDocumentModal').modal('hide');
-             } else {
-                 // alert(response.message);
-             }
-         },
-         error: function () {
-             // alert('Error adding document. Please try again.');
-         }
+            $.ajax({
+                url: '{% url "add-component-document" %}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        // alert(response.message);
+                        $('#addComponentDocumentModal').modal('hide');
+                    } else {
+                        // alert(response.message);
+                    }
+                },
+                error: function () {
+                    // alert('Error adding document. Please try again.');
+                }
+            });
         });
     });
-});
 
 </script>
 {% endblock %}

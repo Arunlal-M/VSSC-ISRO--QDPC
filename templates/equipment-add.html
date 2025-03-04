@@ -1,7 +1,6 @@
 {% extends 'index.html' %}
 {% block content %}
 {% load static %}
-
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -313,10 +312,16 @@
                 processData: false, // Required for file uploads
                 success: function (response) {
 
-                    window.location.href = "{% url 'equipment-list' %}"; // Redirect after success
+                    showAlert('Data Submitted Successfully !', 'success');
+                    setTimeout(function () {
+                        window.location.href = "{% url 'equipment-list' %}"; // Redirect after success
+                    }, 3000);
                 },
+
+
                 error: function (xhr, status, error) {
-                    alert('An error occurred: ' + error); // Show error message in case of failure
+                    showAlert('Data Submission Unsuccessful! Please try again.', 'error');
+                    // Show error message in case of failure
                 }
             });
         });
