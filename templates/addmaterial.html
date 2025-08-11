@@ -1,13 +1,13 @@
 {% extends 'index.html' %}
 {% block content %}
-{% load static %}
+   {% load static %}
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
                 <h4>Add Raw Material</h4>
-                <h6>Raw Material Configuration</h6>
             </div>
+            <a href="{% url 'raw-material' %}" class="btn btn-added">Back to List</a>
         </div>
         <!-- /add -->
         <div class="card">
@@ -16,17 +16,7 @@
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                             <label>Raw Material</label>
-                            <input type="text" name="raw-material" id="raw-material">
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-4">
-                        <div class="form-group">
-                            <label for="precertified" class="form-label">Pre-Certified</label>
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="precertified" name="precertified">
-                                <label class="form-check-label" for="precertified">Check if Pre-Certified</label>
-                            </div>
+                            <input type="text" name="raw-material" id="raw-material" class="form-control">
                         </div>
                     </div>
 
@@ -38,6 +28,7 @@
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="col-md-6 col-lg-4">
                         <label for="sources" class="form-label">Sources</label>
                         <select class="select" id="sources" name="sources[]" multiple>
@@ -46,19 +37,21 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-6 col-lg-4">
-                        <label for="acceptance_test" class="form-label">Acceptance Test</label>
-                        <select class="select" id="acceptance_test" name="acceptance_test[]" multiple onchange="handleSelection()">
-                            {% for acc in acceptence_test %}
-                            <option value="{{ acc.id }}">{{ acc.name }}</option>
-                            {% endfor %}
-                        </select>
+
+                     <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                            <label for="precertified" class="form-label">Pre-Certified</label>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="precertified" name="precertified">
+                                <label class="form-check-label" for="precertified">Check if Pre-Certified</label>
+                            </div>
+                        </div>
                     </div>
-                    
+
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                             <label for="grade">Grade</label>
-                            <select class="select" id="grade" name="grade[]" multiple>
+                            <select class="select" id="grade" name="grade" multiple onchange="handleSelection()">
                                 {% for grade in grades %}
                                 <option value="{{ grade.id }}">{{ grade.name }}</option>
                                 {% endfor %}
@@ -66,7 +59,16 @@
                         </div>
                     </div>
 
-                    
+                    <div class="col-md-6 col-lg-4">
+                        <label for="acceptance_test" class="form-label">Acceptance Test</label>
+                        <select class="select" id="acceptance_test" name="acceptance_test" multiple
+                            onchange="handleSelection()">
+                            {% for acc in acceptence_test %}
+                            <option value="{{ acc.id }}">{{ acc.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                             <label for="shelf_life_type">Shelf Life</label>
@@ -78,24 +80,35 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
                         <div class="form-group">
                             <label for="shelf_life_value">Shelf Life Duration</label>
-                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control" placeholder="Enter duration">
+                            <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control"
+                                placeholder="Enter duration">
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
                         <div class="form-group">
                             <label for="unit">Shelf Life Period</label>
                             <select id="unit" name="unit" class="form-control">
                                 <option value="days">Days</option>
                                 <option value="months">Months</option>
+                                <option value="years">Years</option>
                             </select>
                         </div>
                     </div>
 
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                            <label for="document_upload" class="form-label">Document Upload</label>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="document_upload" name="document_upload">
+                                <label class="form-check-label" for="document_upload">Check to upload Document</label>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="col-lg-12">
                         <button type="button" id="submitButton" class="btn btn-submit me-2">Submit</button>
@@ -107,205 +120,184 @@
         <!-- /add -->
     </div>
 
-    {% load static %}
-
+    <div class="container mt-5">
+        <h1>Acceptance Test Specifications</h1>
+        <!-- Div where the table will be created dynamically -->
         <div class="content" id="acceptance_test_table" style="display: none;">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="page-title">
-                    <h4>Acceptance Test</h4>
-                </div>
-                {% comment %} 
-                <div class="page-btn">
-                    <a href="addmaterial.html" class="btn btn-added" id="add-consumable">
-                        <img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Consumable
-                    </a>
-                </div>
-                {% endcomment %}
-            </div>
-    
-            <!-- Filter and Search -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-top">
-                        <div class="search-set">
-                            <div class="search-path">
-                                <a class="btn btn-filter" id="filter_search">
-                                    <img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
-                                    <span>
-                                        <img src="{% static 'assets/img/icons/closes.svg' %}" alt="img">
-                                    </span>
-                                </a>
-                            </div>
-                            <div class="search-input">
-                                <a class="btn btn-searchset">
-                                    <img src="{% static 'assets/img/icons/search-white.svg' %}" alt="img">
-                                </a>
-                            </div>
+            <!-- Table will be appended here via JavaScript -->
+        </div>
+    </div>
+    <!-- /Main Wrapper -->
+
+    <!-- Add Document Modal -->
+    <div class="modal fade" id="addRawMaterialDocumentModal" tabindex="-1" aria-labelledby="addDocumentLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="addDocumentForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addDocumentLabel">Add Raw Material Document</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Hidden field for Raw Material -->
+                        <input type="hidden" id="rawMaterialField" name="raw_material">
+
+                        <!-- Title Field -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" name="title"
+                                placeholder="Enter document title" required>
+                        </div>
+
+                        <!-- Category Dropdown -->
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option>Choose Document Type</option>
+                                {% for doc_type in document_types %}
+                                <option value="{{ doc_type.id }}">{{ doc_type.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                         <!-- Issue Number Field -->
+                        <div class="mb-3">
+                            <label for="issue_no" class="form-label">Issue Number</label>
+                            <input type="text" class="form-control" id="issue_no" name="issue_no"
+                                placeholder="Enter issue number" required>
+                        </div>
+
+                        <!-- Revision Number Field -->
+                        <div class="mb-3">
+                            <label for="revision_no" class="form-label">Revision Number</label>
+                            <input type="text" class="form-control" id="revision_no" name="revision_no"
+                                placeholder="Enter revision number" required>
+                        </div>
+
+                        <!-- Release Date Field -->
+                        <div class="mb-3">
+                            <label for="release_date" class="form-label">Release Date</label>
+                            <input type="date" class="form-control" id="release_date" name="release_date" required>
+                        </div>
+
+                        <!-- Approved By Field -->
+                        <div class="mb-3">
+                            <label for="approved_by" class="form-label">Approved By</label>
+                            <input type="text" class="form-control" id="approved_by" name="approved_by"
+                                placeholder="Enter approver's name" required>
+                        </div>
+
+                        <!-- Document Upload Field -->
+                        <div class="mb-3">
+                            <label for="document" class="form-label">Upload Document</label>
+                            <input type="file" class="form-control" id="document" name="document" required>
+                        </div>
+
+                        <!-- Validity Field -->
+                        <div class="mb-3">
+                            <label for="validity" class="form-label">Validity (Years)</label>
+                            <input type="number" class="form-control" id="validity" name="validity"
+                                placeholder="Enter validity in years" required>
                         </div>
                     </div>
-    
-                    <!-- Tabs Section -->
-                    {% comment %}
-                    <div class="comp-sec-wrapper">
-                        <section class="comp-section">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="card bg-white">
-                                        <div class="card-body">
-                                            <ul class="nav nav-tabs nav-tabs-solid nav-justified">
-                                                <li class="nav-item">
-                                                    <a class="nav-link active" href="#solid-justified-tab1" data-bs-toggle="tab">Active</a>
-                                                </li>
-                                                <li class="nav-item">
-                                                    <a class="nav-link" href="#solid-justified-tab2" data-bs-toggle="tab">Inactive</a>
-                                                </li>
-                                            </ul>
-                                            <div class="tab-content">
-                                                <div class="tab-pane show active" id="solid-justified-tab1">
-                    {% endcomment %}
-    
-                    <!-- Table Section -->
-                    <div class="table-responsive">
-                        <table class="table datanew">
-                            <thead>
-                                <tr>
-                                    <th>Acceptance Test</th>
-                                    <th>Specification</th>
-                                    <th>Re-evaluation Frequency</th>
-                                    {% comment %} <th>Procurement Date</th> {% endcomment %}
-                                    {% comment %}
-                                    <th>Packing Details</th>
-                                    <th>Action</th>
-                                    {% endcomment %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                    {% for test in acceptance_tests %}
-                <tr>
-                    <td>{{ test.name }}</td>
-                    <td>
-                        {% if test.min_value and test.max_value and test.unit_name %}
-                            {{ test.min_value }} - {{ test.max_value }} {{ test.unit_name }}
-                        {% elif test.color %}
-                        {{ test.color }}
-                        {% else %}
-                            N/D
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if test.reevaluation_frequency_value %}
-                            {{ test.reevaluation_frequency_value }} {{ test.reevaluation_frequency_unit }}
-                        {% else %}
-                            N/D
-                        {% endif %}
-                    </td>
-                {% comment %} <td>
-                        {% if test.sampling_plan_url %}
-                            <a href="{{ test.sampling_plan_url }}" target="_blank">View Sampling Plan</a>
-                            <!-- Optionally embed the PDF directly -->
-                            <!-- <iframe src="{{ test.sampling_plan_url }}" width="600" height="400" style="border: none;"></iframe> -->
-                        {% else %}
-                            No file available
-                        {% endif %}
-                    </td> {% endcomment %}
-            
-                    
-                </tr>
-                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Save Document</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
-   
-    
+    </div> 
 
-<!-- /Main Wrapper -->
-
-<!-- Add Document Modal -->
-<div class="modal fade" id="addRawMaterialDocumentModal" tabindex="-1" aria-labelledby="addDocumentLabel"
-    aria-hidden="true">
+<!-- Pre-Certification Modal -->
+<div class="modal fade" id="preCertificationModal" tabindex="-1" aria-labelledby="preCertLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="addDocumentForm">
+            <form id="preCertForm" enctype="multipart/form-data">
+                   {% csrf_token %}
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addDocumentLabel">Add Raw Material Document</h5>
+                    <h5 class="modal-title" id="preCertLabel">Pre-Certification Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
                 </div>
                 <div class="modal-body">
-                    <!-- Hidden field for Raw Material -->
-                    <input type="hidden" id="rawMaterialField" name="raw_material">
-
-                    <!-- Title Field -->
+                    <input type="hidden" id="consumableField" name="consumable">
                     <div class="mb-3">
-                        <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="title" name="title"
-                            placeholder="Enter document title" required>
-                    </div>
-
-                    <!-- Category Dropdown -->
-                    <div class="mb-3">
-                        <label for="category" class="form-label">Category</label>
-                        <select class="form-select" id="category" name="category" required>
-                            <option>Choose Document Type</option>
-                            {% for doc_type in document_types %}
-                            <option value="{{ doc_type.id }}">{{ doc_type.name }}</option>
+                        <label for="certified_by" class="form-label">Certified By</label>
+                        <select class="form-select" id="certified_by" name="certified_by" required>
+                            {% for own in owner %}
+                            <option value="{{ own.id }}">{{ own.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    {% comment %} <div class="mb-3">
-                        <label for="category" class="form-label">Category</label>
-                        <select class="form-select" id="category" name="category" required>
-                            {% for choice, label in RawMaterialDocument.CATEGORY_NAME_CHOICES %}
-                            <option value="{{ choice }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div> {% endcomment %}
-
-                    <!-- Issue Number Field -->
                     <div class="mb-3">
-                        <label for="issue_no" class="form-label">Issue Number</label>
-                        <input type="text" class="form-control" id="issue_no" name="issue_no"
-                            placeholder="Enter issue number" required>
+                        <label for="certificate_ref" class="form-label">Certificate Reference No.</label>
+                        <input type="text" class="form-control" id="certificate_ref" name="certificate_ref" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="certificate_issue_date" class="form-label">Issue Date</label>
+                        <input type="date" class="form-control" id="certificate_issue_date" name="certificate_issue_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="certificate_valid_till" class="form-label">Valid Till</label>
+                        <input type="date" class="form-control" id="certificate_valid_till" name="certificate_valid_till" required>
+                    </div>
+                    <div class="mb-3" id="Certificate_disposition">
+                        <label class="form-label">Certificate disposition:</label>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input disposition-radio" type="radio" name="disposition" id="cleared" value="CLEARED" required>
+                            <label class="form-check-label" for="cleared">
+                                Cleared for use
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input disposition-radio" type="radio" name="disposition" id="pending" value="PENDING">
+                            <label class="form-check-label" for="pending">
+                                Cleared for use subject to completion of pending action
+                            </label>
+                            
+                            <div id="pendingActionsContainer" style="display: none; margin-top: 10px; margin-left: 20px;">
+                                <div id="pendingActionsList"></div>
+                                <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addPendingAction">
+                                    <i class="bi bi-plus"></i> Add Pending Action
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input disposition-radio" type="radio" name="disposition" id="not_cleared" value="NOT_CLEARED">
+                            <label class="form-check-label" for="not_cleared">
+                                Not cleared
+                            </label>
+                        </div>
                     </div>
 
-                    <!-- Revision Number Field -->
-                    <div class="mb-3">
-                        <label for="revision_no" class="form-label">Revision Number</label>
-                        <input type="text" class="form-control" id="revision_no" name="revision_no"
-                            placeholder="Enter revision number" required>
+                    <!-- Template for pending action item (hidden) -->
+                    <div id="pendingActionTemplate" style="display: none;">
+                        <div class="pending-action-item mb-2">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="pending_actions[]" placeholder="Enter pending action details">
+                                <button type="button" class="btn btn-outline-danger remove-action">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Release Date Field -->
-                    <div class="mb-3">
-                        <label for="release_date" class="form-label">Release Date</label>
-                        <input type="date" class="form-control" id="release_date" name="release_date" required>
-                    </div>
+                     <div class="mb-3">
+                    <label for="certificate_file" class="form-label">Upload Certificate</label>
+                    <input type="file" class="form-control" id="certificate_file" name="certificate_file" accept=".pdf,.jpg,.png" required>
 
-                    <!-- Approved By Field -->
-                    <div class="mb-3">
-                        <label for="approved_by" class="form-label">Approved By</label>
-                        <input type="text" class="form-control" id="approved_by" name="approved_by"
-                            placeholder="Enter approver's name" required>
-                    </div>
-
-                    <!-- Document Upload Field -->
-                    <div class="mb-3">
-                        <label for="document" class="form-label">Upload Document</label>
-                        <input type="file" class="form-control" id="document" name="document" required>
-                    </div>
-
-                    <!-- Validity Field -->
-                    <div class="mb-3">
-                        <label for="validity" class="form-label">Validity (Years)</label>
-                        <input type="number" class="form-control" id="validity" name="validity"
-                            placeholder="Enter validity in years" required>
-                    </div>
                 </div>
+
+
+
+                </div>
+    
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Save Document</button>
+                    
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </form>
@@ -313,209 +305,334 @@
     </div>
 </div>
 
+    {% endblock %}
 
-
-{% endblock %}
-
-{% block scripts %}
-<script>
-
-    function handleSelection() {
-        const dropdown = document.getElementById("acceptance_test");
-        const selectedValues = Array.from(dropdown.selectedOptions).map(option => option.value);
-
-        // Show alert with selected values
-        alert(selectedValues);
-
-        // Get the table container
-        const tableContainer = document.getElementById("acceptance_test_table");
-
-        // Check if there is at least one selection and toggle visibility
-        if (selectedValues.length > 0) {
-            tableContainer.style.display = "block"; // Show the table
-        } else {
-            tableContainer.style.display = "none"; // Hide the table
+    {% block scripts %}
+    <script>
+        const gradeAcceptanceTests = {};
+        
+        function clearMultiselectDropdown(dropdown) {
+            for (let option of dropdown.options) {
+                option.selected = false;
+            }
         }
-    }
 
-    $(document).ready(function () {
-        $('#shelf_life_duration_group').hide();
-        $('#shelf_life_period_group').hide();
+        function handleSelection() {
+            console.log("handleSelection called");
+
+            const gradeDropdown = document.getElementById("grade");
+            const acceptanceDropdown = document.getElementById("acceptance_test");
+            const selectedGrades = Array.from(gradeDropdown.selectedOptions).map(option => option.value);
+            const selectedAcceptanceTests = Array.from(acceptanceDropdown.selectedOptions).map(option => option.value);
+            const tableContainer = document.getElementById("acceptance_test_table");
+
+            // Hide container if no grades selected
+            if (selectedGrades.length === 0) {
+                tableContainer.innerHTML = "";
+                tableContainer.style.display = "none";
+                return;
+            }
+
+            // Show container
+            tableContainer.style.display = "block";
+
+            // Step 1: Remove tables for grades that were removed
+            const existingTables = Array.from(tableContainer.querySelectorAll("table"));
+            existingTables.forEach(table => {
+                const gradeIdMatch = table.id.match(/^grade_(.+)_acceptanceTestTable$/);
+                if (gradeIdMatch) {
+                    const gradeId = gradeIdMatch[1];
+                    if (!selectedGrades.includes(gradeId)) {
+                        table.remove();
+                        delete gradeAcceptanceTests[gradeId];
+                    }
+                }
+            });
+
+            // Step 2: Loop through all selected grades
+            selectedGrades.forEach(gradeId => {
+                const gradeName = gradeDropdown.querySelector(`option[value="${gradeId}"]`).textContent;
+
+                // Create or reuse table for this grade
+                let gradeTable = document.getElementById(`grade_${gradeId}_acceptanceTestTable`);
+                if (!gradeTable) {
+                    gradeTable = document.createElement("table");
+                    gradeTable.id = `grade_${gradeId}_acceptanceTestTable`;
+                    gradeTable.className = "table table-striped";
+                    gradeTable.innerHTML = `
+                    <thead>
+                        <tr><th colspan="2">Grade: ${gradeName}</th></tr>
+                        <tr><th>Specification</th><th>Reevaluation Frequency</th></tr>
+                    </thead>
+                    <tbody id="grade_${gradeId}_acceptanceTestTableBody"></tbody>
+                `;
+                    tableContainer.appendChild(gradeTable);
+                }
+
+                const tableBody = document.getElementById(`grade_${gradeId}_acceptanceTestTableBody`);
+                tableBody.innerHTML = ""; // clear before repopulating
+
+                // Store selected acceptance tests
+                gradeAcceptanceTests[gradeId] = selectedAcceptanceTests;
+
+                selectedAcceptanceTests.forEach(testId => {
+                    const testName = acceptanceDropdown.querySelector(`option[value="${testId}"]`).textContent;
+
+                    // AJAX fetch
+                    $.ajax({
+                        url: `{% url "acceptance-list" %}?id=${testId}`,
+                        type: 'GET',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                        success: function (response) {
+                            if (response && response.acceptance_tests) {
+                                response.acceptance_tests.forEach(test => {
+                                    const reevaluationFrequency = `${test.reevaluation_frequency_value} ${test.reevaluation_frequency_unit}`;
+                                    const testRow = `
+                                    <tr id="grade_${gradeId}_test_${test.id}">
+                                        <td>
+                                            <strong>${test.name}</strong><br>
+                                            Min: <input type="number" value="${test.min_value}" class="form-control min-value">
+                                            Max: <input type="number" value="${test.max_value}" class="form-control max-value">
+                                            Unit: <input type="text" value="${test.unit_name}" class="form-control unit-name">
+                                        </td>
+                                        <td>
+                                            <input type="text" value="${reevaluationFrequency}" class="form-control reevaluation-frequency">
+                                        </td>
+                                    </tr>
+                                `;
+                                    tableBody.insertAdjacentHTML('beforeend', testRow);
+                                });
+                            } else {
+                                alert('No acceptance tests found.');
+                            }
+                        },
+                        error: function () {
+                            alert('Failed to fetch acceptance tests. Please try again.');
+                        }
+                    });
+                });
+            });
+        }
+
+        $(document).ready(function () {
+            // Initialize shelf life fields
+            $('#shelf_life_duration_group').hide();
+            $('#shelf_life_period_group').hide();
+
+            // Shelf life type change handler
+            $('#shelf_life_type').change(function () {
+                const selectedOption = $(this).val();
+
+                if (selectedOption === 'add_duration') {
+                    $('#shelf_life_duration_group').show();
+                    $('#shelf_life_period_group').show();
+                } else {
+                    $('#shelf_life_duration_group').hide();
+                    $('#shelf_life_period_group').hide();
+                }
+            });
+
+            // Document upload checkbox handler
+            $('#document_upload').change(function() {
+                const rawMaterialName = $('#raw-material').val().trim();
+                
+                if ($(this).is(':checked')) {
+                    if (!rawMaterialName) {
+                        $('#raw-material').addClass('is-invalid');
+                        if (!$('#raw-material').siblings('.text-danger').length) {
+                            $('#raw-material').after('<span class="text-danger">Please enter the raw material name first</span>');
+                        }
+                        $(this).prop('checked', false);
+                        return;
+                    }
+                    
+                    $('#raw-material').removeClass('is-invalid');
+                    $('#raw-material').siblings('.text-danger').remove();
+                    
+                    $('#rawMaterialField').val(rawMaterialName);
+                    $('#addRawMaterialDocumentModal').modal('show');
+                }
+            });
+
+            // Pre-certified checkbox handler
+            $('#precertified').change(function () {
+                const rawMaterial = $('#raw-material').val().trim();
+                const rawMaterialInput = $('#raw-material');
+                const acceptanceInput = $('#acceptance_test');
+
+                if ($(this).is(':checked')) {
+                    if (!rawMaterial) {
+                        rawMaterialInput.addClass('is-invalid');
+                        if (!rawMaterialInput.siblings('.text-danger').length) {
+                            rawMaterialInput.after('<span class="text-danger">Please enter the Raw Material name</span>');
+                        }
+                        $(this).prop('checked', false);
+                    } else {
+                        rawMaterialInput.removeClass('is-invalid');
+                        rawMaterialInput.siblings('.text-danger').remove();
+
+                        $('#rawMaterialField').val(rawMaterial);
+                        $('#preCertificationModal').modal('show');
+                        acceptanceInput.prop('disabled', true);
+                    }
+                } else {
+                    acceptanceInput.prop('disabled', false);
+                }
+            });
+
+            // Pending actions functionality
+            const pendingRadio = document.getElementById('pending');
+            const pendingContainer = document.getElementById('pendingActionsContainer');
+            const pendingList = document.getElementById('pendingActionsList');
+            const addButton = document.getElementById('addPendingAction');
+            const template = document.getElementById('pendingActionTemplate');
             
+            // Show/hide pending actions container
+            document.querySelectorAll('.disposition-radio').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    pendingContainer.style.display = this.id === 'pending' ? 'block' : 'none';
+                });
+            });
+            
+            // Add new pending action
+            addButton.addEventListener('click', function() {
+                const newAction = template.cloneNode(true);
+                newAction.style.display = 'block';
+                newAction.removeAttribute('id');
+                pendingList.appendChild(newAction);
+                
+                // Add event listener to remove button
+                newAction.querySelector('.remove-action').addEventListener('click', function() {
+                    newAction.remove();
+                });
+            });
 
-        $('#shelf_life_type').change(function () {
-            const selectedOption = $(this).val();
-    
-            if (selectedOption === 'add_duration') {
-                // Show duration and period inputs
-                $('#shelf_life_duration_group').show();
-                $('#shelf_life_period_group').show();
-            } else {
-                // Hide duration and period inputs
-                $('#shelf_life_duration_group').hide();
-                $('#shelf_life_period_group').hide();
-            }
-        });
+         
+            // Submit main form
+            $('#submitButton').click(function (event) {
+                event.preventDefault();
 
-        // Show Add Document Modal only if Precertified is checked
-        $('#precertified').change(function () {
-            const rawMaterial = $('#raw-material').val().trim(); // Get Raw Material value
-            const rawMaterialInput = $('#raw-material'); // Raw Material input field
-            const acceptanceInput = $('#acceptance_test'); // Acceptance input field
+                const formData = new FormData();
 
-            if (!rawMaterial) {
-                rawMaterialInput.addClass('is-invalid'); // Add invalid styling
-                if (!rawMaterialInput.siblings('.text-danger').length) {
-                    rawMaterialInput.after('<span class="text-danger">Please enter the Raw Material name</span>');
+                // Add basic fields
+                formData.append('name', $('#raw-material').val());
+                formData.append('shelf_life_type', $('#shelf_life_type').val());
+                formData.append('shelf_life_value', $('#shelf_life_value').val());
+                formData.append('shelf_life_unit', $('#unit').val());
+                formData.append('precertified', $('#precertified').is(':checked'));
+                formData.append('document_upload', $('#document_upload').is(':checked'));
+                formData.append('certified_by', $('#certified_by').val());
+                formData.append('certificate_ref', $('#certificate_ref').val());
+                formData.append('certificate_disposition', $('input[name="disposition"]:checked').val());
+                formData.append('issue_date', $('#certificate_issue_date').val());
+                formData.append('valid_till', $('#certificate_valid_till').val());
+                const certificateFile = $('#certificate_file')[0].files[0];
+                if (certificateFile) {
+                    formData.append('certificate_file', certificateFile);
                 }
-                $(this).prop('checked', false); // Uncheck Precertified
-            } else {
-                rawMaterialInput.removeClass('is-invalid');
-                rawMaterialInput.siblings('.text-danger').remove();
+                            // Add multi-value fields
+                const grade = $('#grade').val();
+                if (grade) {
+                    grade.forEach((val) => formData.append('grade', val));
+                }
 
-                // Set the raw material name in the modal's hidden input field
-                $('#rawMaterialField').val(rawMaterial);
+                const sources = $('#sources').val();
+                if (sources) {
+                    sources.forEach((val) => formData.append('sources', val));
+                }
 
-         // Show the modal
-        $('#addRawMaterialDocumentModal').modal('show');
-            // Disable the acceptance input field if precertified is checked
-            if ($(this).is(':checked')) {
-                acceptanceInput.prop('disabled', true);
-            } else {
-                acceptanceInput.prop('disabled', false);
-            }
-            }
-        });
+                const suppliers = $('#supplier').val();
+                if (suppliers) {
+                    suppliers.forEach((val) => formData.append('suppliers', val));
+                }
 
-        // Submit Raw Material Form
-        $('#submitButton').click(function (event) {
-            event.preventDefault();
+                // Collect test data
+                const test_data = [];
+                $('[id^="grade_"][id$="_acceptanceTestTableBody"], #mainAcceptanceTestTableBody').find('tr').each(function () {
+                    const rowId = $(this).attr('id');
+                    if (!rowId || !rowId.startsWith('grade_')) return;
 
-        var name = $('#raw-material').val().trim();
-        var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
-        var shelf_life_type = $('#shelf_life_type').val();
-        var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
-        var shelf_life_unit = $('#unit').val();
-        var precertified = $('#precertified').is(':checked');
-        var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
-        var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
-        var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
+                    const parts = rowId.split('_');
+                    const test_id = parts.length > 0 ? parts[parts.length - 1] : null;
+                    const grade_id = parts.length >= 3 ? parts[1] : null;
 
-            // Validation for shelf life value
-        if (shelf_life_type === 'add_duration' && (isNaN(shelf_life_value) || shelf_life_value <= 0)) {
-            $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
-            return;
-        }
+                    const min_value = $(this).find('.min-value').val();
+                    const max_value = $(this).find('.max-value').val();
+                    const unit_name = $(this).find('.unit-name').val();
+                    const reevaluation_frequency = $(this).find('.reevaluation-frequency').val();
 
-             // Handle case for 'TBD' or 'Not Applicable'
-        if (shelf_life_type === 'tbd' || shelf_life_type === 'not_applicable') {
-            shelf_life_value = null;  // Set shelf_life_value to null for these options
-            shelf_life_unit = null;   // Reset shelf_life_unit as well
-        }
+                    test_data.push({
+                        name: $('#raw-material').val(),
+                        acceptance_test_id: test_id,
+                        grade_id: grade_id,
+                        min_value: min_value || null,
+                        max_value: max_value || null,
+                        unit_name: unit_name || null,
+                        reevaluation_frequency: reevaluation_frequency || null
+                    });
+                });
 
-
-            // Get the current date
-            var currentDate = new Date();
-            var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
-
-            // Create the data object with all the fields
-            var rawMaterialData = {
-                name: name,
-                grade: grade,
-                shelf_life_type: shelf_life_type,
-                shelf_life_value: shelf_life_value,
-                shelf_life_unit: shelf_life_unit,
-                user_defined_date: userDefinedDate, // Autofill current date
-                precertified: precertified,
-                sources: sources,
-                suppliers: suppliers,
-                acceptance_test: acceptance_test,
-            };
-
-            $.ajax({
-                type: 'POST',
-                url: '{% url "raw-material-add" %}',
-                data: JSON.stringify(rawMaterialData),
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                success: function (response) {
-                    if (response.success) {
-                        showAlert('Data Submitted Successfully !', 'success');
-                        setTimeout(function () {
-                            window.location.href = "{% url 'raw-material' %}";
-                        }, 3000);
-                    } else {
-                        //  $('#error-message').text(response.message).show(); // Show error message
-                        showAlert('Data Submission Unsuccessful! Please try again.', 'error');
-
+                formData.append('test_data', JSON.stringify(test_data));
+                
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "raw-material-add" %}',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            showAlert('Data Submitted Successfully!', 'success');
+                            setTimeout(function () {
+                                window.location.href = "{% url 'raw-material' %}";
+                            }, 3000);
+                        } else {
+                            showAlert('Data Submission Unsuccessful! Please try again.', 'error');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred. Please try again.');
                     }
-                },
-                error: function () {
-                    //   $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
-                    showAlert('An error occurred: ' + error, 'error'); // Show error message in case of failure
+                });
+            });
 
-                }
+            // Document form submission
+            $('#addDocumentForm').submit(function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                var raw_material = $('#raw-material').val();
+
+                formData.append('raw_material', raw_material);
+
+                $.ajax({
+                    url: '{% url "add-raw-material-document" %}',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            $('#addRawMaterialDocumentModal').modal('hide');
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Error adding document. Please try again.');
+                    }
+                });
             });
         });
 
-        // Populate Category Dropdown Dynamically (Optional if already done in the template)
-        //const categoryChoices = [
-            //{ value: "", label: "Select a Value" },
-            //{ value: "DOC/DOCX", label: ".doc/.docx" },
-           // { value: "PDF", label: ".pdf" },
-           // { value: "TXT", label: ".txt" },
-           // { value: "XLS/XLSX", label: ".xls/.xlsx" },
-           // { value: "CSV", label: ".csv" },
-           // { value: "PPT/PPTX", label: ".ppt/.pptx" },
-           // { value: "ODP", label: ".odp" },
-          //  { value: "JPG/JPEG", label: ".jpg/.jpeg" },
-           // { value: "PNG", label: ".png" },
-           // { value: "ZIP", label: ".zip" },
-           // { value: "RAR", label: ".rar" }
-        //];
-
-        //const categoryDropdown = $('#category');
-       // categoryChoices.forEach(choice => {
-       //     categoryDropdown.append(new Option(choice.label, choice.value));
-       // });
-
-        // Submit Document Form
-        $('#addDocumentForm').submit(function (e) {
-            e.preventDefault();
-            var formData = new FormData(this);
-            var raw_material = $('#raw-material').val();
-
-            formData.append('raw_material', raw_material);
-
-            for (var pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-
-            }
-
-            $.ajax({
-                url: '{% url "add-raw-material-document" %}',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                success: function (response) {
-                    if (response.success) {
-                        // alert(response.message);
-                        $('#addRawMaterialDocumentModal').modal('hide');
-                    } else {
-                        // alert(response.message);
-                    }
-                },
-                error: function () {
-                    // alert('Error adding document. Please try again.');
-                }
-            });
-        });
-    });
-</script>
-{% endblock %}
+        function showAlert(message, type) {
+            // Implement your alert display logic here
+            alert(message);
+        }
+    </script>
+    {% endblock %}

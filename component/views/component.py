@@ -15,6 +15,11 @@ from rest_framework.response import Response
 from django.db.models import Max
 from qdpc_core_models.models.grade import Grade
 from qdpc_core_models.models.document_type import DocumentType
+from component.serializers.comptestdataserializer import CompTestDataSerializer
+from django.contrib.contenttypes.models import ContentType
+from consumable.serializers.consumable_list_serializer import PreCertificationSerializer
+from qdpc_core_models.models.division import Division
+import json
 
 
 class ComponentListFetchView(BaseModelViewSet):
@@ -44,8 +49,9 @@ class ComponentListFetchView(BaseModelViewSet):
         all_sources = Sources.objects.all().values('id', 'name')
         all_suppliers = Suppliers.objects.all().values('id', 'name')
         all_grades = Grade.objects.all().values('id', 'name','abbreviation')
-        
+        all_acceptance = AcceptanceTest.objects.all().values('id', 'name')
 
+       
         components_data = {
             'id': comp.id,
             'name': comp.name,
@@ -61,6 +67,8 @@ class ComponentListFetchView(BaseModelViewSet):
             'all_sources': list(all_sources),  # Include all available sources
             'all_suppliers': list(all_suppliers),  # Include all available suppliers
             'all_grades': list(all_grades),  # Include all available grades
+            'all_acceptance' : list(all_acceptance),
+
         }
 
         return components_data
@@ -92,37 +100,120 @@ class ComponentAdd(BaseModelViewSet):
         # Filter the AcceptanceTest objects to get only the most recent ones
         latest_acceptance_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
         document_types = DocumentType.objects.all()  # Add this line to fetch document types
-
+        owner = Division.objects.all()
         context = {
             'sources': sources,
             'suppliers': suppliers,
             'acceptence_test':latest_acceptance_tests,
             'grades':grades,
             'document_types': document_types,  # Pass document types to the template
-
+            'owner': owner,  # Pass document types to the template
         }
         return render(request, 'addcomponent.html',context)
-    
     def post(self, request):
-        data=request.data
-        print(request.data)
-        success=False
-        message=constants.USERNAME_PASSWORD_EMPTY
-        status_code=status.HTTP_403_FORBIDDEN
+        data = request.data.copy()
+        files = request.FILES
+        print("FILES:", files)
+        print("DATA:", data)
+
+        # Safely extract test_data
+        test_data_raw = data.get('test_data', '[]')
+        try:
+            test_data = json.loads(test_data_raw)
+        except Exception as e:
+            print("Failed to parse test_data:", e)
+            test_data = []
+
+# ✅ Extract acceptance_test ids and inject into data
+        acceptance_test_ids = []
+        for item in test_data:
+            test_id = item.get('acceptance_test_id')
+            if test_id and test_id not in acceptance_test_ids:
+                acceptance_test_ids.append(test_id)
+        data.setlist('acceptance_test', acceptance_test_ids)
+
+        # Convert to proper types
+        precertification = data.get('precertified', 'false')
+        precertification = precertification.lower() == 'true' if isinstance(precertification, str) else False
+
+        success = False
+        message = "Something went wrong"
+        status_code = status.HTTP_400_BAD_REQUEST
+        response_data = {}
 
         try:
             if data:
-                success, status_code, data, message = ComponentService.add_component_add(data=data)
-                print( success, status_code, data, message,"what i got afer testing")
+                # Call service to add component
+                success, status_code, component_data, message = ComponentService.add_component_add(data=data)
+                print(success, status_code, component_data, message, "Component creation response")
+
+                if success:
+                    component_id = component_data.get('id')
+
+                    # Attach component_id to each test data item
+                    for item in test_data:
+                        item['component_id'] = component_id
+
+                    # ✅ Save test data
+                    if test_data:
+                        serializer = CompTestDataSerializer(data=test_data, many=True)
+                        if serializer.is_valid():
+                            serializer.save()
+                            print("Test data saved successfully")
+                        else:
+                            print("Test data validation failed:", serializer.errors)
+                            return Response({
+                                'message': 'Test data validation failed',
+                                'errors': serializer.errors
+                            }, status=status.HTTP_400_BAD_REQUEST)
+
+                    # ✅ Save PreCertification
+                    if precertification:
+                        print("Handling PreCertification")
+
+                        def get_val(key):
+                            val = data.getlist(key)
+                            return val[0] if val else None
+
+                        precert_data = {
+                            'content_type': ContentType.objects.get(model='component').id,
+                            'object_id': component_id,
+                            'certified_by': get_val('certified_by'),
+                            'certificate_reference_no': get_val('certificate_ref'),
+                            'certificate_issue_date': get_val('issue_date'),
+                            'certificate_valid_till': get_val('valid_till'),
+                            'certificate_file': files.get('certificate_file'),
+                            'certificate_disposition': get_val('certificate_disposition') or 'CLEARED',
+                        }
+
+                        print("PreCertification Data:", precert_data)
+
+                        precert_serializer = PreCertificationSerializer(data=precert_data)
+                        if precert_serializer.is_valid():
+                            precert_serializer.save()
+                            print("PreCertification saved successfully")
+                        else:
+                            print("PreCertification serializer errors:", precert_serializer.errors)
+                            return Response({
+                                'message': 'PreCertification validation failed',
+                                'errors': precert_serializer.errors
+                            }, status=status.HTTP_400_BAD_REQUEST)
+
+                    response_data = component_data
+                    message = "Component created successfully"
+                    status_code = status.HTTP_201_CREATED
 
         except Exception as ex:
-            data={}
-            success = False
-            message = constants.USERNAME_PASSWORD_EMPTY
-            status_code = status.HTTP_400_BAD_REQUEST
-            
-        return self.render_response(data, success, message, status_code)
+            print("Exception occurred:", ex)
+            message = str(ex)
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
+        return self.render_response(
+            response_data if success else {},
+            success,
+            message,
+            status_code
+        )
 
 class ComponentDetailView(BaseModelViewSet):
     """
@@ -345,3 +436,11 @@ class AddComponentDocumentView(BaseModelViewSet):
                 'success': False,
                 'message': f"An error occurred: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class ComponentByid(BaseModelViewSet):
+    def get(self, request, material_id):
+        batches = Component.objects.filter(id=material_id)
+        serializer = ComponentSerializer(batches, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

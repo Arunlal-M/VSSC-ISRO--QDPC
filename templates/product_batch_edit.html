@@ -1,0 +1,590 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Edit Product Batch</h4>
+            </div>
+            <div class="page-btn">
+                <a href="{% url 'product-batch-list' %}" class="btn btn-added">Back to List</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div id="loadingIndicator" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading batch data...</p>
+                </div>
+
+                <div id="editFormContainer" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Select ID Type</label>
+                                <select id="id_type" class="form-control" required>
+                                    <option value="" disabled selected></option>
+                                    <option value="batch">Batch ID</option>
+                                    <option value="unit">Unit ID</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6 batch-field" style="display: none;">
+                            <div class="form-group">
+                                <label for="batch_id">Batch ID</label>
+                                <input type="text" id="batch_id" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 unit-field" style="display: none;">
+                            <div class="form-group">
+                                <label for="unit_id">Unit ID</label>
+                                <input type="text" id="unit_id" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="product">Product</label>
+                                <select id="product" class="form-control" required>
+                                    <option value="" disabled selected>Select Product</option>
+                                    {% for product in products %}
+                                    <option value="{{ product.id }}">{{ product.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                              <label for="raw_material">Raw Material</label>
+                              <select id="raw_material" class="form-control" required>
+                                <option value="" disabled selected>Select Raw Material</option>
+                              </select>
+                            </div>
+                          </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="raw_material_batch">Raw Material Batch</label>
+                                <select id="raw_material_batch" class="form-control" multiple required>
+                                   
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                              <label for="consumable">Consumable</label>
+                              <select id="consumable" class="form-control" required>
+                                <option value="" disabled selected>Select Consumable</option>
+                              </select>
+                            </div>
+                          </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="consumable_batch">Consumable Batch</label>
+                                <select id="consumable_batch" class="form-control" multiple required>
+                                   
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                              <label for="component">Component</label>
+                              <select id="component" class="form-control" required>
+                                <option value="" disabled selected>Select Component</option>
+                              </select>
+                            </div>
+                          </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="component_batch">Component Batch</label>
+                                <select id="component_batch" class="form-control" multiple required>
+                                    <option value="" disabled selected>Select Batch</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="process">Process</label>
+                                <select id="process" class="form-control" required disabled>
+                                    <option value="" disabled selected>Select Process</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div id="process-steps-container" style="display: none;">
+                                <!-- Process steps will be injected here -->
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="batch_size_value">Batch Size</label>
+                                <input type="number" id="batch_size_value" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="batch_size_unit">Batch Size Unit</label>
+                                <select id="batch_size_unit" class="form-control" required>
+                                    <option value="" disabled selected>Select Unit</option>
+                                    {% for unit in units %}
+                                    <option value="{{ unit.id }}">{{ unit.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="manufacturings_start_date">Manufacturing Start Date</label>
+                                <input type="date" id="manufacturings_start_date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="manufacturings_end_date">Manufacturing End Date</label>
+                                <input type="date" id="manufacturings_end_date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="packing_details">Packing Details</label>
+                                <textarea id="packing_details" class="form-control" rows="3" required></textarea>
+                            </div>
+                        </div>
+                          <div class="col-md-12">
+                            <div class="form-group">
+                                <button type="button" class="btn btn-primary" id="updateBatchBtn">
+                                    <i class="fas fa-save"></i> Update Batch
+                                </button>
+                                <button type="button" class="btn btn-success" id="qaApprovalBtn">
+                                    <i class="fas fa-check-circle"></i> Submit for QA Approval
+                                </button>
+                                <button type="button" class="btn btn-danger" id="cancelBtn">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="errorContainer" class="alert alert-danger" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="errorMessage"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+$(document).ready(function () {
+    // Get batch ID from URL
+    const pathParts = window.location.pathname.split('/');
+    const batchId = pathParts[pathParts.length - 2];
+    let batchData = null;
+
+    // Initialize select2
+    $('select').select2({
+        width: '100%',
+        placeholder: "Select items",
+        allowClear: true
+    });
+
+    // Show loading state
+    $('#loadingIndicator').show();
+    $('#editFormContainer').hide();
+    $('#errorContainer').hide();
+
+    // Load batch data
+    $.ajax({
+        url: `/api/product-batches/${batchId}/`,
+        type: 'GET',
+        success: function(response) {
+            batchData = response;
+            initializeForm();
+            $('#loadingIndicator').hide();
+            $('#editFormContainer').show();
+        },
+        error: function(xhr) {
+            $('#loadingIndicator').hide();
+            $('#errorMessage').text('Failed to load batch data: ' + 
+                (xhr.responseJSON?.detail || xhr.statusText));
+            $('#errorContainer').show();
+        }
+    });
+
+    function initializeForm() {
+        // Populate basic fields
+        $('#id_type').val(batchData.id_type).trigger('change');
+        if (batchData.id_type === 'batch') {
+            $('.batch-field').show();
+            $('#batch_id').val(batchData.batch_id);
+        } else {
+            $('.unit-field').show();
+            $('#unit_id').val(batchData.unit_id);
+        }
+
+        $('#product').val(batchData.product.id).trigger('change');
+        $('#batch_size_value').val(batchData.batch_size_value);
+        $('#batch_size_unit').val(batchData.batch_size_unit.id);
+        $('#manufacturings_start_date').val(batchData.manufacturings_start_date);
+        $('#manufacturings_end_date').val(batchData.manufacturings_end_date);
+        $('#packing_details').val(batchData.packing_details);
+
+        // Set up event handlers after initial load
+        setupEventHandlers();
+    }
+
+    function setupEventHandlers() {
+        // ID Type selection handler
+        $('#id_type').on('change', function() {
+            const selectedValue = $(this).val();
+            $('.batch-field, .unit-field').hide();
+            if(selectedValue === 'batch') {
+                $('.batch-field').show();
+            } else if(selectedValue === 'unit') {
+                $('.unit-field').show();
+            }
+        });
+
+        // Product change handler
+        $('#product').on('change', function() {
+            const productId = $(this).val();
+            if (!productId) return;
+
+            // Clear dependent fields
+            $('#raw_material, #consumable, #component').empty()
+                .append('<option value="" disabled selected>Loading...</option>');
+            $('#raw_material_batch, #consumable_batch, #component_batch').empty();
+            $('#process').empty().prop('disabled', true);
+
+            // Load product-specific data
+            loadProductData(productId);
+        });
+
+        // Raw Material change handler
+        $('#raw_material').on('change', function() {
+            const materialId = $(this).val();
+            const batchDropdown = $('#raw_material_batch');
+            
+            batchDropdown.empty();
+            if (!materialId) return;
+            
+            batchDropdown.append('<option value="">Loading batches...</option>');
+            
+            $.ajax({
+                url: `/api/raw-material-batches/?material_id=${materialId}`,
+                type: 'GET',
+                success: function(data) {
+                    batchDropdown.empty();
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(function(batch) {
+                            const selected = batchData.raw_material_batch.includes(batch.id);
+                            batchDropdown.append(
+                                `<option value="${batch.id}" ${selected ? 'selected' : ''}>${batch.batch_id}</option>`
+                            );
+                        });
+                        batchDropdown.trigger('change');
+                    } else {
+                        batchDropdown.append('<option value="" disabled>No batches found</option>');
+                    }
+                },
+                error: function(xhr) {
+                    batchDropdown.empty().append('<option value="">Error loading batches</option>');
+                }
+            });
+        });
+
+        // Similar handlers for consumable and component...
+
+        // Process change handler
+        $('#process').on('change', function() {
+            const processId = $(this).val();
+            const container = $('#process-steps-container');
+            
+            if (!processId) {
+                container.hide();
+                return;
+            }
+
+            container.html('<div class="text-center py-4"><div class="spinner-border"></div></div>').show();
+
+            // Load process steps
+            $.ajax({
+                url: `/api/process-steps/?process_id=${processId}&batch_id=${batchId}`,
+                type: 'GET',
+                success: function(response) {
+                    renderProcessSteps(response.results);
+                },
+                error: function(xhr) {
+                    container.html('<div class="alert alert-danger">Failed to load steps</div>');
+                }
+            });
+        });
+
+        // Update button handler
+        $('#updateBatchBtn').on('click', function() {
+            submitBatch('update');
+        });
+
+        // QA Approval button handler
+        $('#qaApprovalBtn').on('click', function() {
+            submitBatch('qa_approval');
+        });
+
+        // Cancel button handler
+        $('#cancelBtn').on('click', function() {
+            window.location.href = "{% url 'product-batch-list' %}";
+        });
+    }
+
+    function loadProductData(productId) {
+        // Show loading states
+        $('#raw_material, #consumable, #component').html('<option value="">Loading...</option>');
+        $('#process').html('<option value="">Loading...</option>').prop('disabled', true);
+
+        // Load all product data in parallel
+        Promise.all([
+            $.get(`/api/raw-materials/?product_id=${productId}`),
+            $.get(`/api/consumables/?product_id=${productId}`),
+            $.get(`/api/components/?product_id=${productId}`),
+            $.get(`/api/processes/?product_id=${productId}`)
+        ]).then(function(responses) {
+            // Populate raw materials
+            const rawMaterials = responses[0].results || [];
+            populateDropdown('#raw_material', rawMaterials, batchData.raw_material?.id);
+            
+            // Populate consumables
+            const consumables = responses[1].results || [];
+            populateDropdown('#consumable', consumables, batchData.consumable?.id);
+            
+            // Populate components
+            const components = responses[2].results || [];
+            populateDropdown('#component', components, batchData.component?.id);
+            
+            // Populate processes
+            const processes = responses[3].results || [];
+            populateDropdown('#process', processes, batchData.process?.id, true);
+            
+        }).catch(function(error) {
+            console.error("Error loading product data:", error);
+            resetDropdowns();
+        });
+    }
+
+    function populateDropdown(selector, items, selectedId = null, enableAfter = false) {
+        const dropdown = $(selector);
+        dropdown.empty().append('<option value="" disabled selected>Select...</option>');
+        
+        if (items.length > 0) {
+            items.forEach(item => {
+                dropdown.append(
+                    `<option value="${item.id}" ${selectedId === item.id ? 'selected' : ''}>${item.name}</option>`
+                );
+            });
+            if (enableAfter) {
+                dropdown.prop('disabled', false);
+            }
+            dropdown.trigger('change');
+        } else {
+            dropdown.append('<option value="" disabled>No options available</option>');
+        }
+    }
+
+    function renderProcessSteps(steps) {
+        const container = $('#process-steps-container');
+        container.empty();
+        
+        if (!steps || steps.length === 0) {
+            container.html('<div class="alert alert-info">No steps found for this process</div>');
+            return;
+        }
+        
+        steps.forEach((step, index) => {
+            const stepHtml = `
+                <div class="card mb-4 border-primary" data-step-id="${step.id}">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between">
+                        <h5 class="mb-0">Step ${index + 1}</h5>
+                        <button class="btn btn-sm btn-light toggle-step">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Process Description</label>
+                            <textarea class="form-control" name="process_description">${step.process_description || ''}</textarea>
+                        </div>
+                        
+                        <!-- Raw Material Section -->
+                        <div class="row border-bottom pb-3 mb-3">
+                            <div class="col-md-12">
+                                <h6 class="text-primary">Raw Material</h6>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Material</label>
+                                    <select class="form-control" name="raw_material">
+                                        ${generateOptions(rawMaterials, step.raw_material?.id)}
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- Add more fields similarly... -->
+                        </div>
+                        
+                        <!-- Add other sections similarly... -->
+                    </div>
+                </div>
+            `;
+            container.append(stepHtml);
+        });
+        
+        // Add toggle functionality
+        $('.toggle-step').on('click', function() {
+            $(this).closest('.card').find('.card-body').slideToggle();
+            $(this).find('i').toggleClass('fa-chevron-down fa-chevron-up');
+        });
+    }
+
+    function generateOptions(items, selectedId) {
+        if (!items || items.length === 0) {
+            return '<option value="" disabled>No options</option>';
+        }
+        
+        let options = '<option value="" disabled>Select...</option>';
+        items.forEach(item => {
+            options += `<option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>${item.name}</option>`;
+        });
+        return options;
+    }
+
+    function submitBatch(action) {
+        if (!validateForm()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please fill all required fields'
+            });
+            return;
+        }
+
+        const formData = collectFormData(action);
+        
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to ${action === 'update' ? 'update' : 'submit for QA approval'} this batch`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, proceed',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                sendUpdateRequest(formData, action);
+            }
+        });
+    }
+
+    function collectFormData(action) {
+        // Similar to your existing function but adapted for edit
+        return {
+            id_type: $('#id_type').val(),
+            batch_id: $('#batch_id').val(),
+            unit_id: $('#unit_id').val(),
+            product: $('#product').val(),
+            raw_material: $('#raw_material').val(),
+            raw_material_batch: $('#raw_material_batch').val(),
+            consumable: $('#consumable').val(),
+            consumable_batch: $('#consumable_batch').val(),
+            component: $('#component').val(),
+            component_batch: $('#component_batch').val(),
+            process: $('#process').val(),
+            batch_size_value: $('#batch_size_value').val(),
+            batch_size_unit: $('#batch_size_unit').val(),
+            manufacturings_start_date: $('#manufacturings_start_date').val(),
+            manufacturings_end_date: $('#manufacturings_end_date').val(),
+            packing_details: $('#packing_details').val(),
+            action: action,
+            process_steps: collectProcessStepsData()
+        };
+    }
+
+    function collectProcessStepsData() {
+        const steps = [];
+        $('#process-steps-container .card').each(function() {
+            const stepId = $(this).data('step-id');
+            steps.push({
+                id: stepId,
+                process_description: $(this).find('[name="process_description"]').val(),
+                // Collect all other step fields similarly
+            });
+        });
+        return steps;
+    }
+
+    function sendUpdateRequest(formData, action) {
+        const btn = action === 'update' ? $('#updateBatchBtn') : $('#qaApprovalBtn');
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+        
+        $.ajax({
+            url: `/api/product-batches/${batchId}/`,
+            type: 'PATCH',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message || 'Batch updated successfully'
+                }).then(() => {
+                    window.location.href = response.redirect_url || "{% url 'product-batch-list' %}";
+                });
+            },
+            error: function(xhr) {
+                const errorMsg = xhr.responseJSON?.detail || 
+                               xhr.responseJSON?.message || 
+                               'Failed to update batch';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMsg
+                });
+            },
+            complete: function() {
+                btn.prop('disabled', false).html(
+                    action === 'update' ? '<i class="fas fa-save"></i> Update Batch' : 
+                    '<i class="fas fa-check-circle"></i> Submit for QA Approval'
+                );
+            }
+        });
+    }
+
+    function validateForm() {
+        // Implement your validation logic
+        return true;
+    }
+
+    function getCookie(name) {
+        // Your existing cookie function
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

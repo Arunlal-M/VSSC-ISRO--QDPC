@@ -17,7 +17,7 @@ class RawMaterial(models.Model):
         ('add_duration', 'Add Duration'),
     ]
         
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=150, unique=True)
     sources = models.ManyToManyField(Sources, related_name='raw_materials')
     is_active = models.BooleanField(default=True)
     precertified = models.BooleanField(default=False, blank=True, null=True)  
@@ -25,9 +25,9 @@ class RawMaterial(models.Model):
     grade = models.ManyToManyField(Grade, related_name='raw_materials')
     shelf_life_type = models.CharField(max_length=20, choices=SHELF_LIFE_OPTIONS, null=True, blank=True, default='tbd',)
     shelf_life_value = models.FloatField(null=True, blank=True)
-    shelf_life_unit = models.CharField(max_length=10, choices=[('days', 'Days'), ('months', 'Months')],null=True,blank=True)
+    shelf_life_unit = models.CharField(max_length=10, choices=[('days', 'Days'), ('months', 'Months'),('years', 'Years')],null=True,blank=True)
     user_defined_date = models.DateField(default=now)
-    acceptance_test = models.ManyToManyField(AcceptanceTest, blank=True, null=True, related_name='raw_materials')
+    acceptance_test = models.ManyToManyField(AcceptanceTest, blank=True, related_name='raw_materials')
 
     @property
     def calculate_expiry_date(self):
@@ -36,6 +36,9 @@ class RawMaterial(models.Model):
             return procurement_date + timedelta(days=self.shelf_life_value)
         elif self.shelf_life_unit == 'months':
             return procurement_date + timedelta(days=self.shelf_life_value * 30)  # Approximation for months
+        elif self.shelf_life_unit == 'years':
+             return procurement_date + timedelta(days=self.shelf_life_value * 365)  # Approximation for years
+        return None  # Handle cases where shelf_life_unit is not set or invalid
 
     def __str__(self):
         return self.name
@@ -57,7 +60,7 @@ class RawMaterialDocument(models.Model):
     #     ('RAR', '.rar'),
     #  ]
     
-    raw_material = models.CharField(max_length=255,unique=True,null=True,blank=True)
+    raw_material = models.CharField(max_length=150,unique=True,null=True,blank=True)
     title = models.CharField(max_length=255)
     category = models.ForeignKey(DocumentType, on_delete=models.CASCADE,related_name='rawmaterial_documenttype',blank=True, null=True)
     issue_no = models.CharField(max_length=255)

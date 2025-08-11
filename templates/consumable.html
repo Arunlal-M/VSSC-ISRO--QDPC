@@ -92,11 +92,14 @@
                                                                     {{ batch.shelf_life_value }} 
 																	{{ batch.shelf_life_unit }}
                                                                 </td>
-                                                                <td class="clickable-row"
-                                                                    data-batch-id="{{ batch.id }}">
-                                                                    {% for test_name in batch.acceptance_test_names %}
-                                                                    {{ test_name }}{% if not forloop.last %}, {% endif %}
-                                                                    {% endfor %}
+                                                                <td class="clickable-row" data-batch-id="{{ batch.id }}">
+                                                                    {% if batch.acceptance_test_names %}
+                                                                        {% for test_name in batch.acceptance_test_names %}
+                                                                            {{ test_name }}{% if not forloop.last %}, {% endif %}
+                                                                        {% endfor %}
+                                                                    {% else %}
+                                                                        None
+                                                                    {% endif %}
                                                                 </td>
                                                                 <td>
                                                                     <div
@@ -110,14 +113,18 @@
                                                                     </div>
                                                                 </td>
                                                                 <td>
+                                                                    <!-- TRIGGER FROM TABLE -->
+                                                                    <a class="me-3 view-con-btn" data-id="{{ batch.id }}">
+                                                                        <img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+                                                                    </a> 
                                                                     <a class="me-3 view-user-btn" data-bs-toggle="modal" data-bs-target="#consumpage" data-batch-id="{{ batch.id }}">
                                                                         <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                                                     </a>
                                                                     
-                                                                    <!-- <a id="delete-btn" data-id="{{ batch.id }}">
+                                                                    <a id="delete-btn" data-id="{{ batch.id }}">
                                                                         <img src="{% static 'assets/img/icons/delete.svg' %}"
                                                                             alt="img">
-                                                                    </a> -->
+                                                                    </a>
                                                                 </td>
                                                             </tr>
 														{% endif %}
@@ -189,19 +196,18 @@
                                                                 </td>
 
                                                                 <td>
-                                                                    <!-- <a class="me-3 view-user-btn" href="javascript:void(0);"
-                                                                        data-bs-toggle="modal" data-bs-target="#materialpage"
-                                                                        data-batch-id="{{ batch.id }}">
-                                                                        <i class="fa fa-eye"></i>
-                                                                    </a> -->
+                                                                    <!-- TRIGGER FROM TABLE -->
+                                                                    <a class="me-3 view-con-btn" data-id="{{ batch.id }}">
+                                                                        <img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+                                                                    </a> 
                                                                     <a class="me-3 view-user-btn" data-bs-toggle="modal" data-bs-target="#consumpage" data-batch-id="{{ batch.id }}">
                                                                         <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                                                     </a>
                                                                     
-                                                                    <!-- <a id="delete-btn" data-id="{{ batch.id }}">
+                                                                    <a id="delete-btn" data-id="{{ batch.id }}">
                                                                         <img src="{% static 'assets/img/icons/delete.svg' %}"
                                                                             alt="img">
-                                                                    </a> -->
+                                                                    </a>
 
                                                                 </td>
                                                             </tr>
@@ -308,6 +314,52 @@
         </div>
     </div>
 </div>
+
+<!-- VIEW CONSUMABLE MODAL -->
+<div class="modal fade" id="viewConsumableModal" tabindex="-1" aria-labelledby="viewConsumableLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewConsumableLabel">View Consumable Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+        </div>
+        <div class="modal-body">
+          <div class="container">
+            <div class="row">
+              <div class="col-6 mb-2">
+                <label>Consumable</label>
+                <input type="text" id="view_name" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Shelf Life</label>
+                <input type="text" id="view_shelf_life" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Shelf Life Period</label>
+                <input type="text" id="view_shelf_life_period" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Sources</label>
+                <input type="text" id="view_sources" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Suppliers</label>
+                <input type="text" id="view_suppliers" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Grades</label>
+                <input type="text" id="view_grades" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Acceptance Test</label>
+                <input type="text" id="view_acceptance" class="form-control" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 {% endblock %}
 
@@ -423,6 +475,42 @@
                 },
                 error: function () {
                     $('#error-message').text('An error occurred. Please try again.').show();
+                }
+            });
+        });
+    });
+
+    //VIEW
+    $(document).ready(function () {
+        $('.view-con-btn').on('click', function () {
+            alert("hii")
+
+          const conId = $(this).data('id');
+            $.ajax({
+                type: 'POST',
+                url: `/consumable/view-consumable/${conId}/`,
+                
+                headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function (response) {
+                if (response.success) {
+                    const data = response.data;
+                    $('#view_name').val(data.name);
+                    $('#view_shelf_life').val(data.shelf_life_value + ' ' + data.shelf_life_unit);
+                    $('#view_shelf_life_period').val(data.shelf_life_value);
+                    $('#view_sources').val(data.sources.map(s => s.name).join(', '));
+                    $('#view_suppliers').val(data.suppliers.map(s => s.name).join(', '));
+                    $('#view_grades').val(data.grades.map(g => g.name).join(', '));
+                    $('#view_acceptance').val(data.acceptance_test.map(a => a.name).join(', '));
+                    $('#viewConsumableModal').modal('show');
+                    
+                } else {
+                    alert('Consumable not found.');
+                }
+                },
+                error: function () {
+                alert('Failed to fetch consumable details.');
                 }
             });
         });

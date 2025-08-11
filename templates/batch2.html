@@ -21,6 +21,12 @@
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
+                            <label for="procurement_date">Procurement Date</label>
+                            <input type="date" id="procurement_date" name="procurement_date" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
                             <label>Raw Material</label>
                             <select id="raw_material" name="raw_material" class="form-control">
                                 <option value="">Select a Raw Material</option>
@@ -30,12 +36,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label for="procurement_date">Procurement Date</label>
-                            <input type="date" id="procurement_date" name="procurement_date" class="form-control">
-                        </div>
-                    </div>
+
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Batch Size</label>
@@ -45,7 +46,7 @@
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Unit</label>
-                            <select class="select" id="batch_size_unit" name="batch_size_unit" >
+                            <select class="select" id="batch_size_unit" name="batch_size_unit">
                                 <option value="">Select a Unit</option>
                                 {% for unit in units %}
                                 <option value="{{ unit.id }}">{{ unit.name }}</option>
@@ -59,6 +60,12 @@
                             <input type="text" name="packing_details" id="packing_details" class="form-control">
                         </div>
                     </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="date" id="expiry_date" name="expiry_date" class="form-control" readonly>
+                        </div>
+                    </div>
                     <div class="col-lg-12">
                         <button id="submitButton" class="btn btn-submit me-2">Submit</button>
                     </div>
@@ -68,7 +75,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="recents" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="recents" tabindex="-1" aria-hidden="true" >
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -96,8 +103,20 @@
                     url: `/product/raw-material/${selectedValue}/`,
                     type: 'GET',
                     success: function (response) {
-                        var rawMaterialData = response.data;
-                        console.log(response.data)
+
+                    console.log("rawmaterial data",response.data);
+                        var rawMaterialData = response.data;                      
+                        var procurementDate = $('#procurement_date').val();
+                        var shelfLifeValue = rawMaterialData.shelf_life_value;
+                        var shelfLifeUnit = rawMaterialData.shelf_life_unit;
+                        var expiryDate = null;
+
+                        // ✅ CHANGE: Calculate Expiry Date if procurement date is available
+
+                        if (procurementDate && shelfLifeValue && shelfLifeUnit) {
+                            expiryDate = calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit);
+                            $('#expiry_date').val(expiryDate);
+                        }
 
                         var acceptanceTests = rawMaterialData.acceptance_test;
                         var tabContent = $('#tab-content');
@@ -186,72 +205,100 @@
                         </div>
                     `;
 
-                            acceptanceTests.forEach((test) => {
-                                newContent += `
-                            <div class="row mb-3 align-items-center border-bottom">
-                               <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>Specification</label>
-                                        <input type="text" id="specification-value-${test.id}" value="${test.min}-${test.max}" placeholder="Enter specification" class="form-control" readonly>
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>${test.name}</label>
-                                        <input type="number" id="test-value-${test.id}" placeholder="Enter test value" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>Unit</label>
-                                        <input type="text" id="unit-${test.id}" value="${test.unit}" placeholder="Enter unit" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select class="form-control" id="status-${test.id}" style="background-color: green; color: white;">
-                                            <option value="Valid">Specification Met</option>
-                                            <option value="Invalid">Specification Not Met</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>Remark</label>
-                                        <input type="text" id="remark-${test.id}" placeholder="Enter remark" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>File</label>
-                                        <input type="file" class="form-control mt-2" id="file-${test.id}">
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                           
+                            $(document).on('change', '#grade-dropdown', function () {
 
-                            // Add event listener to check if test value is within the min and max range
-                            $(document).on('input', `#test-value-${test.id}`, function () {
-                                var enteredValue = parseFloat($(this).val());
+                                    var gradeID = $(this).val();                                  
+                                    const selectedGradeName = $(this).find('option:selected').text();                                  
+                                    const rawMaterialID = $('#raw_material').val();                                   
+                                    const rawMaterialName = $('#raw_material option:selected').text();
+                                    if (!gradeID || !rawMaterialID) {
+                                        alert('Please select a valid grade and raw material.');
+                                        return;
+                                    }
 
-                                var min = parseFloat(test.min);
-                                var max = parseFloat(test.max);
-                                var statusDropdown = $(`#status-${test.id}`);
+                                  
 
-                                // Automatically select status based on entered value
-                                if (enteredValue >= min && enteredValue <= max) {
-                                    statusDropdown.val("Valid");
-                                    statusDropdown.css("background-color", "green");
-                                    statusDropdown.css("color", "white");
-                                } else {
-                                    statusDropdown.val("Invalid");
-                                    statusDropdown.css("background-color", "red");
-                                    statusDropdown.css("color", "white");
-                                }
+                                $.ajax({
+                                    url: '/product/rawmaterial-add-batch/',
+                                    type: 'GET',
+                                    data: {
+                                        grade_name: gradeID,
+                                        raw_material_name: rawMaterialID
+                                    },
+                                    success: function (response) {
+                                        const acceptanceTests = response.tests;
+
+                                        console.log("grade ropdown data",acceptanceTests);
+                                        
+
+                                        const tabContent = $('#tab-content');
+                                        const testBlockId = `grade-test-block-${selectedGradeName}`;
+                                        const newTestBlock = $(`<div id="${testBlockId}" class="grade-test-block"></div>`);
+
+                                        // ✅ Clear previous test block
+                                        $('.grade-test-block').remove();
+
+                                        // ✅ Generate content for this grade
+                                        acceptanceTests.forEach((test) => {
+                                            const testHtml = `
+                    <div class="row mb-3 align-items-center border-bottom">
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>Specification</label>
+                            <input type="text" id="specification-value-${test.id}" value="${test.min}-${test.max}" class="form-control" readonly>
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>${test.name}</label>
+                            <input type="number" id="test-value-${test.id}" class="form-control" placeholder="Enter test value">
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>Unit</label>
+                            <input type="text" id="unit-${test.id}" value="${test.unit}" class="form-control" readonly>
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>Status</label>
+                            <select class="form-control" id="status}">
+                                <option value="Valid">Specification Met</option>
+                                <option value="Invalid">Specification Not Met</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>Remark</label>
+                            <input type="text" id="remark" class="form-control" placeholder="Enter remark">
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>File</label>
+                            <input type="file" class="form-control mt-2" id="fileUpload"> 
+                        </div>
+                    </div>
+                `;
+
+                                            newTestBlock.append(testHtml);
+
+                                            // ✅ Bind value checker
+                                            $(document).off('input', `#test-value-${test.id}`).on('input', `#test-value-${test.id}`, function () {
+                                                const val = parseFloat($(this).val());
+                                                const min = parseFloat(test.min);
+                                                const max = parseFloat(test.max);
+                                                const status = $(`#status-${test.id}`);
+
+                                                if (!isNaN(val) && val >= min && val <= max) {
+                                                    status.val("Valid").css({ backgroundColor: "green", color: "white" });
+                                                } else {
+                                                    status.val("Invalid").css({ backgroundColor: "red", color: "white" });
+                                                }
+                                            });
+                                        });
+
+                                        // ✅ Append the new block and ensure visibility
+                                        tabContent.append(newTestBlock).show();
+                                    },
+                                    error: function () {
+                                        alert('Failed to fetch acceptance tests.');
+                                    }
+                                });
                             });
 
-                        });
 
                             newContent += `
                         <div class="row">
@@ -269,29 +316,33 @@
                             var formData = new FormData();
                             formData.append('raw_material', selectedValue);
                             formData.append('batch_id', batchId);
-                        
+                            formData.append('expiry_date', expiryDate);//  expiry date in submission
+
                             // Loop through each acceptance test and append its data to FormData
                             acceptanceTests.forEach((test, index) => {
                                 formData.append(`acceptance_tests[${index}][id]`, test.id);
                                 formData.append(`acceptance_tests[${index}][test_value]`, $(`#test-value-${test.id}`).val());
-                                formData.append(`acceptance_tests[${index}][min_value]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[0], 10));
-                                formData.append(`acceptance_tests[${index}][max_value]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[1], 10));
-                                formData.append(`acceptance_tests[${index}][status]`, $(`#status-${test.id}`).val());
-                                formData.append(`acceptance_tests[${index}][remark]`, $(`#remark-${test.id}`).val());
+                                formData.append(`acceptance_tests[${index}][min]`, parseInt($(`#specification-value-${test.id}`).val()));
+                                formData.append(`acceptance_tests[${index}][max]`, parseInt($(`#specification-value`).val()));
+                                formData.append(`acceptance_tests[${index}][status]`, $(`#status`).val());
+
+                                // formData.append(`acceptance_tests[${index}][status]`, $(`#status-${test.id}`).val());
+                                formData.append(`acceptance_tests[${index}][remark]`, $(`#remark`).val()); 
                                 formData.append(`acceptance_tests[${index}][created_by]`, 'user');
-                        
+
                                 // Append the file directly (if a file is selected)
-                                var fileInput = $(`#file-${test.id}`)[0].files[0];
-                                if (fileInput) {
-                                    formData.append(`acceptance_tests[${index}][file]`, fileInput);
-                                }
+                                var fileInput = $('#fileUpload')[0]?.files[0];
+                                        if (fileInput) {
+                                            formData.append(`acceptance_tests[${index}][file]`, fileInput);
+                                        }
+
                             });
-                        
+
                             // Append additional fields for source, supplier, and grade
                             formData.append('sources', $('#source-dropdown').val());
                             formData.append('suppliers', $('#supplier-dropdown').val());
                             formData.append('grade', $('#grade-dropdown').val());
-                        
+
                             // AJAX request to send FormData to the server
                             $.ajax({
                                 url: '{% url "rawmaterial-batch-test-add" %}',
@@ -311,8 +362,8 @@
                                 }
                             });
                         });
-                        
-                        
+
+
                     },
                     error: function (error) {
                         console.log('Error fetching data:', error);
@@ -322,9 +373,9 @@
         });
     });
 
-    $(document).ready(function() {
-        $('#submitButton').click(function(event) {
-            event.preventDefault(); 
+    $(document).ready(function () {
+        $('#submitButton').click(function (event) {
+            event.preventDefault();
             // Check if this alert shows
 
             // Gather form data
@@ -335,6 +386,7 @@
             var batchSizeUnit = $('#batch_size_unit').val();
             // var batchSizeUnit = $('#batch_size_unit').val() ? $('#batch_size_unit').val().map(Number) : [];
             var packingDetails = $('#packing_details').val();
+            var expiryDate = $('#expiry_date').val(); //  Get expiry date from the form
 
             // Create the data object
             var rawMaterialBatchData = {
@@ -343,9 +395,11 @@
                 procurement_date: procurementDate,
                 batch_size_value: batchSizeValue,
                 batch_size_unit: batchSizeUnit,
-                packing_details: packingDetails
+                packing_details: packingDetails,
+                expiry_date: expiryDate// Send expiry date to backend
+
             };
-        // Debug: Check the data object
+            // Debug: Check the data object
 
             // Send data as JSON
             $.ajax({
@@ -356,20 +410,38 @@
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
                 },
-                success: function(response) {
-                // Check the response
+                success: function (response) {
+                    // Check the response
                     if (response.success) {
                         window.location.href = "{% url 'raw-material-batch-fetch' %}"; // Redirect or update the UI as needed
                     } else {
                         $('#error-message').text(response.message).show(); // Show error message
                     }
                 },
-                error: function() {
+                error: function () {
                     $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
                 }
             });
         });
     });
+
+    //  Function to calculate expiry date
+
+    function calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit) {
+        var date = new Date(procurementDate);
+
+        if (shelfLifeUnit === 'days') {
+            date.setDate(date.getDate() + shelfLifeValue);
+        } else if (shelfLifeUnit === 'months') {
+            date.setMonth(date.getMonth() + shelfLifeValue);
+        } else if (shelfLifeUnit === 'years') {
+            date.setFullYear(date.getFullYear() + shelfLifeValue);
+        }
+
+        return date.toISOString().split('T')[0];  // Return formatted date (YYYY-MM-DD)
+    }
+
+
 
 </script>
 

@@ -47,23 +47,31 @@ INSTALLED_APPS = [
     'consumable',
     'process',
     'component',
+    'stage_clearance',
+    'qdpc.apps.QdpcConfig',
 
 
 
 
 ]
+
+# Authentication Settings
+AUTH_USER_MODEL = 'qdpc_core_models.User'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'qdpc.core.helpers.UserAuthenticator',]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  # This handles authentication
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'authentication.middleware.RedirectUnauthorizedMiddleware',
+    'authentication.middleware.ThreadLocalMiddleware',
+    # 'authentication.middleware.RedirectUnauthorizedMiddleware',  # Uncomment if needed
 ]
-
 ROOT_URLCONF = 'qdpc.urls'
 
 TEMPLATES = [
@@ -88,6 +96,27 @@ WSGI_APPLICATION = 'qdpc.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     },
+ 
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'isro_new',
+#         'USER': 'admin',
+#         'PASSWORD': 'aDmin11@',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -136,9 +165,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-AUTH_USER_MODEL = 'qdpc_core_models.User'
 
 
 REST_FRAMEWORK = {

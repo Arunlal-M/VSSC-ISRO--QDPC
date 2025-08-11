@@ -1,0 +1,1089 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+      <h4 class="page-title">Add Product Batch</h4>
+      <a href="{% url 'product-batch-list' %}" class="btn btn-added">Back to List</a>
+    </div>
+    <form id="batchForm" enctype="multipart/form-data">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Product Identification</h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-3 mb-3">
+
+
+               <div class="col-md-6">
+      <label for="product_data" class="form-label">Select Type</label>
+      <select id="product_data" class="form-control">
+        <option value="batch">Batch</option>
+        <option value="unit">Unit</option>
+      </select>
+    </div>
+
+    <!-- Batch ID Input -->
+    <div class="col-md-6" id="batchIdContainer">
+      <label for="batchId" class="form-label">Batch ID</label>
+      <input type="text" class="form-control" id="batchId" name="batchId" placeholder="Enter Batch ID">
+    </div>
+
+    <!-- Unit ID Input -->
+    <div class="col-md-6" id="unitIdContainer">
+      <label for="unitId" class="form-label">Unit ID</label>
+      <input type="text" class="form-control" id="unitId" name="unitId" placeholder="Enter Unit ID">
+    </div>
+  </div>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label for="manufacturingStart" class="form-label">Manufacturing Start</label>
+                  <input type="date" class="form-control" id="manufacturingStart" name="manufacturingStart">
+                </div>
+                <div class="col-md-6">
+                  <label for="manufacturingEnd" class="form-label">Manufacturing End</label>
+                  <input type="date" class="form-control" id="manufacturingEnd" name="manufacturingEnd">
+                </div>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label for="product">Product</label>
+                  <select id="product" class="form-control" >
+                    <option value="" disabled selected>Select Product</option>
+                    {% for prodct in products %}
+                    <option value="{{ prodct.id }}">{{ prodct.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Applicable Drawings</h5>
+            </div>
+            <div class="card-body" id="drawingContainer">
+              <table>
+                <tr>
+                  <th>Drwaning Tittle </th>
+                </tr>
+              </table>
+
+              <p class="text-muted">Please select a product to load drawings.</p>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Raw Materials</h5>
+            </div>
+            <div class="card-body">
+              <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                  <tr>
+                    <th>Raw Material</th>
+                    <th>Raw Material Batch</th>
+                    <th>Expiry Date</th>
+                    <th>Source Name</th>
+                    <th>Supplier Name</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="rawMaterialTableBody"></tbody>
+              </table>
+              <div class="text-end mt-2">
+                <button type="button" class="btn btn-primary" id="addRowBtn">+ Add Raw Material</button>
+              </div>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Component Selection</h5>
+            </div>
+            <div class="card-body">
+              <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                  <tr>
+                    <th>Component</th>
+                    <th>Component Batch</th>
+                    <th>Expiry Date</th>
+                    <th>Source Name</th>
+                    <th>Supplier Name</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="componentTableBody"></tbody>
+              </table>
+              <div class="text-end mt-2">
+                <button type="button" class="btn btn-primary" id="addComponentRowBtn">+ Add Component</button>
+              </div>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Consumable Selection</h5>
+            </div>
+            <div class="card-body">
+              <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                  <tr>
+                    <th>Consumable</th>
+                    <th>Batch</th>
+                    <th>Expiry Date</th>
+                    <th>Source</th>
+                    <th>Supplier</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="consumableTableBody"></tbody>
+              </table>
+              <div class="text-end mt-2">
+                <button class="btn btn-primary" id="addConsumableRowBtn">+ Add Consumable</button>
+              </div>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Raw Material Acceptance Test Results</h5>
+            </div>
+            <div class="card-body" id="acceptanceTestContainer">
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Raw Material Process</h5>
+            </div>
+            <div class="card-body" id="processSetionContainer">
+            <table class="raw-material-acceptance-table" >
+
+                <th>Process Name</th>
+              </table>             
+            </div>
+          </div>
+            <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Equipment Details</h5>
+            </div>
+            <div class="card-body" id="equpmentSetionContainer">
+              <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                  <tr>
+                    <th>Equipment Name</th>
+                    <th>Equipment ID</th>
+                    <th>Calibration Due Date</th>
+                    <th>Show Calibration Certificate</th>
+                  </tr>
+                </thead>
+                <tbody id="equpmentTableBody"></tbody>
+              </table>
+              <div class="text-end mt-2">
+                <!-- <button class="btn btn-primary" id="addEqupmntRowBtn">+ Add Equipment</button> -->
+              </div>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Product Acceptance Tests</h5>
+            </div>
+            <div class="card-body" id="productacceptenceSetionContainer">
+              <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                  <tr>
+                    <th>Acceptance Test</th>
+                    <th>Specification</th>
+                    <th>Result</th>
+                    <th>Date of Test</th>
+                    <th>Remarks</th>
+                    <th>Upload Test Report</th>
+                    <th>View Test Report</th>
+                  </tr>
+                </thead>
+                <tbody id="productacceptenceTableBody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+             <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between">
+                <h5 class="mb-0">Additional Data Tables</h5>
+                <button type="button" class="btn btn-light btn-sm" id="addTableBtn">
+                    <i class="fas fa-plus"></i> Add New Table
+                </button>
+            </div>
+            <div class="card-body" id="tablesContainer">
+                <!-- Dynamic tables will appear here -->
+                <div class="alert alert-info">
+                    Click "Add New Table" to create your first table
+                </div>
+            </div>
+        </div>
+       
+          <div class="row mt-4">
+            <div class="col-md-12 text-end">
+              <button type="submit" class="btn btn-primary">Save Batch</button>
+              <button type="button" class="btn btn-success" id="qaApprovalBtn">QA Approval</button>
+            </div>
+          </div>
+
+        </div> 
+      </div> 
+    </form>
+  </div> 
+</div> 
+
+{% endblock %}
+<style>
+  .is-invalid {
+    border: 2px solid red !important;
+  }
+</style>
+{% block scripts %}
+<script>
+let rawMaterialsList = [];
+let drawings = [];
+let componentList = [];
+let consumableList = [];
+$(document).ready(function () {
+
+ $('#unitIdContainer').hide();
+
+    $('#product_data').on('change', function () {
+      const selected = $(this).val();
+      if (selected === 'unit') {
+        $('#unitIdContainer').show();
+        $('#batchIdContainer').hide();
+      } else {
+        $('#batchIdContainer').show();
+        $('#unitIdContainer').hide();
+      }
+    });
+
+  $('#product').change(function () {
+    const productId = $(this).val();
+    if (!productId) return;
+    $('#rawMaterialTableBody').empty();
+    $('#componentTableBody').empty();
+    $('#consumableTableBody').empty();
+    $.ajax({
+      url: '/product/api/raw-materials/',
+      method: 'GET',
+      data: { product_id: productId },
+      success: function (data) {
+        const processcontainer =$('#processSetionContainer');       
+        const container = $('#acceptanceTestContainer');
+        const section = $('#acceptanceTestSection');
+        rawMaterialsList = data.raw_materials;
+        addRawMaterialRow();
+        
+      },      
+      error: function () {
+        alert('Failed to load raw materials');    
+      }
+    });
+
+    // Load Drawings dynamically based on product
+$.ajax({
+  url: '/product/api/drawings/',
+  method: 'GET',
+  data: { product_id: productId },
+  success: function (data) {
+    const container = $('#drawingContainer');
+    container.empty();
+
+    if (data.length === 0) {
+      container.append(`<p class="text-muted">No drawings found for this product.</p>`);
+    } else {
+      data.forEach(drawing => {
+        const checkboxHtml = `
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="${drawing.id}" id="drawing${drawing.id}" name="drawings[]">
+            <label class="form-check-label" for="drawing${drawing.id}">
+              ${drawing.drawing_title}
+            </label>
+          </div>`;
+        container.append(checkboxHtml);
+      });
+    }
+  },
+  error: function () {
+    alert('Failed to load drawings');
+  }
+});    
+    $.ajax({
+      url: '/product/api/get-process/',
+      method: 'GET',
+      data: { product_id: productId },
+      success: function (data) {      
+        const container =$('#processSetionContainer');
+         container.empty();
+          $.each(data, function(index, process) {
+            const html = `
+                <div class="process-item">
+                    <span>${process.process_title}</span>
+                </div>
+            `;
+            container.append(html);
+        });
+      },
+      error: function () {
+        alert('Failed to load components');
+      }
+    });
+    $.ajax({
+      url: '/product/api/get-acceptance-tests/',
+      method: 'GET',
+      data: { product_id: productId },
+      success: function(data) {  
+
+        console.log("acceptence",data);
+         
+        const tableBody = $('#productacceptenceTableBody');
+        tableBody.empty();
+            if (data.length === 0) {
+      tableBody.append(`
+        <tr>
+          <td colspan="7" class="text-muted">No acceptance tests found for this product.</td>
+        </tr>
+      `);
+    } else {
+      data.forEach((test, index) => {
+        const result = test.result || '';
+        const date = test.date_of_test || '';
+        const remark = test.remark || '';
+        const report = test.report ? `<a href="${test.report}" target="_blank" class="btn btn-sm btn-info">View</a>` : `<button type="button" class="btn btn-sm btn-secondary" disabled>No file</button>`;
+
+        const row = `
+          <tr data-acceptance-id="${test.id}">
+            <td>${test.acceptance_test_name || 'Test #' + test.acceptance_test}</td>
+                 <td>${test.min_value} - ${test.max_value} ${test.unit_name || ''}</td>
+            <td><input type="text" name="result_${test.id}" class="form-control result-input" value="${result}"></td>
+            <td><input type="date" name="date_${test.id}" class="form-control date-input" value="${date}"></td>
+            <td><input type="text" name="remark_${test.id}" class="form-control remark-input" value="${remark}"></td>
+            <td><input type="file" name="report_${test.id}" class="form-control report-input"></td>
+            <td>${report}</td>
+          </tr>
+        `;
+        tableBody.append(row);
+      });
+        }
+      },
+      error: function() {
+        alert('Failed to load acceptance tests');
+      }
+    });
+    $.ajax({
+      url: '/product/api/components/',
+      method: 'GET',
+      data: { product_id: productId },
+      success: function (data) {
+        componentList = data;
+        addComponentRow();
+      },
+      error: function () {
+        alert('Failed to load components');
+      }
+    });  
+    $.ajax({
+      url: '/product/api/consumables/',
+      method: 'GET',
+      data: { product_id: productId },
+      success: function (data) {
+
+        console.log("consumable",data);
+        
+        consumableList = data;
+        addConsumableRow();
+      },
+      error: function () {
+        alert('Failed to load consumables');
+      }
+    });    
+    $.ajax({
+      url: '/product/api/get-equpment/',
+      method: 'GET',
+      data: { product_id: productId },
+    success: function (data) {    
+    const tableBody = $('#equpmentTableBody');
+    tableBody.empty();
+    if (!data.equipment) {
+        tableBody.append(`<tr><td colspan="5" class="text-danger">Error: ${data.error || 'Unexpected response'}</td></tr>`);
+        return;
+    }
+    const equipmentList = data.equipment;
+    if (equipmentList.length === 0) {
+        tableBody.append(`<tr><td colspan="5" class="text-muted">No equipment found for this product.</td></tr>`);
+    } else {
+        equipmentList.forEach(equipment => {
+            const docs = equipment.documents || [];
+            const doc = docs.length > 0 ? docs[0] : null;
+            const fileUrl = doc ? `/media/${doc.documentFile}` : null;
+            const rowHtml = `
+                <tr>
+                    <td>${equipment.name}</td>
+                    <td>${equipment.serial_no}</td>
+                    <td>${equipment.calibration_due_date || 'N/A'}</td>
+                    <td>
+                        ${fileUrl ? `<a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>` : 'No Document'}
+                    </td>
+                   
+                </tr>`;
+            tableBody.append(rowHtml);
+        });
+    }
+
+    function isImageFile(filePath) {
+        return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(filePath);
+    }
+},
+
+
+      error: function () {
+        alert('Failed to load equipment data');
+      }
+    });
+  });
+
+  $('#addRowBtn').click(function (e) {
+    e.preventDefault();
+    addRawMaterialRow();
+  });
+  $('#addComponentRowBtn').click(function (e) {
+    e.preventDefault();
+    addComponentRow();
+  });
+  $('#addConsumableRowBtn').click(function (e) {
+    e.preventDefault();
+    addConsumableRow();
+  });
+});
+function addRawMaterialRow() {
+  const options = rawMaterialsList.map(rm =>
+    `<option value="${rm.id}">${rm.name}</option>`
+  ).join('');
+
+  const row = `
+    <tr>
+      <td><select class="form-select raw-material-select"><option value="">-- Select --</option>${options}</select></td>
+      <td><select class="form-select raw-batch-select"><option value="">-- Select Batch --</option></select></td>
+      <td><input type="text" class="form-control expiry" readonly></td>
+      <td><input type="text" class="form-control source" readonly></td>
+      <td><input type="text" class="form-control supplier" readonly></td>
+      <td><input type="text" class="form-control status" readonly></td>
+    
+    </tr>`;
+  $('#rawMaterialTableBody').append(row);
+}
+$(document).on('change', '.raw-material-select', function () {
+  const selectedId = parseInt($(this).val());
+  const row = $(this).closest('tr');
+  const material = rawMaterialsList.find(rm => rm.id === selectedId);
+  row.find('.source, .supplier, .expiry, .status').val('');
+  row.find('.raw-batch-select').html('<option value="">-- Select Batch --</option>');
+  if (material) {
+    row.find('.source').val((material.source_names || []).join(', '));
+    row.find('.supplier').val((material.supplier_names || []).join(', '));
+    const batchOptions = (material.batches || []).map(batch => `
+      <option value="${batch.id}" data-expiry="${batch.expiry_date}" data-status="${batch.status}">
+        ${batch.batch_id}
+      </option>`).join('');
+    row.find('.raw-batch-select').append(batchOptions);   
+    appendPrecertifiedTestData(selectedId);
+  }
+});
+function appendPrecertifiedTestData(rawMaterialId) {
+  const productId = $('#product').val(); 
+  if (Number.isNaN(rawMaterialId) || !productId) {
+    console.warn("Missing rawMaterialId or productId");
+    return;
+  }
+  $.ajax({
+    url: '/product/api/get-rawacceptance-tests/',
+    method: 'GET',
+    data: {
+      raw_material_id: rawMaterialId,
+      product_id: productId
+    },
+    success: function (response) {    
+      
+      console.log(response);
+      
+      $('#acceptanceTestContainer').empty();
+      const rawMaterialName = response.raw_material_name || 'Unknown RM';
+      const batch = response.batch || '-';
+      const grade = response.grade_name || '-';
+      const source = response.sources_name || '-';
+      const supplier = response.suppliers_name || '-';
+      const precertifiedBatches = response.batches || [];
+      if (precertifiedBatches.length > 0) {
+        let preTableHTML = `
+        <div class="border p-3 my-4">
+          <h5 class="text-danger mb-3"><strong>If the raw material is a pre-certified item, the following table is to be shown:</strong></h5>
+          <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th colspan="4" class="text-start">
+                    <strong>Raw material name:</strong> ${rawMaterialName} <span class="text-muted">(Pre-certified)</span>
+                  </th>
+                </tr>
+                <tr>
+                  <th>Batch: ${batch}</th>
+                  <th>Grade: ${grade}</th>
+                  <th>Source: ${source}</th>
+                  <th>Supplier: ${supplier}</th>
+                </tr>
+                <tr>
+                  <th colspan="2">Raw Material Batch</th>
+                  <th colspan="2">View Material Certificates</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+        precertifiedBatches.forEach(batchItem => {
+          preTableHTML += `
+                <tr>
+                  <td colspan="2">${batchItem.batch_id}</td>
+                  <td colspan="2"><button class="btn btn-sm btn-primary">View</button></td>
+                </tr>`;
+        });
+
+        preTableHTML += `
+              </tbody>To be entered by the user 
+            </table>
+          </div>
+          <p class="mt-3"><strong>This same logic and design is applicable for Raw material, Components and Consumables.</strong></p>
+        </div>`;
+
+        $('#acceptanceTestContainer').append(preTableHTML);
+      }
+
+      if (response.tests && response.tests.length > 0) {
+        let testTableHTML = `
+        <div class="border p-3 my-4">
+          <h5 class="text-primary mb-3"><strong>Acceptance Test Results</strong></h5>
+          <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th colspan="6" class="text-start">
+                    <strong>Raw material name:</strong> ${rawMaterialName}
+                  </th>
+                </tr>
+                <tr>
+                  <th>Batch: ${batch}</th>
+                  <th>Grade: ${grade}</th>
+                  <th colspan="2">Source: ${source}</th>
+                  <th colspan="2">Supplier: ${supplier}</th>
+                </tr>
+                <tr>
+                  <th>Acceptance Test</th>
+                  <th>Specification</th>
+                  <th>Result</th>
+                  <th>Date of Test</th>
+                  <th>Remarks</th>
+                  <th>View Test Report</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+        response.tests.forEach(test => {
+          testTableHTML += `
+ <tr class="raw-acceptance-row"
+        data-raw-material-id="${rawMaterialId}"
+        data-acceptance-test-id="${test.test_id}">
+                  <td>${test.test_name}</td>
+                  <td>To be fetched from DB  </td>
+                  <td>${test.test_value || '-'}</td>
+                  <td>${test.test_date || '-'}</td>
+                  <td>${test.result_remark || '-'}</td>
+                  <td> ${test.file  ? `<a href="${test.file }" target="_blank">View Report</a>` : 'No file'}</td> 
+
+                </tr>`;
+        });
+
+        testTableHTML += `
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+
+        $('#acceptanceTestContainer').append(testTableHTML);
+      } else {
+        $('#acceptanceTestContainer').append('<p>No acceptance tests found.</p>');
+      }
+    },
+    error: function (xhr) {
+      console.error("Failed to load acceptance test data", xhr);
+      $('#acceptanceTestContainer').html('<p class="text-danger">Error loading acceptance tests.</p>');
+    }
+  });
+}
+
+$(document).on('change', '.raw-batch-select', function () {
+  const selected = $(this).find('option:selected');
+  const row = $(this).closest('tr');
+  const expiry = selected.data('expiry');
+  const today = new Date().toISOString().split('T')[0];
+  const status = expiry < today ? 'Expired' : 'Valid';
+  row.find('.expiry').val(expiry);
+  row.find('.status').val(status);
+});
+function addComponentRow() {
+  const options = componentList.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  const row = `
+    <tr>
+      <td><select class="form-select component-select"><option value="">-- Select --</option>${options}</select></td>
+      <td><select class="form-select component-batch-select"><option value="">-- Select Batch --</option></select></td>
+      <td><input type="text" class="form-control expiry" readonly></td>
+      <td><input type="text" class="form-control source" readonly></td>
+      <td><input type="text" class="form-control supplier" readonly></td>
+      <td><input type="text" class="form-control status" readonly></td>
+    </tr>`;
+  $('#componentTableBody').append(row);
+}
+
+$(document).on('change', '.component-select', function () {
+  const selectedId = parseInt($(this).val());
+  const row = $(this).closest('tr');
+  const component = componentList.find(c => c.id === selectedId);
+  row.find('.source, .supplier, .expiry, .status').val('');
+  row.find('.component-batch-select').html('<option value="">-- Select Batch --</option>');
+  if (component) {
+    row.find('.source').val((component.source_names || []).join(', '));
+    row.find('.supplier').val((component.supplier_names || []).join(', '));
+    const batchOptions = component.batches.map(b => `
+      <option value="${b.id}" data-expiry="${b.expiry_date}" data-status="${b.status}">
+        ${b.batch_id}
+      </option>`).join('');
+    row.find('.component-batch-select').append(batchOptions);
+  }
+});
+$(document).on('change', '.component-batch-select', function () {
+  const selected = $(this).find('option:selected');
+  const expiry = selected.data('expiry');
+  const today = new Date().toISOString().split('T')[0];
+  const status = expiry < today ? 'Expired' : 'Valid';
+  const row = $(this).closest('tr');
+  row.find('.expiry').val(expiry);
+  row.find('.status').val(status);
+});
+function addConsumableRow() {
+  const options = consumableList.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  const row = `
+    <tr>
+      <td><select class="form-select consumable-select"><option value="">-- Select --</option>${options}</select></td>
+      <td><select class="form-select consumable-batch-select"><option value="">-- Select Batch --</option></select></td>
+      <td><input type="text" class="form-control expiry" readonly></td>
+      <td><input type="text" class="form-control source" readonly></td>
+      <td><input type="text" class="form-control supplier" readonly></td>
+      <td><input type="text" class="form-control status" readonly></td>
+    </tr>`;
+  $('#consumableTableBody').append(row);
+}
+
+
+
+$(document).on('change', '.consumable-select', function () {
+  const selectedId = parseInt($(this).val());
+  const row = $(this).closest('tr');
+  const consumable = consumableList.find(c => c.id === selectedId);
+  row.find('.source, .supplier, .expiry, .status').val('');  
+  const batchSelect = row.find('.consumable-batch-select');
+  batchSelect.html('<option value="">-- Select Batch --</option>');
+
+  if (consumable) {
+    row.find('.source').val((consumable.source_names || []).join(', '));
+    row.find('.supplier').val((consumable.supplier_names || []).join(', '));
+    const batchOptions = (consumable.batches || []).map(batch => `
+      <option value="${batch.id}" data-expiry="${batch.expiry_date}" data-status="${batch.status}">
+        ${batch.batch_id}
+      </option>
+    `).join('');
+    batchSelect.append(batchOptions); 
+  }
+});
+
+$(document).on('change', '.consumable-batch-select', function () {
+  const selected = $(this).find('option:selected');
+  const row = $(this).closest('tr');
+  const expiry = selected.data('expiry');
+  const today = new Date().toISOString().split('T')[0];
+  const status = expiry < today ? 'Expired' : 'Valid';
+  row.find('.expiry').val(expiry || '');
+  row.find('.status').val(status || '');
+});
+// save to datbse 
+ // Inside your script block (at bottom of template)
+$('#batchForm').on('submit', function (e) {
+  e.preventDefault();
+  const formData = new FormData();
+  const batchId = $('#batchId').val().trim();
+  const unitId = $('#unitId').val().trim(); 
+  const productId = $('#product').val();
+  const startDate = $('#manufacturingStart').val();
+  const endDate = $('#manufacturingEnd').val();
+
+  // Validation
+  $('.is-invalid').removeClass('is-invalid');
+  if (!batchId && !unitId) {
+    $('#batchId, #unitId').addClass('is-invalid');
+    Swal.fire('Required', 'Please enter either Batch ID or Unit ID.', 'warning');
+    return;
+  }
+  if (!productId) {
+    $('#product').addClass('is-invalid');
+    Swal.fire('Select Product', 'Please select a product.', 'warning');
+    return;
+  }
+
+  if (!startDate || !endDate) {
+    if (!startDate) $('#manufacturingStart').addClass('is-invalid');
+    if (!endDate) $('#manufacturingEnd').addClass('is-invalid');
+    Swal.fire('Missing Dates', 'Please select both start and end dates.', 'warning');
+    return;
+  }
+
+  if (new Date(startDate) > new Date(endDate)) {
+    $('#manufacturingStart, #manufacturingEnd').addClass('is-invalid');
+    Swal.fire('Invalid Dates', 'Start date must be before end date.', 'error');
+    return;
+  }
+
+  // Append base fields
+  formData.append('batch_id', batchId);
+  formData.append('unit', unitId);
+  formData.append('product', productId);
+  formData.append('manufacturing_start', startDate);
+  formData.append('manufacturing_end', endDate);
+
+  // Raw Materials
+ $('#rawMaterialTableBody tr').each(function () {
+  const row = $(this);
+  const rawMaterialId = row.find('.raw-material-select').val();
+  const batchId = row.find('.raw-batch-select').val();
+  const status = row.find('.status').val() || 'Valid';
+
+  if (rawMaterialId && batchId) {
+    const rmData = {
+      raw_material_id: rawMaterialId,
+      batch_id: batchId,
+      status: status
+    };
+    formData.append('raw_materials[]', JSON.stringify(rmData));
+  }
+});
+
+
+  // Components
+  $('#componentTableBody tr').each(function () {
+  const row = $(this);
+  const componentId = row.find('.component-select').val();
+  const batchId = row.find('.component-batch-select').val();
+  const status = row.find('.status').val() || 'Valid';
+
+  if (componentId && batchId) {
+    const componentData = {
+      component_id: componentId,
+      batch_id: batchId,
+      status: status
+    };
+    formData.append('components[]', JSON.stringify(componentData));
+  }
+});
+
+
+  // Consumables
+ $('#consumableTableBody tr').each(function () {
+  const row = $(this);
+  const consumableId = row.find('.consumable-select').val();
+  const batchId = row.find('.consumable-batch-select').val();
+  const status = row.find('.status').val() || 'Valid';
+
+  if (consumableId && batchId) {
+    const consumableData = {
+      consumable_id: consumableId,
+      batch_id: batchId,
+      status: status
+    };
+    formData.append('consumables[]', JSON.stringify(consumableData));
+  }
+});
+
+
+  // Drawings
+  $('#drawingContainer input[type="checkbox"]:checked').each(function () {
+    formData.append('drawings[]', $(this).val());
+  });
+
+  // Processes
+  $('#processSetionContainer .process-item').each(function () {
+    const id = $(this).data('process-id');
+    if (id) formData.append('processes[]', id);
+  });
+
+  // Equipment
+  $('#equpmentTableBody tr').each(function () {
+    const id = $(this).data('equipment-id');
+    if (id) formData.append('equipment[]', id);
+  });
+
+  // Product Acceptance Tests with file upload
+ $('#productacceptenceTableBody tr').each(function () {
+    const row = $(this);
+    const testId = row.data('acceptance-id');
+
+    // Get input values by name
+    const fileInput = row.find(`input[name="report_${testId}"]`)[0];
+    const remarksInput = row.find(`input[name="remark_${testId}"]`);
+    const resultInput = row.find(`input[name="result_${testId}"]`);
+    const dateInput = row.find(`input[name="date_${testId}"]`);
+
+    if (testId) {
+        formData.append('acceptance_tests[]', testId);
+
+        if (resultInput.length > 0) {
+            formData.append(`result_${testId}`, resultInput.val());
+        }
+
+        if (dateInput.length > 0) {
+            formData.append(`date_${testId}`, dateInput.val());
+        }
+
+        if (remarksInput.length > 0) {
+            formData.append(`remark_${testId}`, remarksInput.val());
+        }
+
+        if (fileInput && fileInput.files.length > 0) {
+            formData.append(`report_${testId}`, fileInput.files[0]);
+        }
+    }
+});
+
+
+  
+ let rawTestIndex = 0;
+$('.raw-acceptance-row').each(function () {
+  const row = $(this);
+  const rawMaterialId = row.data('raw-material-id');
+  const testId = row.data('acceptance-test-id');
+  const result = row.find('.result-input').val();
+  const date = row.find('.date-input').val();
+  const remarks = row.find('.remarks-input').val();
+  const fileInput = row.find('.report-input')[0];
+  if (rawMaterialId && testId) {     
+    formData.append(`raw_acceptance[${rawTestIndex}][raw_material_id]`, rawMaterialId);
+    formData.append(`raw_acceptance[${rawTestIndex}][acceptance_test_id]`, testId);
+  
+    rawTestIndex++;
+  }
+});
+// console.log("formdata",formData); exit();
+
+appendDynamicTablesToFormData(formData);
+
+  const csrftoken = getCookie('csrftoken');
+  $.ajaxSetup({
+    headers: { 'X-CSRFToken': csrftoken }
+  });
+  $.ajax({
+    url: "{% url 'product-batch-add' %}",
+    method: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function (response) {
+      Swal.fire('Success', response.message, 'success').then(() => {
+        window.location.href = "{% url 'product-batch-list' %}";
+      });
+    },
+    error: function (xhr) {
+      Swal.fire('Error', xhr.responseJSON?.error || 'Something went wrong.', 'error');
+    }
+  });
+});
+
+let tableCounter = 0;
+
+$('#addTableBtn').on('click', function () {
+    tableCounter++;
+    const tableId = `dynamicTable_${tableCounter}`;
+
+    const tableHtml = `
+        <div class="dynamic-table mb-4 border p-3" id="${tableId}" data-table-index="${tableCounter}">
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                    <input type="text" class="form-control table-name" placeholder="Table Title" required>
+                    <input type="hidden" name="tables[${tableCounter}][title]" class="table-title-hidden">
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="number" class="form-control columns-count" placeholder="Columns" min="1" max="10" value="2">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-primary set-columns-btn" type="button">
+                                <i class="fas fa-check"></i> Set
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" class="btn btn-danger btn-sm remove-table-btn">
+                        <i class="fas fa-trash"></i> Remove Table
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-preview" style="display: none;">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="thead-light"></thead>
+                        <tbody>
+                            <tr class="add-row-tr">
+                                <td colspan="100%" class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-primary add-row-btn">
+                                        <i class="fas fa-plus"></i> Add Row
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('#tablesContainer .alert').remove();
+    $('#tablesContainer').append(tableHtml);
+});
+
+$('#tablesContainer').on('click', '.set-columns-btn', function () {
+    const tableDiv = $(this).closest('.dynamic-table');
+    const tableIndex = tableDiv.data('table-index');
+    const columnsCount = parseInt(tableDiv.find('.columns-count').val());
+    const tableNameInput = tableDiv.find('.table-name');
+    const tableName = tableNameInput.val().trim();
+
+    if (!tableName) {
+        Swal.fire('Error', 'Please enter a table title', 'error');
+        return;
+    }
+
+    if (isNaN(columnsCount) || columnsCount < 1 || columnsCount > 10) {
+        Swal.fire('Error', 'Please enter a valid number of columns (1-10)', 'error');
+        return;
+    }
+
+    tableDiv.find('.table-title-hidden').val(tableName);
+
+    const thead = tableDiv.find('thead');
+    thead.empty();
+
+    let headerRow = '<tr>';
+    for (let i = 0; i < columnsCount; i++) {
+        headerRow += `
+            <th>
+                <input type="text" class="form-control form-control-sm column-name" 
+                       name="tables[${tableIndex}][columns][${i}][name]" 
+                       value="Column ${i + 1}" required>
+            </th>
+        `;
+    }
+    headerRow += `<th class="text-center" style="width: 100px;">Actions</th></tr>`;
+    thead.append(headerRow);
+
+    tableDiv.find('.table-preview').show();
+    tableDiv.find('.columns-count, .set-columns-btn').prop('disabled', true);
+});
+
+$('#tablesContainer').on('click', '.add-row-btn', function () {
+    const tableDiv = $(this).closest('.dynamic-table');
+    const tableIndex = tableDiv.data('table-index');
+    const table = $(this).closest('table');
+    const headerCells = table.find('thead th');
+    const columnCount = headerCells.length - 1;
+
+    let newRow = '<tr>';
+    for (let i = 0; i < columnCount; i++) {
+        const columnName = $(headerCells[i]).find('.column-name').val() || `Column ${i + 1}`;
+        newRow += `
+            <td>
+                <input type="text" class="form-control form-control-sm"
+                       placeholder="${columnName}"
+                       name="tables[${tableIndex}][columns][${i}][data][]">
+            </td>
+        `;
+    }
+    newRow += `
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>`;
+
+    $(this).closest('tbody').find('.add-row-tr').before(newRow);
+});
+
+$('#tablesContainer').on('click', '.remove-row-btn', function () {
+    $(this).closest('tr').remove();
+});
+
+$('#tablesContainer').on('click', '.remove-table-btn', function () {
+    const tableDiv = $(this).closest('.dynamic-table');
+    Swal.fire({
+        title: 'Remove Table?',
+        text: 'Are you sure you want to remove this table?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Yes, remove it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            tableDiv.remove();
+            if ($('#tablesContainer .dynamic-table').length === 0) {
+                $('#tablesContainer').html(`
+                    <div class="alert alert-info">
+                        Click "Add New Table" to create your first table
+                    </div>
+                `);
+            }
+        }
+    });
+});
+
+function appendDynamicTablesToFormData(formData) {
+    const tables = document.querySelectorAll('.dynamic-table');
+
+    tables.forEach((tableDiv, tableIndex) => {
+        const tableTitle = tableDiv.querySelector('.table-name').value;
+        formData.append(`tables[${tableIndex}][title]`, tableTitle);
+
+        // Get column names
+        const columnInputs = tableDiv.querySelectorAll('thead .column-name');
+        columnInputs.forEach((input, colIndex) => {
+            const colName = input.value;
+            formData.append(`tables[${tableIndex}][columns][${colIndex}][name]`, colName);
+        });
+
+        // Get rows
+        const rowTrs = tableDiv.querySelectorAll('tbody tr:not(.add-row-tr)');
+        rowTrs.forEach((tr, rowIndex) => {
+            const rowInputs = tr.querySelectorAll('td input');
+            rowInputs.forEach((input, colIndex) => {
+                formData.append(`tables[${tableIndex}][columns][${colIndex}][data][]`, input.value);
+            });
+        });
+    });
+}
+
+</script>
+
+{% endblock %}
+
+
+

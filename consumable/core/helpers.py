@@ -56,7 +56,7 @@ class ConsumableManager:
     
     @classmethod
     def consumable_add(cls,data,*args, **kwargs):
-        print(data,"what data i got")
+        data['is_active'] = True
         serializer = ConsumableSerializer(data=data)
       
         if serializer.is_valid():

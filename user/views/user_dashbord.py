@@ -19,7 +19,6 @@ class UserDashboard(BaseViewSet):
     
 
     def get(self, request):
-
         name = request.GET.get('name', 'User')  # Retrieve the name from the session, default to 'User' if not found
         return render(request, 'dashboardtwo.html', {"name": name})
 

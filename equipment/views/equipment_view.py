@@ -8,10 +8,17 @@ from qdpc_core_models.models.division import Division
 from rest_framework import status
 from qdpc.core import constants
 from qdpc_core_models.models.document_type import DocumentType
+from django.views import View
+from django.utils.dateparse import parse_date
+from django.contrib import messages
+from equipment.forms import EquipmentForm
+from django.db import IntegrityError
 
 
 
-class EquipmentView(BaseModelViewSet):
+
+   
+class EquipmentView(BaseModelViewSet)   :
     def get(self, request, equipId=None, format=None):
         if equipId:
             equipment_data = self.get_equipment_data(equipId)
@@ -39,13 +46,73 @@ class EquipmentView(BaseModelViewSet):
             return render(request, 'equipment-add.html', context)
 
     def post(self, request):
-        print(request.data)
-        serializer = EquipmentSerializer(data=request.data)
+        name = request.POST.get('name')
+        serial_no = request.POST.get('serial_no')
+        make = request.POST.get('make')
+        last_calibration_date_str = request.POST.get('last_calibration_date')
+        last_calibration_date = parse_date(last_calibration_date_str) if last_calibration_date_str else None
+        calibration_validity_duration_type = request.POST.get('calibration_validity_duration_type')
+        calibration_validity_duration_value = request.POST.get('calibration_validity_duration_value')
+        equipment_owner_id = request.POST.get('equipment_owner')
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        errors = []
+
+        if not name:
+            errors.append("Equipment name is required.")
+        if not serial_no:
+            errors.append("Serial number is required.")
+        if not make:
+            errors.append("Make is required.")
+        if not last_calibration_date:
+            errors.append("Valid calibration date is required.")
+        if not calibration_validity_duration_value or not calibration_validity_duration_value.isdigit():
+            errors.append("Calibration validity value must be a number.")
+
+        if errors:
+            return render(request, 'equipment-add.html', {
+                'errors': errors,
+                'data': request.POST,
+            })
+
+        try:
+            equipment = Equipment.objects.create(
+                name=name,
+                serial_no=serial_no,
+                make=make,
+                last_calibration_date=last_calibration_date,
+                calibration_validity_duration_type=calibration_validity_duration_type,
+                calibration_validity_duration_value=int(calibration_validity_duration_value),
+                equipment_owner_id=equipment_owner_id,
+            )
+
+            document = request.FILES.get('document')
+            document_title = request.POST.get('title')
+            release_date = request.POST.get('release_date')
+            approved_by = request.POST.get('approved_by')
+
+            if document:
+                EquipmentDocument.objects.create(
+                    equipment=equipment,
+                    documentfile=document,  
+                    title=document_title,
+                    release_date=parse_date(release_date) if release_date else None,
+                    approved_by=approved_by
+                )
+            else:
+                print(" No document file uploaded.")
+
+            return redirect('equipment-list')
+
+        except IntegrityError:
+            return redirect('equipment-list')
+
+        except Exception as e:
+            return render(request, 'equipment-add.html', {
+                'errors': [f"An error occurred: {str(e)}"],
+                'data': request.POST,
+            })
+
+
 
     def put(self, request, equipId):
         try:
@@ -125,9 +192,9 @@ class AddEquipmentDocumentView(BaseModelViewSet):
     def post(self, request, format=None):
         try:
             equipment_id = request.data.get('equipment')
-            category_id = request.data.get('category')  # Get the category ID
+            # category_id = request.data.get('category')  # Get the category ID
 
-            if not equipment_id or not category_id:
+            if not equipment_id :
                 return Response({
                     'success': False,
                     'message': 'Equipment is required'
@@ -140,19 +207,19 @@ class AddEquipmentDocumentView(BaseModelViewSet):
             #         'success': False,
             #         'message': 'Raw Material not found'
             #     }, status=status.HTTP_404_NOT_FOUND)
-            category = DocumentType.objects.get(id=category_id)
+            # category = DocumentType.objects.get(id=category_id)
 
             # Create the document
             document = EquipmentDocument.objects.create(
                 equipment=equipment_id,
                 title=request.data.get('title'),
-                category=category,  # Assign the DocumentType instance here
-                issue_no=request.data.get('issue_no'),
-                revision_no=request.data.get('revision_no'),
+                # category=category,  # Assign the DocumentType instance here
+                # issue_no=request.data.get('issue_no'),
+                # revision_no=request.data.get('revision_no'),
                 release_date=request.data.get('release_date'),
                 approved_by=request.data.get('approved_by'),
                 document=request.FILES.get('document'),
-                validity=request.data.get('validity')
+                # validity=request.data.get('validity')
             )
 
             return Response({
@@ -168,4 +235,32 @@ class AddEquipmentDocumentView(BaseModelViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-    
+class ViewEquipmentDetailView(BaseModelViewSet):
+    """
+    View to handle viewing of equipment details using POST method.
+    """
+
+    def post(self, request, equipId, format=None):
+        try:
+            equipment = Equipment.objects.get(id=equipId)
+            serializer = EquipmentSerializer(equipment)
+            data = serializer.data
+
+            data['equipment_owner'] = equipment.equipment_owner.name if equipment.equipment_owner else "Not Assigned"
+            return Response({
+                'success': True,
+                'message': "Equipment data fetched successfully.",
+                'data': data
+            }, status=status.HTTP_200_OK)
+
+        except Equipment.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Equipment not found.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

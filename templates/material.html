@@ -97,6 +97,10 @@
                                                                     </td>
                                                                     <td>
                                                                         <div>
+                                                                            <!-- TRIGGER FROM TABLE -->
+                                                                            <a class="me-3 view-raw-btn" data-id="{{ batch.id }}">
+                                                                                <img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+                                                                            </a>  
                                                                             <a class="me-3 view-user-btn" data-bs-toggle="modal" data-bs-target="#materialpage" data-batch-id="{{ batch.id }}">
                                                                                 <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                                                             </a>
@@ -163,6 +167,10 @@
                                                                         </div>
                                                                      </td>
                                                                     <td>
+                                                                        <!-- TRIGGER FROM TABLE -->
+                                                                        <a class="me-3 view-raw-btn" data-id="{{ batch.id }}">
+                                                                            <img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+                                                                        </a>  
                                                                         <a class="me-3 view-user-btn" data-bs-toggle="modal" data-bs-target="#materialpage" data-batch-id="{{ batch.id }}">
                                                                             <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
                                                                         </a>
@@ -282,6 +290,49 @@
         </div>
     </div>
 </div>
+
+<!-- VIEW RAW MATERIAL MODAL -->
+<div class="modal fade" id="viewRawMaterialModal" tabindex="-1" aria-labelledby="viewRawMaterialLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewRawMaterialLabel">View Raw Material Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+        </div>
+        <div class="modal-body">
+          <div class="container">
+            <div class="row">
+              <div class="col-6 mb-2">
+                <label>Raw Material</label>
+                <input type="text" id="view_name" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Shelf Life</label>
+                <input type="text" id="view_shelf_life" class="form-control" readonly>
+              </div>
+              
+              <div class="col-6 mb-2">
+                <label>Sources</label>
+                <input type="text" id="view_sources" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Suppliers</label>
+                <input type="text" id="view_suppliers" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Grades</label>
+                <input type="text" id="view_grades" class="form-control" readonly>
+              </div>
+              <div class="col-6 mb-2">
+                <label>Acceptance Test</label>
+                <input type="text" id="view_acceptance" class="form-control" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 {% endblock %}
 
@@ -411,6 +462,35 @@
         });
     });
 
+    $(document).ready(function () {
+        $('.view-raw-btn').on('click', function () {
+          const rawId = $(this).data('id');
+          $.ajax({
+            type: 'POST',
+            url: `/product/view/raw-material/${rawId}/`,
+            headers: {
+              'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function (response) {
+              if (response.success) {
+                const data = response.data;
+                $('#view_name').val(data.name);
+                $('#view_shelf_life').val(data.shelf_life_value + ' ' + data.shelf_life_unit);
+                $('#view_sources').val(data.sources.map(s => s.name).join(', '));
+                $('#view_suppliers').val(data.suppliers.map(s => s.name).join(', '));
+                $('#view_grades').val(data.grades.map(g => g.name).join(', '));
+                $('#view_acceptance').val(data.acceptance_test.map(a => a.name).join(', '));
+                $('#viewRawMaterialModal').modal('show');
+              } else {
+                alert('Raw Material not found.');
+              }
+            },
+            error: function () {
+              alert('Failed to fetch raw material details.');
+            }
+          });
+        });
+      });
 
     $(document).on('click', '#delete-btn', function (e) {
         e.preventDefault(); // Prevent default link behavior

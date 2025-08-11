@@ -1,0 +1,156 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Product Batch</h4>
+            </div>
+            <div class="page-btn">
+                <a href="{% url 'product-batch-add' %}" class="btn btn-added">
+                    <img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Batch
+                </a>
+            </div>
+        </div>
+
+        <!-- Product Batch List -->
+        <div class="card">
+            <div class="card-body">
+                <!-- Table controls and search... (keep your existing code) -->
+
+                <div class="table-responsive">
+                    <table class="table datanew">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Product</th>
+                                <th>Batch Id</th>
+                                <th>Manufacturing start date</th>
+                                <th>Manufacturing end date</th>                            
+                                <th>Dynamic table</th>
+                                <th>Action</th>
+                                <th>Report</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for batch in batches %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ batch.product.name}}</td>
+								<td>
+                                {% if batch.batch_id %}
+                                    {{ batch.batch_id }}
+                                {% elif batch.unit_id %}
+                                    {{ batch.unit_id }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                                </td>
+                                <td>{{ batch.manufacturing_start }}</td>
+                                <td>{{ batch.manufacturing_end }}</td>
+								
+								
+							
+                                <!-- In your list view template (replace the current Dynamic table column) -->
+                                                    <td>
+                                    {% if batch.dynamic_tables_data %}
+                                        <button class="btn btn-sm btn-info view-dynamic-tables"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#dynamicTablesModal"
+                                                data-tables='{{ batch.dynamic_tables_data|escapejs }}'>
+                                            View Tables
+                                        </button>
+                                    {% else %}
+                                        No Tables
+                                    {% endif %}
+                                </td>                                       
+                                 <td>
+                                    <div class="actions">
+                                        <a href="{% url 'product-batch-single-view' batch.id %}" class="btn btn-sm btn-light" title="View">
+                                            <img src="{% static 'assets/img/icons/edit.svg' %}" alt="View"></a>
+                                        <a href="{% url 'product-batch-single-view' batch.id %}" class="btn btn-sm btn-light" title="View">
+                                            <img src="{% static 'assets/img/icons/eye.svg' %}" alt="View"></a>
+                                        <a class="delete-batch-btn" data-batch-id="{{ batch.id }}" href="javascript:void(0);">
+                                            <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img" title="Delete">
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'product-batch-single-report' batch.id %}" class="btn btn-sm btn-info">Generate Report</a>
+                                </td>
+                              </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            
+        </div>         
+        <!-- /product list -->
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+
+$(document).ready(function() {
+
+
+    // Delete Batch Button Handler
+   $('.delete-batch-btn').click(function () {
+    const batchId = $(this).data('batch-id');
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "This will delete the batch and all related data!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      reverseButtons: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Proceed with deletion
+        deleteBatch(batchId);
+      }
+    });
+  });
+
+  function deleteBatch(batchId) {
+    $.ajax({
+      url: `/product/product-batch/${batchId}/delete/`, 
+      type: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      success: function (response) {
+        if (response.success) {
+          Swal.fire('Deleted!', 'Batch was deleted successfully.', 'success');
+          $(`[data-batch-id="${batchId}"]`).closest('tr').remove(); 
+        } else {
+          Swal.fire('Error', response.message || 'Failed to delete batch.', 'error');
+        }
+      },
+      error: function (xhr) {
+        Swal.fire('Server Error', xhr.responseJSON?.detail || 'An error occurred.', 'error');
+      }
+    });
+  }
+    function showToast(type, message) {
+     
+        alert(message); 
+    }
+});
+</script>
+
+
+
+{% endblock %}

@@ -7,7 +7,6 @@
             <div class="page-title">
                 <h4>Add Component</h4>
                 <h6>Component Configuration</h6>
-
             </div>
         </div>
         <!-- /add -->
@@ -22,16 +21,6 @@
                     </div>
 
                     <div class="col-md-6 col-lg-4">
-                        <div class="form-group">
-                            <label for="precertified" class="form-label">Pre-Certified</label>
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="precertified" name="precertified">
-                                <label class="form-check-label" for="precertified">Check if Pre-Certified</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-4">
                         <label for="supplier" class="form-label">Suppliers</label>
                         <select class="select" id="supplier" name="supplier[]" multiple>
                             {% for sup in suppliers %}
@@ -39,6 +28,7 @@
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="col-md-6 col-lg-4">
                         <label for="sources" class="form-label">Sources</label>
                         <select class="select" id="sources" name="sources[]" multiple>
@@ -47,24 +37,38 @@
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                             <label for="precertified" class="form-label">Pre-Certified</label>
+                              <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="precertified" name="precertified">
+                                    <label class="form-check-label" for="precertified">Check if Pre-Certified</label>
+                                </div>
+                        </div>
+                    </div>  
+
+                        <div class="col-md-6 col-lg-4">
                         <label for="acceptance_test" class="form-label">Acceptance Test</label>
-                        <select class="select" id="acceptance_test" name="acceptance_test[]" multiple>
+                        <select class="select" id="acceptance_test" name="acceptance_test" multiple
+                            onchange="handleSelection()">
                             {% for acc in acceptence_test %}
                             <option value="{{ acc.id }}">{{ acc.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
+
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                             <label for="grade">Grade</label>
-                            <select class="select" id="grade" name="grade[]" multiple>
+                            <select class="select" id="grade" name="grade" multiple onchange="handleSelection()">
                                 {% for grade in grades %}
                                 <option value="{{ grade.id }}">{{ grade.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
+
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                             <label for="shelf_life_type">Shelf Life</label>
@@ -91,9 +95,21 @@
                             <select id="unit" name="unit" class="form-control">
                                 <option value="days">Days</option>
                                 <option value="months">Months</option>
+                                <option value="years">Years</option>
                             </select>
                         </div>
                     </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                            <label for="document_upload" class="form-label">Document Upload</label>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="document_upload" name="document_upload">
+                                <label class="form-check-label" for="document_upload">Check to upload Document</label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-lg-12">
                         <button type="button" id="submitButton" class="btn btn-submit me-2">Submit</button>
                         <a href="{% url 'component-add' %}" class="btn btn-cancel">Clear</a>
@@ -103,7 +119,14 @@
         </div>
         <!-- /add -->
     </div>
-</div>
+
+<div class="container mt-5">
+        <h1>Acceptance Test Specifications</h1>
+        <!-- Div where the table will be created dynamically -->
+        <div class="content" id="acceptance_test_table">
+            <!-- Table will be appended here via JavaScript -->
+        </div>
+    </div>
 <!-- /Main Wrapper -->
 <!-- Add Document Modal -->
 
@@ -185,12 +208,278 @@
             </form>
         </div>
     </div>
+</div> 
+
+<!-- Pre-Certification Modal -->
+<div class="modal fade" id="preCertificationModal" tabindex="-1" aria-labelledby="preCertLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="preCertForm" enctype="multipart/form-data">
+                   {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="preCertLabel">Pre-Certification Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="componentField" name="component">
+                    <div class="mb-3">
+                        <label for="certified_by" class="form-label">Certified By</label>
+                        <select class="form-select" id="certified_by" name="certified_by" required>
+                            {% for own in owner %}
+                            <option value="{{ own.id }}">{{ own.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="certificate_ref" class="form-label">Certificate Reference No.</label>
+                        <input type="text" class="form-control" id="certificate_ref" name="certificate_ref" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="certificate_issue_date" class="form-label">Issue Date</label>
+                        <input type="date" class="form-control" id="certificate_issue_date" name="certificate_issue_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="certificate_valid_till" class="form-label">Valid Till</label>
+                        <input type="date" class="form-control" id="certificate_valid_till" name="certificate_valid_till" required>
+                    </div>
+                    <div class="mb-3" id="Certificate_disposition">
+                        <label class="form-label">Certificate disposition:</label>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input disposition-radio" type="radio" name="disposition" id="cleared" value="CLEARED" required>
+                            <label class="form-check-label" for="cleared">
+                                Cleared for use
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input disposition-radio" type="radio" name="disposition" id="pending" value="PENDING">
+                            <label class="form-check-label" for="pending">
+                                Cleared for use subject to completion of pending action
+                            </label>
+                            
+                            <div id="pendingActionsContainer" style="display: none; margin-top: 10px; margin-left: 20px;">
+                                <div id="pendingActionsList"></div>
+                                <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addPendingAction">
+                                    <i class="bi bi-plus"></i> Add Pending Action
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input disposition-radio" type="radio" name="disposition" id="not_cleared" value="NOT_CLEARED">
+                            <label class="form-check-label" for="not_cleared">
+                                Not cleared
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Template for pending action item (hidden) -->
+                    <div id="pendingActionTemplate" style="display: none;">
+                        <div class="pending-action-item mb-2">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="pending_actions[]" placeholder="Enter pending action details">
+                                <button type="button" class="btn btn-outline-danger remove-action">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                     <div class="mb-3">
+                    <label for="certificate_file" class="form-label">Upload Certificate</label>
+                    <input type="file" class="form-control" id="certificate_file" name="certificate_file" accept=".pdf,.jpg,.png" required>
+
+                </div>
+
+
+
+                </div>
+    
+                <div class="modal-footer">
+                    
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
+
+
+
+ document.addEventListener('DOMContentLoaded', function() {
+    const pendingRadio = document.getElementById('pending');
+    const pendingContainer = document.getElementById('pendingActionsContainer');
+    const pendingList = document.getElementById('pendingActionsList');
+    const addButton = document.getElementById('addPendingAction');
+    const template = document.getElementById('pendingActionTemplate');
+    
+    // Show/hide pending actions container based on radio selection
+    document.querySelectorAll('.disposition-radio').forEach(radio => {
+        radio.addEventListener('change', function() {
+            pendingContainer.style.display = this.id === 'pending' ? 'block' : 'none';
+        });
+    });
+    
+    // Add new pending action
+    addButton.addEventListener('click', function() {
+        const newAction = template.cloneNode(true);
+        newAction.style.display = 'block';
+        newAction.removeAttribute('id');
+        pendingList.appendChild(newAction);
+        
+        // Add event listener to remove button
+        newAction.querySelector('.remove-action').addEventListener('click', function() {
+            newAction.remove();
+        });
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+const gradeAcceptanceTests = {};
+function clearMultiselectDropdown(dropdown) {
+            for (let option of dropdown.options) {
+                option.selected = false;
+            }
+        }
+
+        
+            function handleSelection() {
+             console.log("handleSelection called");
+    
+            const gradeDropdown = document.getElementById("grade");
+            const acceptanceDropdown = document.getElementById("acceptance_test");
+            const selectedGrades = Array.from(gradeDropdown.selectedOptions).map(option => option.value);
+            const selectedAcceptanceTests = Array.from(acceptanceDropdown.selectedOptions).map(option => option.value);
+            const tableContainer = document.getElementById("acceptance_test_table");
+
+            // Hide container if no grades selected
+            if (selectedGrades.length === 0) {
+                tableContainer.innerHTML = "";
+                tableContainer.style.display = "none";
+                return;
+            }
+
+            // Show container
+            tableContainer.style.display = "block";
+
+            // Step 1: Remove tables for grades that were removed
+            const existingTables = Array.from(tableContainer.querySelectorAll("table"));
+            existingTables.forEach(table => {
+                const gradeIdMatch = table.id.match(/^grade_(.+)_acceptanceTestTable$/);
+                if (gradeIdMatch) {
+                    const gradeId = gradeIdMatch[1];
+                    if (!selectedGrades.includes(gradeId)) {
+                        table.remove();
+                        delete gradeAcceptanceTests[gradeId];
+                    }
+                }
+            });
+
+            // Step 2: Loop through all selected grades
+            selectedGrades.forEach(gradeId => {
+                const gradeName = gradeDropdown.querySelector(`option[value="${gradeId}"]`).textContent;
+
+                // Create or reuse table for this grade
+                let gradeTable = document.getElementById(`grade_${gradeId}_acceptanceTestTable`);
+                if (!gradeTable) {
+                    gradeTable = document.createElement("table");
+                    gradeTable.id = `grade_${gradeId}_acceptanceTestTable`;
+                    gradeTable.className = "table table-striped";
+                    gradeTable.innerHTML = `
+                    <thead>
+                        <tr><th colspan="2">Grade: ${gradeName}</th></tr>
+                        <tr><th>Specification</th><th>Reevaluation Frequency</th></tr>
+                    </thead>
+                    <tbody id="grade_${gradeId}_acceptanceTestTableBody"></tbody>
+                `;
+                    tableContainer.appendChild(gradeTable);
+                }
+
+                const tableBody = document.getElementById(`grade_${gradeId}_acceptanceTestTableBody`);
+                tableBody.innerHTML = ""; // clear before repopulating
+
+                // Store selected acceptance tests
+                gradeAcceptanceTests[gradeId] = selectedAcceptanceTests;
+
+                selectedAcceptanceTests.forEach(testId => {
+                    const testName = acceptanceDropdown.querySelector(`option[value="${testId}"]`).textContent;
+
+                    // AJAX fetch
+                    $.ajax({
+                        url: `{% url "acceptance-list" %}?id=${testId}`,
+                        type: 'GET',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                        success: function (response) {
+                            if (response && response.acceptance_tests) {
+                                response.acceptance_tests.forEach(test => {
+                                    const reevaluationFrequency = `${test.reevaluation_frequency_value} ${test.reevaluation_frequency_unit}`;
+                                    const testRow = `
+                                    <tr id="grade_${gradeId}_test_${test.id}">
+                                        <td>
+                                            <strong>${test.name}</strong><br>
+                                            Min: <input type="number" value="${test.min_value}" class="form-control min-value">
+                                            Max: <input type="number" value="${test.max_value}" class="form-control max-value">
+                                            Unit: <input type="text" value="${test.unit_name}" class="form-control unit-name">
+                                        </td>
+                                        <td>
+                                            <input type="text" value="${reevaluationFrequency}" class="form-control reevaluation-frequency">
+                                        </td>
+                                    </tr>
+                                `;
+                                    tableBody.insertAdjacentHTML('beforeend', testRow);
+                                });
+                            } else {
+                                alert('No acceptance tests found.');
+                            }
+                        },
+                        error: function () {
+                            alert('Failed to fetch acceptance tests. Please try again.');
+                        }
+                    });
+                });
+            });
+        }
+
+        // Function to clear a multiselect dropdown
+        function clearMultiselectDropdown(dropdown) {
+            Array.from(dropdown.options).forEach(option => {
+                option.selected = false; // Deselect all options
+            });
+        }
+
+        // Add event listener to the grade dropdown
+        document.getElementById("grade").addEventListener("change", handleSelection);
+
+
+
+
+
+        // Function to clear a multiselect dropdown
+        function clearMultiselectDropdown(dropdown) {
+            alert("entred dropdewon")
+            dropdown = document.getElementById("acceptance_test");
+            Array.from(dropdown.options).forEach(option => {
+                option.selected = false; // Deselect all options
+            });
+        }
+
     $(document).ready(function () {
         $('#shelf_life_duration_group').hide();
         $('#shelf_life_period_group').hide();
@@ -210,7 +499,30 @@
             }
         });
 
-        // Show Add Document Modal only if Precertified is checked
+        // Show Add Document Modal only if document_upload is checked
+        $('#document_upload').change(function () {
+            const component = $('#component').val().trim(); // Get component value
+            const componentInput = $('#component'); // component input field
+
+            if (!component) {
+                componentInput.addClass('is-invalid'); // Add invalid styling
+                if (!componentInput.siblings('.text-danger').length) {
+                    componentInput.after('<span class="text-danger">Please enter the component name</span>');
+                }
+                $(this).prop('checked', false); // Uncheck document_upload
+            } else {
+                componentInput.removeClass('is-invalid');
+                componentInput.siblings('.text-danger').remove();
+
+                // Set the component name in the modal's hidden input field
+                $('#componentField').val(component);
+
+                // Show the modal
+                $('#addComponentDocumentModal').modal('show');
+            }
+        });
+
+     // Show Add Document Modal only if Precertified is checked
         $('#precertified').change(function () {
             const component = $('#component').val().trim(); // Get component value
             const componentInput = $('#component'); // component input field
@@ -230,7 +542,7 @@
                 $('#componentField').val(component);
 
                 // Show the modal
-                $('#addComponentDocumentModal').modal('show');
+                $('#preCertificationModal').modal('show');
                 // Disable the acceptance input field if precertified is checked
                 if ($(this).is(':checked')) {
                     acceptanceInput.prop('disabled', true);
@@ -239,58 +551,81 @@
                 }
             }
         });
+
         $('#submitButton').click(function (event) {
             event.preventDefault();
 
-            // Gather form data
-            var name = $('#component').val();
-            var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
-            var shelf_life_type = $('#shelf_life_type').val();
-            var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
-            var shelf_life_unit = $('#unit').val();
-            var precertified = $('#precertified').is(':checked');
+             const formData = new FormData();
 
-            // Get selected values from dropdowns
-            var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
-            var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
-            var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
+           // Add basic fields
+            formData.append('name', $('#component').val());
+            formData.append('shelf_life_type', $('#shelf_life_type').val());
+            formData.append('shelf_life_value', $('#shelf_life_value').val());
+            formData.append('shelf_life_unit', $('#unit').val());
+            formData.append('precertified', $('#precertified').is(':checked'));
+            formData.append('document_upload', $('#document_upload').is(':checked'));
 
-            // Validation for shelf life value
-            if (shelf_life_type === 'add_duration' && (isNaN(shelf_life_value) || shelf_life_value <= 0)) {
-                $('#shelf_life_error').text("Shelf life must be a positive numeric value.").show();
-                return;
+            formData.append('certified_by', $('#certified_by').val());
+            formData.append('certificate_ref', $('#certificate_ref').val());
+            formData.append('certificate_disposition', $('input[name="disposition"]:checked').val());
+            formData.append('issue_date', $('#certificate_issue_date').val());
+            formData.append('valid_till', $('#certificate_valid_till').val());
+
+            const certificateFile = $('#certificate_file')[0].files[0];
+            if (certificateFile) {
+                formData.append('certificate_file', certificateFile);
             }
 
-            // Handle case for 'TBD' or 'Not Applicable'
-            if (shelf_life_type === 'tbd' || shelf_life_type === 'not_applicable') {
-                shelf_life_value = null;  // Set shelf_life_value to null for these options
-                shelf_life_unit = null;   // Reset shelf_life_unit as well
+            // Append multi-value fields
+            const grade = $('#grade').val();
+            if (grade) {
+                grade.forEach((val, idx) => formData.append('grade', val));
             }
 
-            // Get the current date
-            var currentDate = new Date();
-            var userDefinedDate = currentDate.toISOString().split('T')[0]; // Format the date as YYYY-MM -DD
+            const sources = $('#sources').val();
+            if (sources) {
+                sources.forEach((val) => formData.append('sources', val));
+            }
 
-            // Create the data object
-            var componentData = {
-                name: name,
-                grade: grade,
-                shelf_life_type: shelf_life_type,
-                shelf_life_value: shelf_life_value,
-                shelf_life_unit: shelf_life_unit,
-                user_defined_date: userDefinedDate, // Autofill current date
-                precertified: precertified,
-                sources: sources,
-                suppliers: suppliers,
-                acceptance_test: acceptance_test,
-            };
+            const suppliers = $('#supplier').val();
+            if (suppliers) {
+                suppliers.forEach((val) => formData.append('suppliers', val));
+            }
 
-            // Send data as JSON
+            // Collect test data
+            const test_data = [];
+            $('[id^="grade_"][id$="_acceptanceTestTableBody"], #mainAcceptanceTestTableBody').find('tr').each(function () {
+                const rowId = $(this).attr('id');
+                if (!rowId || !rowId.startsWith('grade_')) return;
+
+                const parts = rowId.split('_');
+                const test_id = parts.length > 0 ? parts[parts.length - 1] : null;
+                const grade_id = parts.length >= 3 ? parts[1] : null;
+
+                const min_value = $(this).find('.min-value').val();
+                const max_value = $(this).find('.max-value').val();
+                const unit_name = $(this).find('.unit-name').val();
+                const reevaluation_frequency = $(this).find('.reevaluation-frequency').val();
+
+                test_data.push({
+                    name: $('#component').val(),
+                    acceptance_test_id: test_id,
+                    grade_id: grade_id,
+                    min_value: min_value || null,
+                    max_value: max_value || null,
+                    unit_name: unit_name || null,
+                    reevaluation_frequency: reevaluation_frequency || null
+                });
+            });
+
+            formData.append('test_data', JSON.stringify(test_data));
+                              // Send data as JSON
             $.ajax({
                 type: 'POST',
                 url: '{% url "component-add" %}', // URL to your Django view
-                data: JSON.stringify(componentData),
-                contentType: 'application/json',
+                data: formData,
+                processData: false,  // Prevent jQuery from processing data
+                contentType: false,  // Let browser set content type (multipart/form-data)
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
                 },
@@ -301,14 +636,11 @@
                             window.location.href = "{% url 'component-list' %}";
                         }, 3000);
                     } else {
-                        //$('#error-message').text(response.message).show(); // Show error message
                         showAlert('Data Submission Unsuccessful! Please try again.', 'error');
                     }
                 },
                 error: function () {
-                    // $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
                     showAlert('An error occurred: ' + error, 'error'); // Show error message in case of failure
-
                 }
             });
         });
@@ -334,6 +666,7 @@
         // });
 
 
+        
         // Submit Document Form
         $('#addDocumentForm').submit(function (e) {
             e.preventDefault();
@@ -370,6 +703,7 @@
             });
         });
     });
+ 
 
 </script>
 {% endblock %}

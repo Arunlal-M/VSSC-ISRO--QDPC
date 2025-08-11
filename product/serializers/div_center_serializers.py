@@ -24,7 +24,7 @@ class DivisionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Division
-        fields = ['id','name','center','center_name' ]
+        fields = ['id','name','center_id' ]
         
     def get_center_name(self,obj):
         

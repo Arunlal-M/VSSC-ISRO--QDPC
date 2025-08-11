@@ -1,0 +1,124 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Stage Clearance Page</h4>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-top">
+                    <div class="search-set">
+                        <div class="search-path">
+                            <a class="btn btn-filter" id="filter_search">
+                                <img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+                                <span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+                            </a>
+                        </div>
+                        <div class="search-input">
+                            <a class="btn btn-searchset"><img
+                                    src="{% static 'assets/img/icons/search-white.svg' %}" alt="img"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comp-sec-wrapper">
+                    <section class="comp-section">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card bg-white">
+                                    <div class="card-body">
+                                        <ul class="nav nav-tabs nav-tabs-solid nav-justified">
+                                            <li class="nav-item"><a class="nav-link active"
+                                                    href="#solid-justified-tab1" data-bs-toggle="tab">Cleared</a>
+                                            </li>
+                                            <li class="nav-item"><a class="nav-link"
+                                                    href="#solid-justified-tab2"
+                                                    data-bs-toggle="tab">Uncleared</a></li>
+                                        </ul>
+                                        <div class="tab-content">
+                                            <div class="tab-pane show active" id="solid-justified-tab1">
+                                                <div class="table-responsive">
+                                                    <table class="table datanew">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Clearance Item</th>
+                                                                <th>Item Description</th>
+                                                                <th>User</th>
+                                                                <th>Time</th>
+                                                                <th>Status</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            <div class="tab-pane" id="solid-justified-tab2">
+                                                <div class="table-responsive">
+                                                    <table class="table datanew">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Clearance Item</th>
+                                                                <th>Item Description</th>
+                                                                <th>User</th>
+                                                                <th>Time</th>
+                                                                <th>Status</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div >
+        </div>
+    </div>
+</div>
+
+
+
+<!-- DELTE CONFIRMATION MODAL -->
+<div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center ">
+                <p>Are you sure you want to delete this Raw Material?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button type="button" class="btn btn-danger text-right" id="confirm-delete">Delete</button>
+                <button type="button" class="btn btn-secondary text-right" id="cancel-delete"
+                    data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

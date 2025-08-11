@@ -227,15 +227,20 @@ aria-hidden="true">
 						$('#name-error').hide().text('');
 
 						if (response.success) {
-							window.location.reload()
+							showAlert('Data Submitted Successfully !', 'success');
+							setTimeout(function () {
+								window.location.reload()
+							}, 3000);
 						} else {
 							//$('#error-message').text(response.message).show(); // Show error message
+							showAlert('Data Submission Unsuccessful! Please try again.', 'error');
 							$('#abbreviation-error').text(response.result[0].abbreviation).show();
 							$('#name-error').text(response.result[0].name).show();
 						}
 					},
 					error: function () {
 						//$('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+						showAlert('An error occurred: ' + error, 'error'); // Show error message in case of failure
 						$('#abbreviation-error').text('An error occurred. Please try again.').show(); // Show error message
 						$('#name-error').text('An error occurred. Please try again.').show(); // Show error message
 					}

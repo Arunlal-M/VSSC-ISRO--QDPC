@@ -8,17 +8,23 @@ class RawMaterialBatchSerializer(serializers.ModelSerializer):
     batch_size_unit = serializers.PrimaryKeyRelatedField(queryset=Unit.objects.all())
     raw_material_name = serializers.SerializerMethodField()
     # calculate_expiry_date = serializers.SerializerMethodField()
+    unit_name = serializers.SerializerMethodField()
+
 
     class Meta:
         model = RawMaterialBatch
         fields = [
+            'id',
             'raw_material', 
             'raw_material_name',
             'batch_id', 
             'procurement_date',
             'batch_size_value', 
             'batch_size_unit', 
-            'packing_details'
+            'packing_details',
+            'status',
+            'expiry_date',
+            'unit_name'
         ]
 
     def get_raw_material_name(self, obj):
@@ -27,7 +33,8 @@ class RawMaterialBatchSerializer(serializers.ModelSerializer):
     # def get_calculate_expiry_date(self, obj):
     #     return obj.calculate_expiry_date  # Use the calculate_expiry_date method if it exists
 
-  
+    def get_unit_name(self, obj):
+        return obj.batch_size_unit.abbreviation
     
     def create(self, validated_data):
         # Add additional logic here if needed
@@ -46,7 +53,7 @@ class RawMaterialBatchSerializer(serializers.ModelSerializer):
         instance.procurement_date = validated_data.get('procurement_date', instance.procurement_date)
         instance.batch_size_value = validated_data.get('batch_size_value', instance.batch_size_value)
         instance.packing_details = validated_data.get('packing_details', instance.packing_details)
-
+        instance.status = validated_data.get('status', instance.status)  # Ensure status is updated
         # Recalculate expiry date based on the updated data
      
         instance.save()

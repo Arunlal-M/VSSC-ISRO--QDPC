@@ -30,6 +30,8 @@
                         <!-- Add Step Button -->
                         <div class="col-lg-12 mt-3">
                             <button type="button" id="addStepBtn" class="btn btn-primary">Add Step</button>
+                            <button type="button" id="removeStepBtn" class="btn btn-danger">Remove Step</button>
+
                         </div>
 
                         <!-- Submit and Clear Buttons -->
@@ -49,7 +51,7 @@
     document.getElementById('addStepBtn').addEventListener('click', function () {
         stepCounter++;
         const stepsContainer = document.getElementById('stepsContainer');
-
+        const testType = document.getElementById('test_type');
         const newStep = `
             <div class="card mt-4 p-3 border">
                 <h5>Step ${stepCounter}</h5>
@@ -73,13 +75,11 @@
                 <div class="col-lg-3 col-sm-6 col-12">
                     <div class="form-group">
                         <label>RM(s) Used</label>
-                        <select id="raw_material" name="step_${stepCounter}_raw_material[]" class="form-control">
+                        <select id="raw_material_batch" name="step_${stepCounter}_raw_material_batch[]" class="form-control">
                             <option>Choose Rawmaterial</option>
-                            {% for material_status in raw_materials_with_status %}
-                                <option 
-                                    value="{{ material_status.material.id }}" 
-                                    style="color: {% if material_status.is_expired %}red{% else %}green{% endif %};">
-                                    {{ material_status.material.name }} - Expiry Date: {{ material_status.material.calculate_expiry_date|date:"Y-m-d" }}
+                            {% for rwb in raw_material_batch %}
+                                <option value="{{ rwb.id }}" >
+                                    {{ rwb.batch_id }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -91,7 +91,7 @@
                         <div class="form-group">
                             <label>RM Status</label>
                             <select name="step_${stepCounter}_rm_status" class="form-select">
-                                <option value="Valid">Valid</option>
+                                <option value="Material Valid">Material Valid</option>
                                 <option value="Material Expired">Material Expired</option>
                             </select>
                         </div>
@@ -102,11 +102,10 @@
                             <label>Equipment(s) Used</label>
                             <select id="equipment" name="step_${stepCounter}_equipment[]" class="form-control">
                                 <option>Choose equipment</option>
-                                {% for equip_status in equipment_with_status %}
-                                <option 
-                                    value="{{ equip_status.equip.id }}" 
-                                    style="color: {% if equip_status.is_expired %}red{% else %}green{% endif %};">
-                                    {{ equip_status.equip.name }} - Calibration Date: {{ equip_status.equip.calibration_due_date|date:"Y-m-d" }}
+                                {% for equi in equipment %}
+                                <option
+                                    value="{{ equi.id }}" >
+                                    {{ equi.name }} 
                                 </option>
                                 {% endfor %}
                             </select>
@@ -128,63 +127,157 @@
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Consumable(s) Used</label>
-                            <select id="consumable" name="step_${stepCounter}_consumable[]" class="form-control">
+                            <select id="consumable_batch" name="step_${stepCounter}_consumable_batch[]" class="form-control">
                                 <option>Choose Consumable</option>
-                                {% for consum_status in consumables_with_status %}
+                                {% for consb in consumable_batch %}
                                 <option 
-                                    value="{{ consum_status.consum.id }}" 
-                                    style="color: {% if consum_status.is_expired %}red{% else %}green{% endif %};">
-                                    {{ consum_status.consum.name }} - Expiry Date: {{ consum_status.consum.calculate_expiry_date|date:"Y-m-d" }}
-                                </option>
+                                    value="{{ consb.id  }}" >
+                                    {{ consb.batch_id  }}
+                                </option>  
                             {% endfor %}
                             </select>
                         </div>
                     </div>
 
-
+                    <div class="col-lg-3 col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <label>Consumable Status</label>
+                                                <select name="step_${stepCounter}_consumable_status" class="form-select">
+                                                    <option value="Consumable Valid">Consumable Valid</option>
+                                                    <option value="Consumable Expired">Consumable Expired</option>
+                                                </select>
+                                            </div>
+                                        </div>
 
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Component(s) Used</label>
-                            <select id="component" name="step_${stepCounter}_component[]" class="form-control">
+                            <select id="component_batch" name="step_${stepCounter}_component_batch[]" class="form-control">
                                 <option>Choose Component</option>
-                                 {% for comp_status in component_with_status %}
+                                 {% for compb in component_batch %}
                                 <option 
-                                    value="{{ comp_status.comp.id }}" 
-                                    style="color: {% if comp_status.is_expired %}red{% else %}green{% endif %};">
-                                    {{ comp_status.comp.name }} - Expiry Date: {{ comp_status.comp.calculate_expiry_date|date:"Y-m-d" }}
+                                    value="{{ compb.id }}" >
+                                    {{ compb.batch_id }} 
                                 </option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
 
-
-
-
                     <div class="col-lg-3 col-sm-6 col-12">
+                                            <div class="form-group">
+                                                <label>Component Status</label>
+                                                <select name="step_${stepCounter}_component_status" class="form-select">
+                                                    <option value="Component Valid">Component Valid</option>
+                                                    <option value="Component Expired">Component Expired</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+
+<!-- Test Type Selection -->
+					<div class="col-lg-4 col-sm-6 col-12">
+						<div class="form-group">
+							<label for="test_type">Specification Type</label>
+							<select id="test_type" name="step_${stepCounter}_test_type" class="form-select">
+								<option value="">Choose Type</option>
+								<option value="quantitative">Quantitative</option>
+								<option value="qualitative">Qualitative</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- Quantitative Fields -->
+					<div class="col-12" id="quantitative-fields" style="display: none;">
+						<div class="form-group row">
+							<div class="col-lg-3 col-sm-4">
+								<label class="col-form-label">Min Value</label>
+								<input type="text" name="step_${stepCounter}_min_value" id="min_value" class="form-control">
+							</div>
+							<div class="col-lg-2 col-sm-3 text-center align-self-end">
+								<label class="col-form-label">to</label>
+							</div>
+							<div class="col-lg-3 col-sm-4">
+								<label class="col-form-label">Max Value</label>
+								<input type="text" name="step_${stepCounter}_max_value" id="max_value" class="form-control">
+							</div>
+						</div>
+						<div class="form-group row">
+							<div class="col-lg-3 col-sm-4">
+								<label class="col-form-label">Unit</label>
+								<select name="step_${stepCounter}_unit[]" id="unit" class="form-control">
+									<option value="">Select Unit</option>
+									{% for unit in units %}
+									<option value="{{ unit.id }}">{{ unit.name }}</option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+					</div>
+
+
+					<!-- Qualitative Fields -->
+					<div class="col-lg-4 col-sm-6 col-12" id="qualitative-fields" style="display: none;">
+						<div class="form-group">
+							<label for="test_result">Test Result</label>
+							<input type="text" name="step_${stepCounter}_test_result" id="test_result" class="form-control">
+						</div>
+						<div class="form-group">
+							<label for="specification_result">Specification Result</label>
+							<input type="text" name="step_${stepCounter}_specification_result" id="specification_result" class="form-control">
+						</div>
+					</div>
+
+
+
+                    {% comment %} <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Process Step Specification</label>
                             <input type="text" name="step_${stepCounter}_specifications" rows="2" class="form-control" required>
                         </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    </div> {% endcomment %}
+                    {% comment %} <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Measured Value/Observation</label>
                             <input type="text" name="step_${stepCounter}_measured_value" rows="2" class="form-control">
                         </div>
-                    </div>
+                    </div> {% endcomment %}
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Remarks</label>
                             <input type="text" name="step_${stepCounter}_remarks" rows="2" class="form-control">
                         </div>
                     </div>
+                    
                 </div>
             </div>
         `;
+        $(document).ready(function () {
+            // Handle dropdown change event
+            $('#test_type').on('change', function () {
+                var selectedValue = $(this).val();
+    
+                if (selectedValue === 'quantitative') {
+                    $('#quantitative-fields').show();    // Show quantitative fields
+                    $('#qualitative-fields').hide();     // Hide qualitative fields
+                } else if (selectedValue === 'qualitative') {
+                    $('#qualitative-fields').show();     // Show qualitative fields
+                    $('#quantitative-fields').hide();    // Hide quantitative fields
+                } else {
+                    $('#quantitative-fields').hide();    // Hide both if no selection
+                    $('#qualitative-fields').hide();
+                }
+            });
+        });
 
         stepsContainer.insertAdjacentHTML('beforeend', newStep);
+    });
+    document.getElementById('removeStepBtn').addEventListener('click', function () {
+        const stepsContainer = document.getElementById('stepsContainer');
+        if (stepsContainer.lastElementChild) {
+            stepsContainer.removeChild(stepsContainer.lastElementChild);
+            stepCounter--;
+        }
     });
 </script>
 {% endblock %}

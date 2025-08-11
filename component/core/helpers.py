@@ -58,6 +58,7 @@ class ComponentManager:
     @classmethod
     def component_add(cls,data,*args, **kwargs):
         print(data,"what data i got")
+        data['is_active'] = True
         serializer = ComponentSerializer(data=data)
       
         if serializer.is_valid():

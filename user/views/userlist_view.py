@@ -125,4 +125,13 @@ class UserListView(BaseModelViewSet):
     #     except User.DoesNotExist:
     #         return self.render_response({}, False, "User not found", status.HTTP_404_NOT_FOUND)
 
+class UserProfileView(BaseModelViewSet):
+    def get(self,request,format=None):
+        users = User.objects.all()
+        all_roles= self.get_all_obj(model_name=Role)
+        context = {
+            "users":users,
+           "all_roles": all_roles
 
+        }
+        return render(request, 'index.html', context)

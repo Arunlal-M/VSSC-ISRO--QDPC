@@ -10,8 +10,6 @@ from django.shortcuts import render, redirect
 
 from qdpc_core_models.models.user import User
 class Login(BaseViewSet):
-    """ Login Api for qdpc application"""
-
     def get(self,request):
         return render(request,'logintwo.html')
 

@@ -84,52 +84,61 @@ class UserAuthenticator:
     @classmethod
     def user_signup(cls, data, *args, **kwargs):
         """ Handles user signup process """
-        print("Ented singn up")
+        # from app.models import Role  # adjust import
+        print("Entered signup")
         response_data = {}
         success = False
         status_code = status.HTTP_400_BAD_REQUEST
         message = constants.SIGNUP_FAILED
-          
+
         try:
-            # Assuming SignupSerializer is the serializer for user data
             print(data)
             user_serializer = UserSignupSerializer(data=data)
             if user_serializer.is_valid():
-                print("it is valid data")
-                user = user_serializer.save()
+                validated_data = user_serializer.validated_data
 
-                if user:
-                    print("enterd if user")
-                    group_name = 'GUEST'  # Replace with your actual group name
-                    group, created = Group.objects.get_or_create(name=group_name)
-                    role, created = Role.objects.get_or_create(name=group_name)
-                
-                    user.groups.add(group)
-                    user.role.add(role)
-                    username = user.username
-                    email=user.email
-                    send_mail=signup_email(email,username)
-                    print("enterd if user tw")
-                    # Serialize user data for response
-                    response_data = UserSignupSerializer(user).data
-                    print(response_data,"testSS")
-                    success = True
-                    status_code = status.HTTP_201_CREATED
-                    message = constants.SIGNUP_SUCCESS
-                else:
-                    print("Serilzer not valid")
-                    response_data = {"error": "User creation failed"}
-                    message = constants.SIGNUP_FAILED
+                # Get default GUEST role
+                guest_role = Role.objects.get(pk=1)
+
+                # Manually create user
+                # from app.models import User  # replace with actual model path
+                user = User.objects.create_user(
+                    username=validated_data['username'],
+                    password=validated_data['password'],
+                    email=validated_data.get('email'),
+                    first_name=validated_data.get('first_name', ''),
+                    last_name=validated_data.get('last_name', ''),
+                    phone_number=validated_data.get('phone_number', ''),
+                    usertype=validated_data.get('usertype'),
+                    desired_salutation=validated_data.get('desired_salutation'),
+                    user_id=validated_data.get('user_id'),
+                    role=guest_role,
+                    is_active=True
+                )
+
+                # Many-to-many fields (center, divisions)
+                if 'centre' in data:
+                    user.centre.set(data.getlist('centre'))
+                if 'divisions' in data:
+                    user.divisions.set(data.getlist('divisions'))
+
+                # Assign to GUEST group
+                group, _ = Group.objects.get_or_create(name='GUEST')
+                user.groups.add(group)
+
+                # Send mail
+                send_mail = signup_email(user.email, user.username)
+
+                response_data = UserSignupSerializer(user).data
+                success = True
+                status_code = status.HTTP_201_CREATED
+                message = constants.SIGNUP_SUCCESS
             else:
-                print("Serilazer not vlaid")
-               
                 response_data = user_serializer.errors
-                message = constants.SIGNUP_FAILED
-                status_code = status.HTTP_400_BAD_REQUEST
-        
+
         except Exception as e:
+            print("Exception:", e)
             response_data = {"error": str(e)}
-            message = constants.SIGNUP_FAILED
-            status_code = status.HTTP_400_BAD_REQUEST
 
         return success, status_code, response_data, message
+

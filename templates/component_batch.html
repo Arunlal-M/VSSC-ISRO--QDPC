@@ -16,36 +16,37 @@
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Batch ID</label>
-                            <input type="text" id="batch-id" name="batch-id" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Component</label>
-							<select id="component" name="component"  class="form-control" >
-                                <option value="">Select a Component</option>
-								{% for com in components %}
-									<option value="{{ com.id }}">{{ com.name }}</option>
-								{% endfor %}
-							</select>
+                            <input type="text" id="batch-id" name="batch-id" class="form-control" required>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label for="procurement_date">Procurement Date</label>
-                            <input type="date" id="procurement_date" name="procurement_date" class="form-control">
+                            <input type="date" id="procurement_date" name="procurement_date" class="form-control" required>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
+                            <label>Component</label>
+                            <select id="component" name="component" class="form-control" required>
+                                <option value="">Select a Component</option>
+                                {% for com in components %}
+                                <option value="{{ com.id }}">{{ com.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
                             <label>Batch Size</label>
-                            <input type="text" name="batch_size_value" id="batch_size_value" class="form-control">
+                            <input type="number" name="batch_size_value" id="batch_size_value" class="form-control" required>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Unit</label>
-                            <select class="select" id="batch_size_unit" name="batch_size_unit" >
+                            <select class="select" id="batch_size_unit" name="batch_size_unit" required>
                                 <option value="">Select a Unit</option>
                                 {% for unit in units %}
                                 <option value="{{ unit.id }}">{{ unit.name }}</option>
@@ -59,8 +60,15 @@
                             <input type="text" name="packing_details" id="packing_details" class="form-control">
                         </div>
                     </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="date" id="expiry_date" name="expiry_date" class="form-control" readonly>
+                        </div>
+                    </div>
                     <div class="col-lg-12">
                         <button id="submitButton" class="btn btn-submit me-2">Submit</button>
+                        <div id="error-message" class="text-danger mt-2" style="display: none;"></div>
                     </div>
                 </div>
             </div>
@@ -88,320 +96,454 @@
 </div>
 
 <script>
-    $(document).ready(function () {
-        $('#component').on('change', function () {
-            var selectedValue = $(this).val();
-            if (selectedValue) {
-                $.ajax({
-                    url: `/component/component-list/${selectedValue}/`,
-                    type: 'GET',
-                    success: function (response) {
-                        var componentData = response.data;
-                        console.log(response.data)
+$(document).ready(function () {
+    let unitCounter = 1;
 
-                        var acceptanceTests = componentData.acceptance_test;
-                        var tabContent = $('#tab-content');
-                        tabContent.empty().hide();
+    // Calculate expiry date when procurement date or component changes
+    function updateExpiryDate() {
+        var componentId = $('#component').val();
+        var procurementDate = $('#procurement_date').val();
+        
+        if (componentId && procurementDate) {
+            $.ajax({
+                url: `/component/component-list/${componentId}/`,
+                type: 'GET',
+                success: function(response) {
+                    var componentData = response.data;
+                    var shelfLifeValue = componentData.shelf_life_value;
+                    var shelfLifeUnit = componentData.shelf_life_unit;
+                    
+                    if (shelfLifeValue && shelfLifeUnit) {
+                        var expiryDate = calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit);
+                        $('#expiry_date').val(expiryDate);
+                    }
+                }
+            });
+        }
+    }
 
-                        // Fill the Batch ID Field
-                        var batchId = $('#batch-id').val(); // Assuming the API returns a batch_id
-                        $('#batch-id').val(batchId);
-                        $('#batch-id').siblings('.text-danger').remove();
+    $('#procurement_date, #component').change(updateExpiryDate);
 
-                        if (!batchId) {
-                            $('#batch-id').addClass('is-invalid'); // Add a class for styling if needed
-                            $('#batch-id').after('<span class="text-danger">Please fill in the Batch ID</span>');
-                            $('#recents').modal('hide');
-                        } else {
-                            $('#batch-id').removeClass('is-invalid'); // Remove validation if value is present
-                            $('#batch-id').siblings('.text-danger').remove();
-                            $('#recents').modal('show');
-                            // Remove any previous message
+    $('#component').on('change', function () {
+        var selectedValue = $(this).val();
+        if (selectedValue) {
+            $.ajax({
+                url: `/component/component-list/${selectedValue}/`,
+                type: 'GET',
+                success: function (response) {
+                    var componentData = response.data;
+                    var tabContent = $('#tab-content');
+                    tabContent.empty().show();
 
-                            // Populate tabContent if batchId is present
-                            tabContent.show(); // Show tabContent only when Batch ID is valid
+                    // Fill the Batch ID Field
+                    var batchId = $('#batch-id').val();
+                    if (!batchId) {
+                        $('#batch-id').addClass('is-invalid');
+                        $('#batch-id').after('<span class="text-danger">Please fill in the Batch ID</span>');
+                        $('#recents').modal('hide');
+                        return;
+                    }
 
-                            var source = componentData.sources;
-                            var suppliers = componentData.suppliers;
-                            var grade = componentData.grade;
+                    var source = componentData.sources || [];
+                    var suppliers = componentData.suppliers || [];
+                    var grade = componentData.grade || [];
 
-                            // Start building the new content
-                            var newContent = `
-                        <div class="row mb-3 align-items-center border-bottom">
-                            <div class="col-lg-3 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label>Batch ID</label>
-                                    <input type="text" class="form-control" id="batch-id" value="${batchId}" placeholder="Enter Batch ID" readonly>
-                                </div>
+                    // Add Batch ID and basic info at the top of the modal
+                    tabContent.append(`
+                        <div class="row mb-3">
+                            <div class="col-4">
+                                <label><b>Batch ID</b></label>
+                                <input type="text" class="form-control text-center" value="${batchId}" readonly> 
                             </div>
-
-                            <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="col-lg-4 col-sm-6 col-12">
                                 <div class="form-group">
                                     <label>Source</label>
-                                    <select class="form-control" id="source-dropdown">
-                                        <option value="">Select a Source</option>`;
-                            // Loop through sources to create option elements
-                            source.forEach(function (source) {
-                                newContent += `<option value="${source.id}">${source.name}</option>`;
-                            });
-
-                            // Close the select element and continue with the rest of the form
-                            newContent += `
+                                    <select class="form-control" id="source-dropdown" required>
+                                        <option value="">Select a Source</option>
+                                        ${source.map(src => `<option value="${src.id}">${src.name}</option>`).join('')}
                                     </select>
                                 </div>
                             </div>
-
-                            <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="col-lg-4 col-sm-6 col-12">
                                 <div class="form-group">
                                     <label>Supplier</label>
-                                    <select class="form-control" id="supplier-dropdown">
-                                        <option value="">Select a Supplier</option>`;
-                            // Loop through suppliers to create option elements
-                            suppliers.forEach(function (suppliers) {
-                                newContent += `<option value="${suppliers.id}">${suppliers.name}</option>`;
-                            });
-
-                            // Close the select element and continue with the rest of the form
-                            newContent += `
-                                    </select>
-                                </div>
-                            </div>
-
-                    <div class="col-lg-3 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label>Grade</label>
-                                    <select class="form-control" id="grade-dropdown">
-                                        <option value="">Select a Grade</option>`;
-
-                            // Loop through suppliers to create option elements
-                            grade.forEach(function (grade) {
-                                newContent += `<option value="${grade.id}">${grade.name}</option>`;
-                            });
-
-                            // Close the select element and continue with the rest of the form
-                            newContent += `
+                                    <select class="form-control" id="supplier-dropdown" required>
+                                        <option value="">Select a Supplier</option>
+                                        ${suppliers.map(supplier => `<option value="${supplier.id}">${supplier.name}</option>`).join('')}
                                     </select>
                                 </div>
                             </div>
                         </div>
-                    `;
+                    `);
 
-                            acceptanceTests.forEach((test) => {
-                                newContent += `
+                    // Function to add a new unit section
+                    function addUnitSection() {
+                        var newContent = `
+                            <div class="unit-section mb-4 p-3 border rounded" id="unit-section-${unitCounter}">
+                                <div class="row mb-3">
+                                    <div class="col-12 text-center">
+                                        <h5>Component Unit ${unitCounter}</h5>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-lg-4 col-sm-6 col-12">
+                                        <div class="form-group">
+                                            <label>Unit Identification No:</label>
+                                            <input type="text" class="form-control" id="component-unit-${unitCounter}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-6 col-12">
+                                        <div class="form-group">
+                                            <label>Grade</label>
+                                            <select class="form-control grade-dropdown" id="grade-dropdown-${unitCounter}" data-unit-id="${unitCounter}" required>
+                                                <option value="">Select a Grade</option>
+                                                ${grade.map(grd => `<option value="${grd.id}">${grd.name}</option>`).join('')}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="grade-test-block-${unitCounter}" class="grade-test-block">
+                                    <div class="row">
+                                        <div class="col-12 text-center">
+                                            <p class="text-muted">Select a grade to view acceptance tests</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        let $buttonsRow = tabContent.find('.unit-buttons-row');
+                        if ($buttonsRow.length) {
+                            $(newContent).insertBefore($buttonsRow);
+                        } else {
+                            tabContent.append(newContent);
+                        }
+                        unitCounter++;
+                    }
+
+                    // Add the first unit section
+                    addUnitSection();
+
+                    // Add buttons row if not exists
+                    if (!tabContent.find('.unit-buttons-row').length) {
+                        tabContent.append(`
+                            <div class="row mt-4 unit-buttons-row">
+                                <div class="col-6 text-start">
+                                    <button id="add-unit-button" class="btn btn-submit btn-success">Add Unit</button>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <button id="submit-all-tests" class="btn btn-submit btn-primary">Submit All</button>
+                                </div>
+                            </div>
+                        `);
+                    }
+
+                    // Show modal after content is loaded
+                    $('#recents').modal('show');
+                },
+                error: function (error) {
+                    console.error('Error fetching component data:', error);
+                    $('#error-message').text('Failed to load component details').show();
+                }
+            });
+        }
+    });
+
+    // Grade dropdown change handler
+    $(document).on('change', '.grade-dropdown', function() {
+        var unitId = $(this).data('unit-id');
+        var gradeId = $(this).val();
+        var componentId = $('#component').val();
+        
+        if (!gradeId || !componentId) {
+            return;
+        }
+
+        $.ajax({
+            url: '{% url "component-batch-add" %}',
+            type: 'GET',
+            data: {
+                grade_name: $(this).find('option:selected').text(),
+                component_name: $('#component option:selected').text()
+            },
+            success: function(response) {
+                var tests = response.tests || [];
+                var testBlock = $(`#grade-test-block-${unitId}`);
+                testBlock.empty();
+
+                if (tests.length > 0) {
+                    testBlock.append(`
+                        <div class="row mb-3">
+                            <div class="col-12 text-center">
+                                <h5>Acceptance Tests</h5>
+                            </div>
+                        </div>
+                    `);
+
+                    tests.forEach(test => {
+                        testBlock.append(`
                             <div class="row mb-3 align-items-center border-bottom">
-                               <div class="col-lg-2 col-sm-6 col-12 p-2">
+                                <div class="col-lg-2 col-sm-6 col-12 p-2">
                                     <div class="form-group">
                                         <label>Specification</label>
-                                        <input type="text" id="specification-value-${test.id}" value="${test.min}-${test.max}" placeholder="Enter specification" class="form-control" readonly>
+                                        <input type="text" id="specification-value-${test.id}-${unitId}" 
+                                               value="${test.min}-${test.max}" class="form-control" readonly>
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-sm-6 col-12 p-2">
                                     <div class="form-group">
                                         <label>${test.name}</label>
-                                        <input type="number" id="test-value-${test.id}" placeholder="Enter test value" class="form-control">
+                                        <input type="number" id="test-value-${test.id}-${unitId}" 
+                                               class="form-control test-value-input" required>
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-sm-6 col-12 p-2">
                                     <div class="form-group">
                                         <label>Unit</label>
-                                        <input type="text" id="unit-${test.id}" value="${test.unit}" placeholder="Enter unit" class="form-control">
+                                        <input type="text" id="unit-${test.id}-${unitId}" 
+                                               value="${test.unit}" class="form-control" readonly>
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-sm-6 col-12 p-2">
                                     <div class="form-group">
                                         <label>Status</label>
-                                        <select class="form-control" id="status-${test.id}" style="background-color: green; color: white;">
-                                            <option value="Valid">Specification Met</option>
-                                            <option value="Invalid">Specification Not Met</option>
+                                        <select class="form-control status-dropdown" id="status-${test.id}-${unitId}" required>
+                                            <option value="Valid" style="background-color: green; color: white;">Specification Met</option>
+                                            <option value="Invalid" style="background-color: red; color: white;">Specification Not Met</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-sm-6 col-12 p-2">
                                     <div class="form-group">
                                         <label>Remark</label>
-                                        <input type="text" id="remark-${test.id}" placeholder="Enter remark" class="form-control">
+                                        <input type="text" id="remark-${test.id}-${unitId}" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-sm-6 col-12 p-2">
                                     <div class="form-group">
                                         <label>File</label>
-                                        <input type="file" class="form-control mt-2" id="file-${test.id}">
+                                        <input type="file" class="form-control mt-2" id="file-${test.id}-${unitId}">
                                     </div>
                                 </div>
                             </div>
-                        `;
-
-                            // Add event listener to check if test value is within the min and max range
-                            $(document).on('input', `#test-value-${test.id}`, function () {
-                                var enteredValue = parseFloat($(this).val());
-
-                                var min = parseFloat(test.min);
-                                var max = parseFloat(test.max);
-                                var statusDropdown = $(`#status-${test.id}`);
-
-                                // Automatically select status based on entered value
-                                if (enteredValue >= min && enteredValue <= max) {
-                                    statusDropdown.val("Valid");
-                                    statusDropdown.css("background-color", "green");
-                                    statusDropdown.css("color", "white");
-                                } else {
-                                    statusDropdown.val("Invalid");
-                                    statusDropdown.css("background-color", "red");
-                                    statusDropdown.css("color", "white");
-                                }
-                            });
-
-                        });
-
-                            newContent += `
+                        `);
+                    });
+                } else {
+                    testBlock.append(`
                         <div class="row">
-                            <div class="col-lg-4 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <button id="submit-all-tests" class="btn btn-submit me-2">Submit All</button>
-                                </div>
+                            <div class="col-12 text-center">
+                                <p class="text-muted">No acceptance tests defined for this grade</p>
                             </div>
                         </div>
-                    `;
-
-                            tabContent.append(newContent);
-                        }
-                        $('#submit-all-tests').off('click').on('click', function () {
-                            var formData = new FormData();
-                            formData.append('component', selectedValue);
-                            formData.append('batch_id', batchId);
-                        
-                            // Loop through each acceptance test and append its data to FormData
-                            acceptanceTests.forEach((test, index) => {
-                                formData.append(`acceptance_tests[${index}][id]`, test.id);
-                                formData.append(`acceptance_tests[${index}][test_value]`, $(`#test-value-${test.id}`).val());
-                                formData.append(`acceptance_tests[${index}][min_value]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[0], 10));
-                                formData.append(`acceptance_tests[${index}][max_value]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[1], 10));
-                                formData.append(`acceptance_tests[${index}][status]`, $(`#status-${test.id}`).val());
-                                formData.append(`acceptance_tests[${index}][remark]`, $(`#remark-${test.id}`).val());
-                                formData.append(`acceptance_tests[${index}][created_by]`, 'user');
-                        
-                                // Append the file directly (if a file is selected)
-                                var fileInput = $(`#file-${test.id}`)[0].files[0];
-                                if (fileInput) {
-                                    formData.append(`acceptance_tests[${index}][file]`, fileInput);
-                                }
-                            });
-                        
-                            // Append additional fields for source, supplier, and grade
-                            formData.append('sources', $('#source-dropdown').val());
-                            formData.append('suppliers', $('#supplier-dropdown').val());
-                            formData.append('grade', $('#grade-dropdown').val());
-                        
-                            // AJAX request to send FormData to the server
-                            $.ajax({
-                                url: '{% url "component-batch-test-add" %}',
-                                type: 'POST',
-                                data: formData,
-                                headers: {
-                                    'X-CSRFToken': '{{ csrf_token }}'
-                                },
-                                processData: false,
-                                contentType: false,
-                                success: function (response) {
-                                    alert('Files and test values submitted successfully.');
-                                    $('#modal-close-btn').click();
-                                },
-                                error: function (error) {
-                                    console.log('Error submitting data:', error);
-                                }
-                            });
-                        });
-                        
-                        
-                    },
-                    error: function (error) {
-                        console.log('Error fetching data:', error);
-                    }
-                });
+                    `);
+                }
+            },
+            error: function(error) {
+                console.error('Error loading tests:', error);
+                $(`#grade-test-block-${unitId}`).html(`
+                    <div class="row">
+                        <div class="col-12 text-center text-danger">
+                            Failed to load tests
+                        </div>
+                    </div>
+                `);
             }
         });
     });
 
-    $(document).ready(function() {
-        $('#submitButton').click(function(event) {
-            alert("clicjed")
-            event.preventDefault(); 
-            // Check if this alert shows
+    // Test value validation
+    $(document).on('input', '.test-value-input', function() {
+        var idParts = $(this).attr('id').split('-');
+        var testId = idParts[2];
+        var unitId = idParts[3];
+        
+        var enteredValue = parseFloat($(this).val());
+        var specVal = $(`#specification-value-${testId}-${unitId}`).val();
+        var min = parseFloat(specVal.split('-')[0]);
+        var max = parseFloat(specVal.split('-')[1]);
+        var statusDropdown = $(`#status-${testId}-${unitId}`);
+        
+        if (!isNaN(enteredValue)) {
+            if (enteredValue >= min && enteredValue <= max) {
+                statusDropdown.val("Valid")
+                    .css("background-color", "green")
+                    .css("color", "white");
+            } else {
+                statusDropdown.val("Invalid")
+                    .css("background-color", "red")
+                    .css("color", "white");
+            }
+        }
+    });
 
-            // Gather form data
-            var comp = $('#component').val();
-            var batchId = $('#batch-id').val();
-            var procurementDate = $('#procurement_date').val();
-            var batchSizeValue = parseFloat($('#batch_size_value').val()); // Ensure float conversion
-            var batchSizeUnit = $('#batch_size_unit').val();
-            // var batchSizeUnit = $('#batch_size_unit').val() ? $('#batch_size_unit').val().map(Number) : [];
-            var packingDetails = $('#packing_details').val();
+    // Add unit button
+    $(document).on('click', '#add-unit-button', function(e) {
+        e.preventDefault();
+        addUnitSection();
+    });
 
-            // Create the data object
-            var componentBatchData = {
-                component: comp,
-                batch_id: batchId,
-                procurement_date: procurementDate,
-                batch_size_value: batchSizeValue,
-                batch_size_unit: batchSizeUnit,
-                packing_details: packingDetails
-            };
-        // Debug: Check the data object
+    // Submit all tests
+    $(document).on('click', '#submit-all-tests', function() {
+        var formData = new FormData();
+        var componentId = $('#component').val();
+        var batchId = $('#batch-id').val();
+        var source = $('#source-dropdown').val();
+        var supplier = $('#supplier-dropdown').val();
 
-            // Send data as JSON
-            $.ajax({
-                type: 'POST',
-                url: '{% url "component-batch-add" %}', // URL to your Django view
-                data: JSON.stringify(componentBatchData),
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
-                },
-                success: function(response) {
-                // Check the response
-                    if (response.success) {
-                        window.location.href = "{% url 'component-batch-fetch' %}"; // Redirect or update the UI as needed
-                    } else {
-                        $('#error-message').text(response.message).show(); // Show error message
-                    }
-                },
-                error: function() {
-                    $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+        if (!componentId || !batchId || !source || !supplier) {
+            alert('Please fill all required fields');
+            return;
+        }
+
+        formData.append('component', componentId);
+        formData.append('batch_id', batchId);
+        formData.append('source', source);
+        formData.append('supplier', supplier);
+
+        // Collect data from all units
+        $('.unit-section').each(function(unitIdx) {
+            var unitId = $(this).attr('id').split('-')[2];
+            var componentUnit = $(`#component-unit-${unitId}`).val();
+            var grade = $(`#grade-dropdown-${unitId}`).val();
+
+            if (!componentUnit || !grade) {
+                alert(`Please fill all fields for Unit ${unitIdx + 1}`);
+                return false;
+            }
+
+            formData.append(`units[${unitIdx}][component_unit]`, componentUnit);
+            formData.append(`units[${unitIdx}][grade]`, grade);
+
+            // Collect test data
+            $(`#grade-test-block-${unitId} .test-value-input`).each(function() {
+                var testId = $(this).attr('id').split('-')[2];
+                
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][unit_index]`, unitIdx);
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][component_unit]`, componentUnit);
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][source]`, source);
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][supplier]`, supplier);
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][grade]`, grade);
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][id]`, testId);
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][test_value]`, $(this).val());
+                
+                var specVal = $(`#specification-value-${testId}-${unitId}`).val();
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][min_value]`, specVal.split('-')[0]);
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][max_value]`, specVal.split('-')[1]);
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][status]`, $(`#status-${testId}-${unitId}`).val());
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][remark]`, $(`#remark-${testId}-${unitId}`).val());
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][created_by]`, 'user');
+                
+                var file = $(`#file-${testId}-${unitId}`)[0].files[0];
+                if (file) {
+                    formData.append(`acceptance_tests[${unitIdx}_${testId}][file]`, file);
                 }
             });
         });
+
+        // Debug: Log FormData before sending
+        for (var pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+
+        $.ajax({
+            url: '{% url "component-batch-test-add" %}',
+            type: 'POST',
+            data: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                alert('Data submitted successfully');
+                $('#recents').modal('hide');
+               // window.location.href = "{% url 'component-batch-fetch' %}";
+            },
+            error: function(error) {
+                console.error('Submission error:', error);
+                alert('Error submitting data: ' + error.responseText);
+            }
+        });
     });
 
-</script>
+    // Main form submission
+    $('#submitButton').click(function(e) {
+        e.preventDefault();
+        var formData = {
+            component: $('#component').val(),
+            batch_id: $('#batch-id').val(),
+            procurement_date: $('#procurement_date').val(),
+            batch_size_value: $('#batch_size_value').val(),
+            batch_size_unit: $('#batch_size_unit').val(),
+            packing_details: $('#packing_details').val(),
+            expiry_date: $('#expiry_date').val()
+        };
 
+        // Basic validation
+        if (!formData.component || !formData.batch_id || !formData.procurement_date || 
+            !formData.batch_size_value || !formData.batch_size_unit) {
+            $('#error-message').text('Please fill all required fields').show();
+            return;
+        }
+
+        console.log('Submitting batch data:', formData);
+
+        $.ajax({
+            type: 'POST',
+            url: '{% url "component-batch-add" %}',
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function (response) {
+                if (response.success) {
+                    window.location.href = "{% url 'component-batch-fetch' %}";
+                } else {
+                    $('#error-message').text(response.message).show();
+                }
+            },
+            error: function(error) {
+                console.error('Batch submission error:', error);
+                $('#error-message').text(error.responseJSON?.message || 'Server error').show();
+            }
+        });
+    });
+
+    function calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit) {
+        var date = new Date(procurementDate);
+        if (shelfLifeUnit === 'days') {
+            date.setDate(date.getDate() + shelfLifeValue);
+        } else if (shelfLifeUnit === 'months') {
+            date.setMonth(date.getMonth() + shelfLifeValue);
+        } else if (shelfLifeUnit === 'years') {
+            date.setFullYear(date.getFullYear() + shelfLifeValue);
+        }
+        return date.toISOString().split('T')[0];
+    }
+});
+</script>
 
 <style>
     .modal-dialog {
         max-width: 1250px;
         margin-left: 290px;
     }
-
-    /* Add border to each row */
     .row.border-bottom {
         border-bottom: 1px solid #ccc;
     }
-
-    /* Make the style responsive for mobile view */
+    .unit-section {
+        background-color: #f8f9fa;
+        margin-bottom: 20px;
+    }
     @media (max-width: 768px) {
         .modal-dialog {
             max-width: 90%;
             margin-left: 5%;
         }
-
         .row.border-bottom {
             flex-direction: column;
         }
-
-        .row.border-bottom>div {
-            margin-bottom: 10px;
-        }
     }
 </style>
-
 {% endblock %}
-

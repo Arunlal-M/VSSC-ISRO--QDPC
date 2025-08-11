@@ -2,24 +2,34 @@
     <div class="sidebar-inner slimscroll">
         <div id="sidebar-menu" class="sidebar-menu">
             <ul>
-
+                {% if not 'QA' in request.user.groups.all|join:", " %}
                 <li class="submenu-open">
                     <h6 class="submenu-hdr">User Management</h6>
                     <ul>
                         <li>
                             <a href="{% url 'user-dashboard' %}"><i data-feather="grid"></i><span>Dashboard</span></a>
                         </li>
+                        {% if request.user.role and request.user.role.name == "SDA" %}
 
                         <li>
                             <a href="{% url 'equipment-list' %}"><i data-feather="grid"></i><span>Equipments</span></a>
                         </li>
-                        <li>
+
+                        <li> {% if request.user.role and request.user.role.name == "SDA" %}
+
+                            {% endif %}
+
+
+                            
                             <a href="{% url 'user-list' %}"><i data-feather="grid"></i><span>Users</span></a>
                         </li>
+                        {% endif%}
                         <li>
                             <a href="{% url 'acceptance-list' %}"><i data-feather="grid"></i><span>Acceptance
                                     Test</span></a>
                         </li>
+
+
                         <li>
                             <a href="{% url 'raw-material' %}"><i data-feather="grid"></i><span>Rawmaterial</span></a>
                         </li>
@@ -45,15 +55,19 @@
                             <a href="{% url 'process_list' %}"><i data-feather="grid"></i><span>Process</span></a>
                         </li>
                         <li>
-                            <a href="{% url 'product-view' %}"><i data-feather="grid"></i><span>Product</span></a>
+                            <a href="{% url 'product-home' %}"><i data-feather="grid"></i><span>Product</span></a>
                         </li>
+                        <!-- <li>
+                            <a href="{% url 'product-batch-list' %}"><i data-feather="grid"></i><span>Product
+                                    Batch</span></a>
+                        </li> -->
 
 
 
 
                     </ul>
                 </li>
-
+  {% endif %}
 
                 <li class="submenu-open">
                     <h6 class="submenu-hdr">Miscellaneous Data Management</h6>
@@ -70,6 +84,10 @@
                             <a href="{% url 'enduse-list' %}"><i data-feather="grid"></i><span>Enduse</span></a>
                         </li>
 
+                        <!-- <li>
+                            <a href="{% url 'productcategory-list' %}"><i data-feather="grid"></i><span>Product Category</span></a>
+                        </li> -->
+                        
                         <li>
                             <a href="{% url 'documenttype-list' %}"><i data-feather="grid"></i><span>Document
                                     Type</span></a>
@@ -99,14 +117,17 @@
                             <a href="#"><i data-feather="grid"></i><span>Process Log-Sheet</span></a>
                         </li>
                         <li>
-                            <a href="#"><i data-feather="grid"></i><span>Stage Clearance</span></a>
+                            <a href="{% url 'clearance' %}"><i data-feather="grid"></i><span>Stage Clearance</span></a>
                         </li>
                         <li>
-                            <a href="{% url 'generate_qar' %}"><i data-feather="grid"></i><span>Q.A.R-Report</span></a>
+                            <a href="#"><i data-feather="grid"></i><span>Q.A.R-Report</span></a>
                             {% comment %} {% url 'generate_qar' %} {% endcomment %}
                         </li>
                     </ul>
                 </li>
+                {% if not request.user.groups.filter.name == 'QA' %}
+                <!-- Only show Roles Management if user is NOT in QA group -->
+
 
                 <li class="submenu-open">
                     <h6 class="submenu-hdr">Roles Management</h6>
@@ -116,7 +137,7 @@
                         </li>
                     </ul>
                 </li>
-
+{% endif %}
 
             </ul>
         </div>

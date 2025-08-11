@@ -1,32 +1,48 @@
 from django.shortcuts import redirect
-from django.urls import reverse
+from django.urls import reverse, resolve
 from django.http import JsonResponse
+import threading
 
-class RedirectUnauthorizedMiddleware:
-    """
-    Middleware to redirect unauthorized requests to the login page.
-    """
+_thread_locals = threading.local()
 
+def get_current_user():
+    return getattr(_thread_locals, 'user', None)
+
+class ThreadLocalMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        print("Middleware: Checking request authentication")
+        _thread_locals.user = getattr(request, 'user', None)
+        response = self.get_response(request)
+        return response
 
-        # Check if the user is not authenticated
+class RedirectUnauthorizedMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            view_name = resolve(request.path_info).view_name
+        except Exception:
+            view_name = None
+
+        excluded_view_names = [
+            'login_view',
+            'logout_view',
+            'sign-up',
+            'forgot_username',
+            'forgot_password',
+        ]
+
+        # If the path is in excluded list, skip auth check
+        if view_name in excluded_view_names:
+            return self.get_response(request)
+
+        # If user is not authenticated
         if not request.user.is_authenticated:
-            print("User is not authenticated")
+            if request.path.startswith('/api/') or request.content_type == 'application/json':
+                return JsonResponse({'detail': 'Unauthorized. Redirecting to login.'}, status=401)
+            return redirect(reverse('login_view'))
 
-            # Exclude specific endpoints (e.g., login URL)
-            excluded_paths = [reverse('login_view'), reverse('logout_view')]
-            if request.path not in excluded_paths:
-                
-                # For API requests (JSON content)
-                if request.path.startswith('/api/') or request.content_type == 'application/json':
-                    return JsonResponse({'detail': 'Unauthorized. Redirecting to login.'}, status=401)
-
-                # Redirect to login page for non-API requests
-                return redirect(reverse('login_view'))
-
-        # If authenticated, allow the request to proceed
         return self.get_response(request)

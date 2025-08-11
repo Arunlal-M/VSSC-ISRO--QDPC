@@ -136,9 +136,39 @@
             padding-top: 0.3em;
             margin-top: 2em;
         }
-        .container-br{
+
+        .container-br {
             padding: 0 1em 1em;
             border: 1px solid;
+        }
+
+        .bullet-list {
+            list-style-type: none;
+            padding-left: 1.5em;
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+        .subsection-title {
+            font-weight: bold;
+            margin-top: 0.8em;
+        }
+
+        .subsubsection-title {
+            font-style: italic;
+            margin-top: 0.5em;
         }
     </style>
 </head>
@@ -148,8 +178,8 @@
         <div class="page container-br">
             <table>
                 <tr>
-                    <th class="br-none">Report No: VSSC/QDPC/AK/F1691/2024/Rec.: 2451</th>
-                    <th class="bl-none text-end">Date: 25-10-2024</th>
+                    <th class="br-none">Report No: VSSC/QPDC/QAR/Product-A/2024/Rec: 2451</th>
+                    <th class="bl-none text-end">Date: {{ today|date:"d/m/Y" }}</th>
                 </tr>
             </table>
             <p class="title">गुणवत्ता प्रभाग नोदक एवं रसायन / QUALITY DIVISION PROPELLANTS & CHEMICALS<br />
@@ -164,396 +194,619 @@
                 <tr>
                     <th colspan="2" class="text-center">Quality Assessment Report</th>
                 </tr>
-                <tr>
-                    <td class="bold">Product</td>
-                    <td class="bold">Product-A</td>
-                </tr>
-                <tr>
-                    <td class="bold">Batch Nos.</td>
-                    <td class="bold">Div-1/Product-A/0116/2024 to <br />Div-1/Product-A/0120/2024 (5 batches)</td>
-                </tr>
             </table>
+
+            <div class="section-title">1. Introduction</div>
+            <ul class="bullet-list">
+                <li>Brief introduction about the product and purpose of this report</li>
+                <li>Scope of the quality assessment</li>
+                <li>Summary of the batches/units covered in this report</li>
+            </ul>
+
+            <div class="section-title">2. Item Identification</div>
             <table>
                 <tr>
-                    <td class="text-center">प्रस्तुतकर्ता <br>Prepared by </td>
-                    <td class="text-center min-w-50">Engineer-1 <br>Engineer-2 </td>
-                    <td class="min-w"></td>
+                    <td class="bold">Product Name</td>
+                    <td>{{ product.name }}</td>
                 </tr>
                 <tr>
-                    <td class="text-center">समीक्षाकर्ता  <br>Reviewed by </td>
-                    <td class="text-center min-w-50">Section Head</td>
-                    <td class="min-w"></td>
+                    <td class="bold">Batch Identification No./Unit Identification No.</td>
+                    <td>Div-1/{{ product.name }}/0116/2024 to Div-1/Product-A/0120/2024 (5 batches)</td>
                 </tr>
                 <tr>
-                    <td class="text-center">अनुमोदनकर्ता  <br>Approved by </td>
-                    <td class="text-center min-w-50">Division Head</td>
-                    <td class="min-w"></td>
+                    <td class="bold">Manufacturing date</td>
+                    <td>{{ batch.manufacturings_start_date|date:"d/m/Y" }}</td>
+                </tr>
+                <tr>
+                    <td class="bold">Expiry date</td>
+                    <td>{{ batch.manufacturings_end_date|date:"d/m/Y" }}</td>
                 </tr>
             </table>
-            <p class="m-0 mt-1 bold">Circulation List: </p>
-            <table class="m-0">
-                <tr>
-                    <td class="max-width-50">To</td>
-                    <td colspan="2">Person-1 </td>
-                </tr>
-                <tr>
-                    <td class="max-width-50" rowspan="2">Cc</td>
-                    <td>Person-2</td>
-                    <td>Person-4</td>
-                </tr>
-                <tr>
-                    <td>Person-3</td>
-                    <td>Person-5</td>
-                </tr>
-            </table>
+
+            <div class="section-title">3. End use</div>
+            <p>For PSLV launch vehicle (Specific use)</p>
+
+            <div class="section-title">4. Processing agency</div>
+            <p>Division-1, VSSC</p>
+
+            <div class="section-title">5. Changes</div>
+            <ul class="bullet-list">
+                <li>Summary of any changes in process, materials, or specifications</li>
+                <li>Impact assessment of changes</li>
+            </ul>
+
             <div class="footer text-end footer-line">Page | 1</div>
         </div>
+
         <div class="page container-br mt-1">
-            <p class="m-0 mt-1 bold font-large">1. Product Identification </p>
-            <p class="m-0 mt-1 bold pl-15">Product Name: Product-A</p>
-            <table class="mw-adjust">
+            <div class="section-title">6. QA observations and remarks</div>
+
+            <div class="subsection-title">6.1. Raw material</div>
+            <ul class="bullet-list">
+                <li>All raw materials were within specification limits</li>
+                <li>Certificates of analysis available for all materials</li>
+            </ul>
+
+            <div class="subsection-title">6.2. Components</div>
+            <ul class="bullet-list">
+                <li>All components were inspected and found acceptable</li>
+                <li>Traceability maintained for all critical components</li>
+            </ul>
+
+            <div class="subsection-title">6.3. In-process checks</div>
+            <ul class="bullet-list">
+                <li>All in-process parameters were monitored and recorded</li>
+                <li>No deviations observed during processing</li>
+            </ul>
+
+            <div class="subsection-title">6.4. Inspections</div>
+
+            <div class="subsubsection-title">6.4.1. NDT Inspection</div>
+            <ul class="bullet-list">
+                <li>NDT inspection results were satisfactory</li>
+                <li>No indications found beyond acceptable limits</li>
+            </ul>
+
+            <div class="subsubsection-title">6.4.2. Visual Inspection</div>
+            <ul class="bullet-list">
+                <li>No visual defects observed</li>
+                <li>Surface finish meets requirements</li>
+            </ul>
+
+            <div class="subsubsection-title">6.4.3. Dimensional Inspection</div>
+            <ul class="bullet-list">
+                <li>All critical dimensions within tolerance</li>
+                <li>Measurement records maintained</li>
+            </ul>
+
+            <div class="subsection-title">6.5. Product acceptance tests</div>
+            <ul class="bullet-list">
+                <li>All acceptance test results meet specification requirements</li>
+                <li>Test reports attached in Annexure</li>
+            </ul>
+
+            <div class="section-title">7. Non-conformances</div>
+            <table>
                 <tr>
-                    <th>B. No.</th>
-                    <th>D.O.M</th>
-                    <th>D.O.E</th>
-                    <th>Batch Size, g</th>
+                    <th>NC No.</th>
+                    <th>Description</th>
+                    <th>Disposition</th>
+                    <th>Status</th>
                 </tr>
                 <tr>
-                    <td>Div-1/Product-A/0116/2024</td>
-                    <td>27.07.2024</td>
-                    <td>26.07.2025</td>
-                    <td>2250</td>
+                    <td>NC-001</td>
+                    <td>Minor deviation in parameter X</td>
+                    <td>Accepted with concession</td>
+                    <td>Closed</td>
                 </tr>
                 <tr>
-                    <td>Div-1/Product-A/0117/2024</td>
-                    <td>27.07.2024</td>
-                    <td>26.07.2025</td>
-                    <td>2310</td>
-                </tr>
-                <tr>
-                    <td>Div-1/Product-A/0118/2024</td>
-                    <td>27.07.2024</td>
-                    <td>26.07.2025</td>
-                    <td>2260</td>
-                </tr>
-                <tr>
-                    <td>Div-1/Product-A/0119/2024</td>
-                    <td>25.08.2024</td>
-                    <td>24.08.2025</td>
-                    <td>2225</td>
-                </tr>
-                <tr>
-                    <td>Div-1/Product-A/0120/2024</td>
-                    <td>25.08.2024</td>
-                    <td>24.08.2025</td>
-                    <td>2230</td>
+                    <td>NC-002</td>
+                    <td>Documentation error in batch record</td>
+                    <td>Corrected</td>
+                    <td>Closed</td>
                 </tr>
             </table>
-            <p class="m-0 mt-1 bold font-large">2. References</p>
-            <p class="m-0 mt-1 pl-15"><strong>2.1.</strong> Process document for product-A, Document No:
-                ABCD/DiV2/PD/01/2021 dated July 2021</p>
-            <p class="m-0 mt-1 pl-15"><strong>2.2.</strong> Log sheets from Div-1 </p>
-            <p class="m-0 mt-1 bold font-large">3. End use: For PSLV launch vehicle (Specific use)</p>
-            <p class="m-0 mt-1 bold font-large">4. Assessment by review forums</p>
-            <p class="m-0 mt-1 pl-15"><strong>4.1.</strong> Remark-1</p>
-            <p class="m-0 mt-1 pl-15"><strong>4.2.</strong> Remark-2</p>
-            <p class="m-0 mt-1 pl-15"><strong>4.3.</strong> ---</p>
-            <p class="m-0 mt-1 pl-15"><strong>4.4.</strong> ---</p>
-            <p class="m-0 mt-1 bold font-large">5. QA observation and remarks</p>
-            <p class="m-0 mt-1 pl-15"><strong>5.1.</strong> Raw materials used in the processing product-A were analysed
-                as per Ref. 2.1. Properties of all the raw materials meet the specification. (Ref. Annexure-I)</p>
-            <p class="m-0 mt-1 pl-15"><strong>5.2.</strong> Processing of all the batches was carried out at as per Ref
-                2.1.</p>
-            <p class="m-0 mt-1 pl-15"><strong>5.3.</strong> Acceptance of the product were carried and the test results
-                meet the specification (Ref AnnexureIIIA).</p>
-            <p class="m-0 mt-1 pl-15"><strong>5.4.</strong> Comments regarding and NCs and NC management, if any</p>
-            <p class="m-0 mt-1 pl-15"><strong>5.5.</strong> Remark-1</p>
-            <p class="m-0 mt-1 pl-15"><strong>5.6.</strong> Remark-2</p>
-            <p class="m-0 mt-1 bold font-large">6. Non-conformances: </p>
-            <p class="m-0 mt-1 pl-15"><strong>6.1.</strong> NC-1</p>
-            <p class="m-0 mt-1 pl-15"><strong>6.2.</strong> NC-2</p>
-            <p class="m-0 mt-1 bold font-large">7. Storage Condition: </p>
-            <p class="m-0 mt-1 pl-15"><strong>7.1.</strong> As the product is moisture sensitive, it is to be stored in
-                airtight containers under dry nitrogen/dry argon blanket and kept in ambient condition.</p>
 
             <div class="footer text-end footer-line">Page | 2</div>
-
         </div>
 
         <div class="page container-br mt-1">
+            <div class="section-title">8. Reviews</div>
+            <ul class="bullet-list">
+                <li>Reviewed by Quality Review Board on 20-10-2024</li>
+                <li>All observations addressed</li>
+                <li>No open items pending</li>
+            </ul>
 
-            <p class="m-0 mt-1 bold font-large">8. QA Recommendation</p>
-            <p class="m-0 mt-1 pl-15">o Recommendation-1</p>
-            <p class="m-0 mt-1 pl-15">o Recommendation-2</p>
+            <div class="section-title">9. Storage</div>
+            <ul class="bullet-list">
+                <li>Product to be stored in controlled environment</li>
+                <li>Temperature range: 20°C to 30°C</li>
+                <li>Relative humidity: <60%< /li>
+                <li>Protection from direct sunlight required</li>
+            </ul>
 
-            <p class="m-0 mt-1 bold font-large">9. Pending actions</p>
-            <p class="m-0 mt-1 pl-15">o Actions-1</p>
-            <p class="m-0 mt-1 pl-15">o Actions-2</p>
+            <div class="section-title">10. Packaging and transportation</div>
+            <ul class="bullet-list">
+                <li>Use approved packaging materials</li>
+                <li>Ensure proper cushioning during transport</li>
+                <li>Maintain temperature control during transit if required</li>
+                <li>Seal all packages with tamper-evident seals</li>
+            </ul>
 
-            <p class="m-0 mt-1 bold font-large">10. Disposition</p>
-
+            <div class="section-title">11. Pending actions</div>
             <table>
                 <tr>
-                    <td colspan="2" class="pl-15 line-height-1 br-solid-5">• <strong>Product-1 with batch nos.</strong>
-                        Div-1/Product-A/0116/2024 <strong>to</strong> Div-1/Product-A/0116/2024
-                        <strong>(5 batches) <br /><span class="pl-15">are cleared for further use.</span></strong>
-                        <br />• <strong>The following points are to be noted:
-                            <ul class="m-0 p-0 pl-15">
-                                <li>Note-1 </li>
-                                <li>Note-2 </li>
-                                <li>Note-3 </li>
-                            </ul>
-                        </strong>
+                    <th>Action No.</th>
+                    <th>Description</th>
+                    <th>Target Date</th>
+                    <th>Responsible</th>
+                </tr>
+                <tr>
+                    <td>ACT-001</td>
+                    <td>Update procedure XYZ based on lessons learned</td>
+                    <td>30-11-2024</td>
+                    <td>Engineer-1</td>
+                </tr>
+                <tr>
+                    <td>ACT-002</td>
+                    <td>Conduct additional testing on retained samples</td>
+                    <td>15-11-2024</td>
+                    <td>Lab Team</td>
+                </tr>
+            </table>
+
+            <div class="section-title">12. QA Recommendations</div>
+            <ul class="bullet-list">
+                <li>Product meets all quality requirements</li>
+                <li>Recommended for use in intended application</li>
+                <li>Monitor performance during initial use</li>
+            </ul>
+
+            <div class="footer text-end footer-line">Page | 3</div>
+        </div>
+
+        <div class="page container-br mt-1">
+            <div class="section-title">13. Any other remarks</div>
+            <ul class="bullet-list">
+                <li>Special handling instructions for product use</li>
+                <li>Note on shelf-life monitoring requirements</li>
+            </ul>
+
+            <div class="section-title">14. Disposition</div>
+            <table>
+                <tr>
+                    <td class="line-height-1 br-solid-5">
+                        <strong>Product-A with batch nos.</strong> Div-1/Product-A/0116/2024 <strong>to</strong>
+                        Div-1/Product-A/0120/2024
+                        <strong>(5 batches) are cleared for further use.</strong>
+                        <br /><strong>The following points are to be noted:</strong>
+                        <ul class="bullet-list">
+                            <li>Use within specified shelf life</li>
+                            <li>Follow all handling and storage instructions</li>
+                            <li>Report any anomalies during use</li>
+                        </ul>
                     </td>
                 </tr>
             </table>
 
-            <div class="footer text-end footer-line">Page | 3</div>
+            <div class="section-title">15. Applicable References/Documents</div>
+            <ul class="bullet-list">
+                <li>Process document for product-A, Document No: ABCD/DiV2/PD/01/2021 dated July 2021</li>
+                <li>Quality manual QM-001 Rev. 3</li>
+                <li>Test procedure TP-0456 Rev. 2</li>
+            </ul>
 
-        </div>
 
-        <div class="page container-br mt-1">
-            <p class="text-end bold font-large m-0 mt-1"><u>Annexure-I</u></p>
-            <p class="text-center font-large m-0 bold">Acceptance test of raw materials</p>
 
-            <table>
-                <tr>
-                    <th>Sl. No.</th>
-                    <th class="text-center">Parameters</th>
-                    <th class="text-center">Specification</th>
-                    <th class="text-center">Test Results</th>
-                    <th class="text-center">Test report reference No.</th>
-                </tr>
-                <tr>
-                    <td rowspan="4" class="text-center"><strong>1</strong></td>
-                    <td colspan="4"><strong>RM-1</strong></td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-1</td>
-                    <td>Colourless liquid</td>
-                    <td>Colourless liquid</td>
-                    <td class="text-center">---------</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-2</td>
-                    <td>60 - 70</td>
-                    <td>58.7</td>
-                    <td rowspan="2" class="text-center">4S89XCV, Dt: 29.07.2024</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-3</td>
-                    <td>
-                        < 0.5 </td>
-                    <td>0.08</td>
-                </tr>
-                <tr>
-                    <td rowspan="4" class="text-center"><strong>2</strong></td>
-                    <td colspan="4"><strong>RM-2</strong></td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-1</td>
-                    <td>Colourless viscous solid</td>
-                    <td>Colourless viscous solid</td>
-                    <td class="text-center">---------</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-2</td>
-                    <td>1300 - 1500</td>
-                    <td>1437</td>
-                    <td rowspan="2" class="text-center">5S90XCV, Dt:29.04.2024</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-3</td>
-                    <td>
-                        < 1.0 </td>
-                    <td>0.19</td>
-                </tr>
-                <tr>
-                    <td rowspan="3" class="text-center"><strong>3</strong></td>
-                    <td colspan="4"><strong>RM-3</strong></td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-1</td>
-                    <td>Colourless solid </td>
-                    <td>Colourless solid</td>
-                    <td class="text-center">---------</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-2</td>
-                    <td>1220 - 1260 </td>
-                    <td>1230</td>
-                    <td class="text-center">8X62FGH, Dt: 30.08.2024</td>
-                </tr>
-                <tr>
-                    <td rowspan="6" class="text-center"><strong>4</strong></td>
-                    <td colspan="5"><strong>RM-4</strong></td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-1</td>
-                    <td>Colourless to pale yellow liquid</td>
-                    <td>Colourless liquid</td>
-                    <td class="text-center">---------</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-2</td>
-                    <td>≥98</td>
-                    <td>99.4</td>
-                    <td class="text-center">146129, Dt: 29.05.2024</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-3</td>
-                    <td>1.21 – 1.24</td>
-                    <td>1.22</td>
-                    <td class="text-center">146128, Dt: 03.06.2024</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-4</td>
-                    <td>1.5660-1.5680</td>
-                    <td>1.5657</td>
-                    <td class="text-center">149713, Dt: 05.09.2024</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-5</td>
-                    <td>80±2% <br /> 20±2% </td>
-                    <td>78.7 <br /> 21.3 </td>
-                    <td class="text-center">QSDF/1258924, Dt:17.06.2022</td>
-                </tr>
-                <tr>
-                    <td rowspan="4" class="text-center"><strong>5</strong></td>
-                    <td colspan="4"><strong>RM-5</strong></td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-1</td>
-                    <td>Colourless to pale yellow liquid</td>
-                    <td>Colourless liquid</td>
-                    <td class="text-center">---------</td>
-                </tr>
-                <tr>
-                    <td>Acceptance test-2</td>
-                    <td>≥ 99</td>
-                    <td>99.8</td>
-                    <td class="text-center" style="min-width: 180px;">145799, Dt: 27.05.2024</td>
-                </tr>
-                <tr>
-                    <td style="min-width: 130px;">Specific gravity@25 °C</td>
-                    <td>1.06 – 1.09</td>
-                    <td>1.06</td>
-                    <td class="text-center">145802, Dt: 09.05.2024</td>
-                </tr>
 
-            </table>
+
             <div class="footer text-end footer-line">Page | 4</div>
         </div>
+
         <div class="page container-br mt-1">
-            <p class="text-end bold font-large"> <u>Annexure-IIIA</u> </p>
-            <p class="font-large m-0 bold"><u>Acceptance test of products Properties</u></p>
+            <p class="text-end bold font-large"><u>Annexure-I</u></p>
+            <p class="text-center font-large bold">List of raw materials used and their expiry dates</p>
 
-            <table>
-                <tr>
-                    <th rowspan="2" class="text-center">Sl. No.</th>
-                    <th class="text-center" rowspan="2">Batch No. </th>
-                    <th class="text-center" colspan="2">Test Results (Measured in-house)</th>
-                </tr>
-                <tr>
-                    <th class="text-center">Acceptance test-A, Spec.: <1 x 106 Ω/□ </th>
-                    <th class="text-center">Acceptance test-B (Spec.:20 – 24 Sec) </th>
-                </tr>
-                <tr>
-                    <td class="text-center">1</td>
-                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">105, 105, 105 </td>
-                    <td class="text-center">23.37,21.60,21.73 </td>
-                </tr>
-                <tr>
-                    <td class="text-center">2</td>
-                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">105, 105, 105 </td>
-                    <td class="text-center">23.37,21.60,21.73 </td>
-                </tr>
-                <tr>
-                    <td class="text-center">3</td>
-                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">105, 105, 105 </td>
-                    <td class="text-center">23.37,21.60,21.73 </td>
-                </tr>
-                <tr>
-                    <td class="text-center">4</td>
-                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">105, 105, 105 </td>
-                    <td class="text-center">23.37,21.60,21.73 </td>
-                </tr>
-                <tr>
-                    <td class="text-center">5</td>
-                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">105, 105, 105 </td>
-                    <td class="text-center">23.37,21.60,21.73 </td>
-                </tr>
-                <tr>
-                    <td class="text-center">6</td>
-                    <td style="min-width: 180px;">Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">105, 105, 105 </td>
-                    <td class="text-center">23.37,21.60,21.73 </td>
-                </tr>
-            </table>
+           <table class="info-table">
+    <thead>
+        <tr>
+            <th>Material Name</th>
+            <th>Batch Number</th>
+            <th>Supplier</th>
+            <th>Source</th>
+            <th>Grade </th>
+            <th>Expiry Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for raw_material in raw_materials %}
+        <tr>
+            <td>{{ raw_material.rawmaterial_name }}</td>
+            <td>
+                {% if raw_material.batch %}
+                    {{ raw_material.batch.batch_id }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if raw_material.suppliers.all %}
+                    {% for supplier in raw_material.suppliers.all %}
+                        {{ supplier.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if raw_material.sources.all %}
+                    {% for source in raw_material.sources.all %}
+                        {{ source.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if raw_material.grade.all %}
+                    {% for grade in raw_material.grade.all %}
+                        {{ grade.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if raw_material.expiry_date %}
+                    {{ raw_material.expiry_date|date:"d/m/Y" }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">No raw materials found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-            <p class="text-end bold font-large"> <u>Annexure-IIIB</u> </p>
 
-            <table>
-                <tr>
-                    <th class="text-center">Sl. No.</th>
-                    <th class="text-center">Batch No. </th>
-                    <th class="text-center">Acceptance test-C Spec.: 0.55±0.05</th>
-                    <th class="text-center">Test Report Ref. No.</th>
-                    <th class="text-center">Acceptance test-D Spec.: 0.55±0.05 Spec.: 0.8(min)</th>
-                    <th class="text-center">Test Report Ref. No. </th>
-                </tr>
-                <tr>
-                    <td class="text-center">1</td>
-                    <td>Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">0.56, 0.58 </td>
-                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
-                    <td class="text-center">0.90, 0.89</td>
-                    <td class="text-center" colspan="6" rowspan="6">DIV-10/Emi/2223/2024 Dtd.10.11.2024</td>
-                </tr>
-                <tr>
-                    <td class="text-center">2</td>
-                    <td>Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">0.56, 0.58 </td>
-                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
-                    <td class="text-center">0.90, 0.89</td>
-                </tr>
-                <tr>
-                    <td class="text-center">3</td>
-                    <td>Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">0.56, 0.58 </td>
-                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
-                    <td class="text-center">0.90, 0.89</td>
-                </tr>
-                <tr>
-                    <td class="text-center">4</td>
-                    <td>Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">0.56, 0.58 </td>
-                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
-                    <td class="text-center">0.90, 0.89</td>
-                </tr>
-                <tr>
-                    <td class="text-center">5</td>
-                    <td>Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">0.56, 0.58 </td>
-                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
-                    <td class="text-center">0.90, 0.89</td>
-                </tr>
-                <tr>
-                    <td class="text-center">6</td>
-                    <td>Div-1/Product-A/0116/2024 </td>
-                    <td class="text-center">0.56, 0.58 </td>
-                    <td class="text-center">SMAS/254512 Dt:08.11.2024</td>
-                    <td class="text-center">0.90, 0.89</td>
-                </tr>
-            </table>
+
+
+
+
             <div class="footer text-end footer-line">Page | 5</div>
         </div>
-    </div>
+
+        <div class="page container-br mt-1">
+            <p class="text-end bold font-large"><u>Annexure-II</u></p>
+            <p class="text-center font-large bold">List of Consumables used and their expiry dates</p>
+
+        <table class="info-table">
+    <thead>
+        <tr>
+            <th>Consumable Name</th>
+            <th>Batch Number</th>
+            <th>Supplier</th>
+            <th>Source</th>
+            <th>Grade </th>
+            <th>Expiry Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for consumable in consumables %}
+        <tr>
+            <td>{{ consumable.consumable_name }}</td>
+            <td>
+                {% if consumable.batch %}
+                    {{ consumable.batch.batch_id }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if consumable.suppliers.all %}
+                    {% for supplier in consumable.suppliers.all %}
+                        {{ supplier.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+             <td>
+                {% if consumable.sources.all %}
+                    {% for source in consumable.sources.all %}
+                        {{ source.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if consumable.grade.all %}
+                    {% for grade in consumable.grade.all %}
+                        {{ grade.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if consumable.expiry_date %}
+                    {{ consumable.expiry_date|date:"d/m/Y" }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">No consumables found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+            <div class="footer text-end footer-line">Page | 6</div>
+        </div>
+
+        <div class="page container-br mt-1">
+            <p class="text-end bold font-large"><u>Annexure-III</u></p>
+            <p class="text-center font-large bold">List of Components used and their expiry dates</p>
+
+        <table class="info-table">
+    <thead>
+        <tr>
+            <th>Component Name</th>
+            <th>Batch Number</th>
+            <th>Supplier</th>
+            <th>Source</th>
+            <th>Grade </th>
+            <th>Expiry Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for component in components %}
+        <tr>
+            <td>{{ component.component_name }}</td>
+            <td>
+                {% if component.batch %}
+                    {{ component.batch.batch_id }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if component.suppliers.all %}
+                    {% for supplier in component.suppliers.all %}
+                        {{ supplier.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if component.sources.all %}
+                    {% for source in component.sources.all %}
+                        {{ source.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if component.grade.all %}
+                    {% for grade in component.grade.all %}
+                        {{ grade.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if component.expiry_date %}
+                    {{ component.expiry_date|date:"d/m/Y" }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">No components found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+<div class="footer text-end footer-line">Page | 7</div>
+        </div>
+
+<div class="page container-br mt-1">
+    <p class="text-end bold font-large"><u>Annexure-IV</u></p>
+    <p class="text-center font-large bold">List of Raw Material batches used and their Acceptance Test details</p>
+
+    <table>
+        <tr>
+            <th>Sl. No.</th>
+            <th>Raw Material</th>
+            <th>Batch No.</th>
+            <th>Test Parameter</th>
+            <th>Specification</th>
+            <!-- <th>Result</th>
+            <th>Test Date</th> -->
+        </tr>
+
+        {% for rm in raw_materials %}
+            {% for test in rm.acceptance_tests %}
+                {% if forloop.first %}
+                    <tr>
+                        <td rowspan="{{ rm.acceptance_tests|length }}">{{ forloop.parentloop.counter }}</td>
+                        <td rowspan="{{ rm.acceptance_tests|length }}">{{ rm.rawmaterial_name }}</td>
+                        <td rowspan="{{ rm.acceptance_tests|length }}">{{ batch.batch_id }}</td> <!-- if available -->
+                        <td>{{ test.name }}</td>
+                        <td>
+                            {% if test.min_value and test.max_value %}
+                                {{ test.min_value }} - {{ test.max_value }} {{ test.unit }}
+                            {% else %}
+                                {{ test.specification_result|default:"-" }}
+                            {% endif %}
+                        </td>
+                        <!-- <td>{{ test.test_result|default:"-" }}</td>
+                        <td>{{ test.test_date|date:"d-m-Y" }}</td> -->
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td>{{ test.name }}</td>
+                        <td>
+                            {% if test.min_value and test.max_value %}
+                                {{ test.min_value }} - {{ test.max_value }} {{ test.unit }}
+                            {% else %}
+                                {{ test.specification_result|default:"-" }}
+                            {% endif %}
+                        </td>
+                        <!-- <td>{{ test.test_result|default:"-" }}</td>
+                        <td>{{ test.test_date|date:"d-m-Y" }}</td> -->
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </table>
+</div>
+{% if raw_materials|dictsort:"precertification"|yesno:"1,0" %}
+<div class="page container-br mt-4">
+    <p class="text-center font-large bold"><u>Pre-Certification Details - Raw Materials</u></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Sl. No.</th>
+                <th>Name</th>
+                <th>Certified By</th>
+                <th>Certificate Ref No</th>
+                <th>Issue Date</th>
+                <th>Valid Till</th>
+                <th>Disposition</th>
+                <th>Certificate File</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rm in raw_materials %}
+                {% if rm.precertification %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ rm.rawmaterial_name }}</td>
+                        <td>{{ rm.precertification.certified_by.name }}</td>
+                        <td>{{ rm.precertification.certificate_reference_no }}</td>
+                        <td>{{ rm.precertification.certificate_issue_date|date:"d-m-Y" }}</td>
+                        <td>{{ rm.precertification.certificate_valid_till|date:"d-m-Y" }}</td>
+                        <td>{{ rm.precertification.certificate_disposition }}</td>
+                        <td>
+                            {% if rm.precertification.certificate_file %}
+                                <a href="{{ rm.precertification.certificate_file.url }}" target="_blank">View File</a>
+                            {% else %}
+                                None
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if consumables|dictsort:"precertification"|yesno:"1,0" %}
+<div class="page container-br mt-4">
+    <p class="text-center font-large bold"><u>Pre-Certification Details - Consumables</u></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Sl. No.</th>
+                <th>Name</th>
+                <th>Certified By</th>
+                <th>Certificate Ref No</th>
+                <th>Issue Date</th>
+                <th>Valid Till</th>
+                <th>Disposition</th>
+                <th>Certificate File</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in consumables %}
+                {% if c.precertification %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ c.consumable_name }}</td>
+                        <td>{{ c.precertification.certified_by.name }}</td>
+                        <td>{{ c.precertification.certificate_reference_no }}</td>
+                        <td>{{ c.precertification.certificate_issue_date|date:"d-m-Y" }}</td>
+                        <td>{{ c.precertification.certificate_valid_till|date:"d-m-Y" }}</td>
+                        <td>{{ c.precertification.certificate_disposition }}</td>
+                        <td>
+                            {% if c.precertification.certificate_file %}
+                                <a href="{{ c.precertification.certificate_file.url }}" target="_blank">View File</a>
+                            {% else %}
+                                None
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if components|dictsort:"precertification"|yesno:"1,0" %}
+<div class="page container-br mt-4">
+    <p class="text-center font-large bold"><u>Pre-Certification Details - Components</u></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Sl. No.</th>
+                <th>Name</th>
+                <th>Certified By</th>
+                <th>Certificate Ref No</th>
+                <th>Issue Date</th>
+                <th>Valid Till</th>
+                <th>Disposition</th>
+                <th>Certificate File</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comp in components %}
+                {% if comp.precertification %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ comp.component_name }}</td>
+                        <td>{{ comp.precertification.certified_by.name }}</td>
+                        <td>{{ comp.precertification.certificate_reference_no }}</td>
+                        <td>{{ comp.precertification.certificate_issue_date|date:"d-m-Y" }}</td>
+                        <td>{{ comp.precertification.certificate_valid_till|date:"d-m-Y" }}</td>
+                        <td>{{ comp.precertification.certificate_disposition }}</td>
+                        <td>
+                            {% if comp.precertification.certificate_file %}
+                                <a href="{{ comp.precertification.certificate_file.url }}" target="_blank">View File</a>
+                            {% else %}
+                                None
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+
 </body>
 
 </html>

@@ -15,6 +15,8 @@
         integrity="sha384-9ndCyUa1zYzBSlzLlNZOSfBu4cuZX3PB1z7xO1pqb4hlrjjoC1lzI3LOWjBlBi8M" crossorigin="anonymous">
 
     <!-- jQuery (required for Select2) -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Favicon -->
@@ -38,7 +40,7 @@
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="{% static 'assets/css/style2.css' %}">
-    
+
     <!-- Alert CSS -->
     <link rel="stylesheet" href="{% static 'assets/css/alert.css' %}">
 
@@ -143,7 +145,9 @@
                 <!-- Notifications -->
                 <li class="nav-item dropdown nav-item-box">
                     <a href="javascript:void(0);" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-                        <i data-feather="bell"></i><span class="badge rounded-pill">2</span>
+                        <i data-feather="bell"></i>
+                        <span class="badge rounded-pill" id="notification-count">{{ unread_count }}</span>
+                        <!-- Show unread count -->
                     </a>
                     <div class="dropdown-menu notifications">
                         <div class="topnav-dropdown-header">
@@ -152,91 +156,41 @@
                         </div>
                         <div class="noti-content">
                             <ul class="notification-list">
+                                {% for notification in notifications %}
                                 <li class="notification-message">
-                                    <a href="activities.html">
+                                    <a href="javascript:void(0);" onclick="markNotificationAsRead({{ notification.id }})">
+                                        <div class="media d-flex">
                                         <div class="media d-flex">
                                             <span class="avatar flex-shrink-0">
                                                 <img alt="" src="{% static 'assets/img/profiles/avatar-02.jpg' %}">
                                             </span>
                                             <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">John Doe</span> added
-                                                    new task <span class="noti-title">Patient appointment booking</span>
+                                                <p class="noti-details">
+                                                    <span class="noti-title">{{ notification.message }}</span>
                                                 </p>
-                                                <p class="noti-time"><span class="notification-time">4 mins ago</span>
+                                                <p class="noti-time">
+                                                    <span class="notification-time">{{ notification.created_at|timesince
+                                                        }} ago</span>
                                                 </p>
                                             </div>
                                         </div>
                                     </a>
                                 </li>
+                                {% empty %}
                                 <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="{% static 'assets/img/profiles/avatar-03.jpg' %}">
-                                            </span>
-                                            <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Tarah Shropshire</span>
-                                                    changed the task name <span class="noti-title">Appointment booking
-                                                        with payment gateway</span></p>
-                                                <p class="noti-time"><span class="notification-time">6 mins ago</span>
-                                                </p>
-                                            </div>
+                                    <div class="media d-flex">
+                                        <div class="media-body flex-grow-1">
+                                            <p class="noti-details">
+                                                <span class="noti-title">No new notifications</span>
+                                            </p>
                                         </div>
-                                    </a>
+                                    </div>
                                 </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="{% static 'assets/img/profiles/avatar-06.jpg' %}">
-                                            </span>
-                                            <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Misty Tison</span>
-                                                    added <span class="noti-title">Domenic Houston</span> and <span
-                                                        class="noti-title">Claire Mapes</span> to project <span
-                                                        class="noti-title">Doctor available module</span></p>
-                                                <p class="noti-time"><span class="notification-time">8 mins ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="{% static 'assets/img/profiles/avatar-17.jpg' %}">
-                                            </span>
-                                            <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Rolland Webber</span>
-                                                    completed task <span class="noti-title">Patient and Doctor video
-                                                        conferencing</span></p>
-                                                <p class="noti-time"><span class="notification-time">12 mins ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="{% static 'assets/img/profiles/avatar-13.jpg' %}">
-                                            </span>
-                                            <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Bernardo Galaviz</span>
-                                                    added new task <span class="noti-title">Private chat module</span>
-                                                </p>
-                                                <p class="noti-time"><span class="notification-time">2 days ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
+                                {% endfor %}
                             </ul>
                         </div>
                         <div class="topnav-dropdown-footer">
-                            <a href="activities.html">View all Notifications</a>
+                            <a href="{% url 'view_all_notifications' %}">View all Notifications</a>
                         </div>
                     </div>
                 </li>
@@ -249,12 +203,18 @@
                     <a href="javascript:void(0);" class="dropdown-toggle nav-link userset" data-bs-toggle="dropdown">
                         <span class="user-info">
                             <span class="user-letter">
-                                <img src="{% static 'assets/img/profiles/avator1.jpg' %}" alt="" class="img-fluid">
+                                <img src="{% static 'assets/img/profiles/download.jpg' %}" alt="" class="img-fluid">
                             </span>
                             <span class="user-detail">
                                 <span class="user-detail">
-                                    <span class="user-name">Test User</span>
-                                    <span class="user-role">Super Admin</span>
+                                    <span class="user-name">{{ user.username }}</span>
+                                    <span class="user-role"> 
+                                        {% for role in user.role.all %}
+                                          {{ role.name }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        No Role Assigned
+                                    {% endfor %}
+                                </span>
                                 </span>
 
                             </span>
@@ -263,12 +223,16 @@
                     <div class="dropdown-menu menu-drop-user">
                         <div class="profilename">
                             <div class="profileset">
-                                <span class="user-img"><img src="{% static 'assets/img/profiles/avator1.jpg' %}" alt="">
+                                <span class="user-img"><img src="{% static 'assets/img/profiles/download.jpg' %}" alt="">
                                     <span class="status online"></span></span>
                                 <div class="profilesets">
                                     <div class="profilesets">
-                                        <h6>Test User</h6>
-                                        <h5>Super Admin</h5>
+                                        <h6>{{ user.username }}</h6>
+                                        <h5>{% for role in user.role.all %}
+                                            {{ role.name }}{% if not forloop.last %}, {% endif %}
+                                        {% empty %}
+                                            No Role Assigned
+                                        {% endfor %}    </h5>
                                     </div>
                                 </div>
                             </div>
@@ -368,6 +332,22 @@
         });
     });
 
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === name + '=') {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
     document.getElementById('log-out').addEventListener('click', function (e) {
         e.preventDefault(); // Prevent default link behavior
@@ -392,22 +372,7 @@
             });
     });
 
-    // Helper function to get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) === name + '=') {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+
 
     function showAlert(message, type) {
         let alertBox = $('#alertBox');
@@ -416,6 +381,24 @@
             alertBox.fadeOut();
         }, 2700); // Disappear after 3 seconds
     }
+
+    //for userprofile
+    $(document).ready(function() {
+        $.ajax({
+            type: "GET",
+            url: "user-profile/",  // API endpoint
+             dataType: "json",
+            success: function(data) {
+                $("#user-name").text(data.username); // Update UI with username
+                $("#user-role").text(data.name); // Update UI with username
+            },
+            error: function() {
+                $("#user-name").text("User not found");
+                $("#user-role").text("User not found");
+            }
+        });
+    });
+
 
     $(document).ready(function () {
         $('#successBtn').click(function () {
@@ -426,6 +409,61 @@
             showAlert('Data submission failed!', 'error');
         });
     });
+
+
+    function markNotificationAsRead(notificationId) {
+    console.log('Marking notification as read: ' + notificationId); // Debugging
+
+    fetch(`/notifications/mark_as_read/${notificationId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'), // Ensure CSRF token is included
+        },
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('Notification marked as read successfully'); // Debugging
+
+                // Decrease the notification count
+                const notificationCount = document.getElementById('notification-count');
+                let count = parseInt(notificationCount.textContent);
+                if (count > 0) {
+                    count -= 1;
+                    notificationCount.textContent = count;
+                }
+
+                // Optionally, remove the notification from the dropdown
+                const notificationElement = document.querySelector(`li.notification-message a[onclick*="${notificationId}"]`);
+                if (notificationElement) {
+                    notificationElement.closest('li').remove();
+                }
+
+                // If no notifications are left, show a message
+                if (count === 0) {
+                    const notificationList = document.querySelector('.notification-list');
+                    notificationList.innerHTML = `
+                        <li class="notification-message">
+                            <div class="media d-flex">
+                                <div class="media-body flex-grow-1">
+                                    <p class="noti-details">
+                                        <span class="noti-title">No new notifications</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                    `;
+                }
+            } else {
+                console.error('Failed to mark notification as read:', response.statusText);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+
 </script>
 
 {% block scripts %} {% endblock %}

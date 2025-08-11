@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .views.component import ComponentAdd
-from.views.component import ComponentListFetchView,ComponentDetailView,DeleteComponentView,UpdateComponentStatusView,AddComponentDocumentView
-from .views.component_batch import ComponentBatchFetchView,ComponentBatchAddView
+from.views.component import ComponentListFetchView,ComponentDetailView,DeleteComponentView,UpdateComponentStatusView,AddComponentDocumentView,ComponentByid
+from .views.component_batch import ComponentBatchFetchView,ComponentBatchAddView,ComponentBatchEditView,DeleteComponentBatchView,ComponentBatchesByMaterial
 from .views.component_batch import ComponentBatchAcceptenceTest
 from django.urls import path,include
 from django.conf.urls.static import static
@@ -28,13 +28,17 @@ path('component-detailed-view/<int:batch_id>/',ComponentDetailView.as_view(), na
 # path('rawmaterial-acceptance-add/',RawMaterialAcceptanceTestAdd.as_view(),name='raw-material-acceptance-add'),
 
 
+path('component-batches/<int:material_id>/', ComponentBatchesByMaterial.as_view(), name='component-batches'),
+path('component-id/<int:material_id>/', ComponentByid.as_view(), name='component-id'),
 
 
 path('component-batch-fetch/', ComponentBatchFetchView.as_view(), name='component-batch-fetch'),
 path('component-batch-fetch/<int:batch_id>/', ComponentBatchFetchView.as_view(), name='component-batch-fetch-detail'),
+path('component-batch-fetch/edit/<path:batch_id>/', ComponentBatchEditView.as_view(), name='component-batch-edit'),
+
 path('component-add-batch/', ComponentBatchAddView.as_view(), name='component-batch-add'),
 path('component-batch-test-add/',ComponentBatchAcceptenceTest.as_view(),name='component-batch-test-add'),
-
+path('combatch-list/delete/<path:combatchId>/', DeleteComponentBatchView.as_view(), name='combatch-delete'),
 
 
 

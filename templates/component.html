@@ -92,11 +92,14 @@
                                                                     {{ batch.shelf_life_value }} 
 																	{{ batch.shelf_life_unit }}
                                                                 </td>
-                                                                <td class="clickable-row"
-                                                                    data-batch-id="{{ batch.id }}">
-                                                                    {% for test_name in batch.acceptance_test_names %}
-                                                                    {{ test_name }}{% if not forloop.last %}, {% endif %}
-                                                                    {% endfor %}
+                                                                <td class="clickable-row" data-batch-id="{{ batch.id }}">
+                                                                    {% if batch.acceptance_test_names %}
+                                                                        {% for test_name in batch.acceptance_test_names %}
+                                                                            {{ test_name }}{% if not forloop.last %}, {% endif %}
+                                                                        {% endfor %}
+                                                                    {% else %}
+                                                                        None
+                                                                    {% endif %}
                                                                 </td>
                                                                 <td>
                                                                     <div
@@ -459,15 +462,15 @@
 
     // Handle the confirmation of deletion
     $(document).on('click', '#confirm-delete', function () {
-        var rawId = $(this).data('id'); // Retrieve component ID from the modal's confirm button
+        var componentId = $(this).data('id'); // Retrieve component ID from the modal's confirm button
 
-        if (!rawId) {
+        if (!componentId) {
             alert('Component ID not found.');
             return;
         }
 
         // Construct the URL dynamically
-        const baseUrl = "{% url 'component-list' %}";
+        const baseUrl = "/component/component-list/delete/";
         const deleteUrl = `${baseUrl}${componentId}/`;
 
         // Perform the AJAX request for deletion

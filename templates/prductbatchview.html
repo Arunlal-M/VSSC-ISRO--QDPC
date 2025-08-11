@@ -1,0 +1,252 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block content %}
+{% load json_filters %}
+
+<div class="container my-5">
+  <h3 class="mb-4">Product Batch Report - {% if batch.batch_id %}
+  {{ batch.batch_id }}
+{% else %}
+  {{ batch.unit_id }}
+{% endif %}
+ </h3>
+
+  <!-- Product Info -->
+  <div class="mb-4">
+    <h5>Product Info</h5>
+    <ul>
+      <li><strong>Product:</strong> {{ batch.product.name }}</li>
+      <li><strong>Batch ID:</strong> {{ batch.batch_id }}</li>
+      <li><strong>Unit ID:</strong> {{ batch.unit_id }}</li>
+      <li><strong>Start Date:</strong> {{ batch.manufacturing_start }}</li>
+      <li><strong>End Date:</strong> {{ batch.manufacturing_end_date }}</li>
+    </ul>
+  </div>
+
+  <!-- Drawings -->
+  <div class="mb-4">
+    <h5>Applicable Drawings</h5>
+    <ul>
+      {% for d in drawings %}
+        <li>{{ d.drawing.name }}</li>
+      {% empty %}
+        <li>No drawings found.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Raw Materials -->
+  <div class="mb-4">
+    <h5>Raw Materials</h5>
+    <table class="table table-bordered text-center">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Batch</th>
+          <th>Expiry</th>
+          <th>Source</th>
+          <th>Supplier</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rm in raw_materials %}
+        <tr>
+          <td>{{ rm.raw_material.name }}</td>
+          <td>{{ rm.batch }}</td>
+          <td>{{ rm.expiry_date }}</td>
+          <td>{{ rm.source }}</td>
+          <td>{{ rm.supplier }}</td>
+          <td>{{ rm.status }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No raw materials available.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Components -->
+  <div class="mb-4">
+    <h5>Components</h5>
+    <table class="table table-bordered text-center">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Batch</th>
+          <th>Expiry</th>
+          <th>Source</th>
+          <th>Supplier</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in components %}
+        <tr>
+          <td>{{ c.component.name }}</td>
+          <td>{{ c.batch }}</td>
+          <td>{{ c.expiry_date }}</td>
+          <td>{{ c.source }}</td>
+          <td>{{ c.supplier }}</td>
+          <td>{{ c.status }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No components available.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Consumables -->
+  <div class="mb-4">
+    <h5>Consumables</h5>
+    <table class="table table-bordered text-center">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Batch</th>
+          <th>Expiry</th>
+          <th>Source</th>
+          <th>Supplier</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in consumables %}
+        <tr>
+          <td>{{ c.consumable.name }}</td>
+          <td>{{ c.batch }}</td>
+          <td>{{ c.expiry_date }}</td>
+          <td>{{ c.source }}</td>
+          <td>{{ c.supplier }}</td>
+          <td>{{ c.status }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No consumables available.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Processes -->
+  <div class="mb-4">
+    <h5>Processes</h5>
+    <ul>
+      {% for p in processes %}
+        <li>{{ p.process.name }}</li>
+      {% empty %}
+        <li>No processes added.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Equipment -->
+  <div class="mb-4">
+    <h5>Equipment</h5>
+    <table class="table table-bordered text-center">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Equipment ID</th>
+          <th>Calibration Due</th>
+          <th>Certificate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in equipment %}
+        <tr>
+          <td>{{ e.equipment.name }}</td>
+          <td>{{ e.equipment.equipment_id }}</td>
+          <td>{{ e.calibration_due_date }}</td>
+          <td>
+            {% if e.certificate %}
+              <a href="{{ e.certificate.url }}" target="_blank" class="btn btn-sm btn-primary">View</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">No equipment used.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Product Acceptance Tests -->
+  <div class="mb-4">
+    <h5>Product Acceptance Tests</h5>
+    <table class="table table-bordered text-center">
+      <thead>
+        <tr>
+          <th>Test</th>
+          <th>Specification</th>
+          <th>Result</th>
+          <th>Date</th>
+          <th>Remarks</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in acceptance_tests %}
+        <tr>
+          <td>{{ t.acceptance_test.name }}</td>
+          <td>{{ t.specification }}</td>
+          <td>{{ t.result }}</td>
+          <td>{{ t.date }}</td>
+          <td>{{ t.remarks }}</td>
+          <td>
+            {% if t.report %}
+              <a href="{{ t.report.url }}" target="_blank" class="btn btn-sm btn-primary">View</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No acceptance tests available.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mb-4">
+    
+
+{% for table in tables %}
+<div class="card my-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">{{ table.title }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        {% for col_name in table.columns %}
+                        <th>{{ col_name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in table.rows.all %}
+                    <tr>
+                        {% for col_index in table.columns|length|to_range %}
+
+                        <td>{{ row.data|get_item:col_index|stringformat:"s" }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="{{ table.columns|length }}" class="text-center">No rows</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+  </div>
+</div>
+
+{% endblock %}

@@ -27,6 +27,9 @@ RAW_MATERIAL_FETCH_FAILED="Raw material fetch failed"
 
 RAW_MATERIAL_BACTCH_ADDED="Raw matrial Batch added"
 RAW_MATERIAL_BATCH_FAILD="Raw matrial batch add faild"
+RAW_MATERIAL_BATCH_DELETE_SUCCESSFULLY="Raw Material Batch Deleted Successfully"
+
+ACCEPTANCETEST_DELETE_SUCCESSFULLY="Acceptance test deleted sucessfully"
 
 SOURCE_CREATION_FAILED="Source creation failed due to invalid data."
 SOURCE_CREATION_SUCESSFULLY="Source created successfully."
@@ -66,14 +69,20 @@ ENDUSE_CREATION_FAILED="Enduse creation failed due to invalid data."
 ENDUSE_CREATION_SUCESSFULLY="Enduse created successfully."
 ENDUSE_DELETE_SUCCESSFULLY="Enduse deleted sucessfully"
 
+PRODUCT_CATEGORY_CREATION_FAILED="Product Category creation failed due to invalid data."
+PRODUCT_CATEGORY_CREATION_SUCESSFULLY="Product Category created successfully."
+PRODUCT_CATEGORY_DELETE_SUCCESSFULLY="Product Category deleted sucessfully"
+
 
 CONSUMABLE_FETCH_FAILED="Consumable Fetch Failed"
 CONSUMABLE_BATCH_FAILD="Consumable batch Failed"
 CONSUMABLE_DELETE_SUCCESSFULLY="Consumable  Deleted Successfully"
+CONSUMABLE_BATCH_DELETE_SUCCESSFULLY="Consumable Batch Deleted Successfully"
 
 COMPONENT_FETCH_FAILED="Component Fetch Failed"
 COMPONENT_BATCH_FAILED="Component batch Failed"
 COMPONENT_DELETE_SUCCESSFULLY="Component  Deleted Successfully"
+COMPONENT_BATCH_DELETE_SUCCESSFULLY="Component Batch Deleted Successfully"
 
 PROCESS_STEP_DELETE_SUCCESSFULLY="Process Step deleted sucessfully"
 

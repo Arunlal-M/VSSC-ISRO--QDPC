@@ -10,22 +10,18 @@ from qdpc_core_models.models.center import Center
 from qdpc_core_models.models.division import Division
 from qdpc_core_models.models.user_type import UserType
 from django.http import JsonResponse
-
-
 from django.shortcuts import render, redirect
-
 class Signup(BaseModelViewSet):
-    """ Signup API for qdpc application"""
+    permission_classes = [AllowAny]  
+    authentication_classes = []     
 
     def get(self, request):
-        """Handle request for loading the register template"""
         context = {
             'divisions': self.get_all_obj(model_name=Division),
             'centers': self.get_all_obj(model_name=Center),
             'user_types': self.get_all_obj(model_name=UserType),
         }
-        return render(request, 'regn.html', context)
-
+        return render(request, 'regn.html',context)
     def post(self, request):
         """ Handle POST requests to register a new user """
         data = {}
@@ -34,8 +30,6 @@ class Signup(BaseModelViewSet):
         status_code = status.HTTP_400_BAD_REQUEST
         
         try:
-            # Log request data for debugging
-            print(f"Received signup data: {request.data}")
             
             # Handle user signup via the service
             data = request.data
