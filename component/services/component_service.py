@@ -7,7 +7,7 @@ import traceback
 
 
 class ComponentService:
-    "UserService to make all the user operations"
+    "ComponentService to make all the component operations"
 
 
     @classmethod
@@ -16,11 +16,13 @@ class ComponentService:
         try:
            component_manager = ComponentManager()
            success, status_code, data, message = component_manager.component_list_fetch(pk=pk, *args,**kwargs)
-        except:
-            message = constants.USER_FETCH_FAILED
+        except Exception as e:
+            print(f"Exception in get_component_list: {e}")
+            traceback.print_exc()
+            message = constants.COMPONENT_FETCH_FAILED
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            data = {"error": "Invalid data"}
+            data = {"error": "Failed to fetch component list"}
 
         return success, status_code, data, message
 
@@ -30,11 +32,13 @@ class ComponentService:
         try:
             component_manager = ComponentManager()
             success, status_code, data, message = component_manager.component_batch_fetch(pk=None, *args,**kwargs)
-        except:
-            message = constants.USER_FETCH_FAILED
+        except Exception as e:
+            print(f"Exception in get_component_batch_list: {e}")
+            traceback.print_exc()
+            message = constants.COMPONENT_BATCH_FAILED
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            data = {"error": "Invalid data"}
+            data = {"error": "Failed to fetch component batch list"}
 
         return success, status_code, data, message
     
@@ -48,11 +52,13 @@ class ComponentService:
             print(data,"data2")
             component_manager = ComponentManager()
             success, status_code, data, message = component_manager.component_batch_add(data=data)
-        except:
-            message = constants.USER_FETCH_FAILED
+        except Exception as e:
+            print(f"Exception in add_component_bach_add: {e}")
+            traceback.print_exc()
+            message = constants.COMPONENT_BATCH_FAILED
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            data = {"error": "Invalid data"}
+            data = {"error": "Failed to add component batch"}
 
         return success, status_code, data, message
     
@@ -67,10 +73,10 @@ class ComponentService:
             print("Entered except here")
             print(f"Exception: {e}")
             traceback.print_exc()  # This will print the full traceback
-            message = constants.USER_FETCH_FAILED
+            message = constants.COMPONENT_BATCH_FAILED
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            data = {"error": "Invalid data"}
+            data = {"error": "Failed to add component"}
 
         return success, status_code, data, message
 

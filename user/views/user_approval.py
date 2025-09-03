@@ -22,14 +22,16 @@ class UserApprovalView(BaseModelViewSet):
         try:
             print(request.data)
             user = User.objects.get(id=user_id)
-            roles = request.data.get('roles')  # Get the list of roles from the request
+            roles = request.data.get('roles')  # Can be a single role id or list
 
-            # Check if there are any roles provided
+            # Assign exactly one role (first if list)
             if roles:
-                # Assign only the first role to the user
-                # first_role_id = roles[0]  # Get the first role ID
-                user.role.clear()  # Clear existing roles
-                user.role.add(roles)  # Assign the first role to the user
+                role_id = roles[0] if isinstance(roles, (list, tuple)) else roles
+                try:
+                    role_obj = Role.objects.get(id=role_id)
+                    user.role = role_obj
+                except Role.DoesNotExist:
+                    return Response({'detail': 'Role not found.'}, status=status.HTTP_404_NOT_FOUND)
 
             # group_name = 'ApprovedGroup'  # Replace with your actual group name
             # group, created = Group.objects.get_or_create(name=group_name)

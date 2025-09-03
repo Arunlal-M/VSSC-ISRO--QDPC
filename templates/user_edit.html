@@ -1,0 +1,208 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+	<div class="content">
+		<div class="page-header d-flex align-items-center justify-content-between">
+			<div class="page-title">
+				<h4 class="mb-1">Edit User</h4>
+				<p class="text-muted mb-0">Update account, roles, and organization details</p>
+			</div>
+			<div>
+				<a href="{% url 'user-list' %}" class="btn btn-light">Back to Users</a>
+			</div>
+		</div>
+
+		{% if errors %}
+		<div class="alert alert-danger">
+			<strong>There were validation errors.</strong>
+			<pre class="mb-0">{{ errors|safe }}</pre>
+		</div>
+		{% endif %}
+
+		<form method="post">
+			{% csrf_token %}
+			<div class="card mb-3">
+				<div class="card-header">
+					<h5 class="mb-0">Account</h5>
+				</div>
+				<div class="card-body">
+					<div class="row g-3">
+						<div class="col-lg-4 col-sm-6 col-12">
+							<label class="form-label">Username</label>
+							<input type="text" class="form-control" name="username" value="{{ target_user.username }}" readonly>
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12">
+							<label class="form-label">First name</label>
+							<input type="text" class="form-control" name="first_name" value="{{ target_user.first_name }}" placeholder="First name">
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12">
+							<label class="form-label">Last name</label>
+							<input type="text" class="form-control" name="last_name" value="{{ target_user.last_name }}" placeholder="Last name">
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12">
+							<label class="form-label">Email</label>
+							<input type="email" class="form-control" name="email" value="{{ target_user.email }}" placeholder="name@example.com">
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12">
+							<label class="form-label">Phone</label>
+							<input type="text" class="form-control" name="phone_number" value="{{ target_user.phone_number }}" placeholder="Phone number">
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12">
+							<label class="form-label">Salutation</label>
+							<select class="form-select" name="desired_salutation">
+								{% for val, label in target_user.SALUTATION_CHOICES %}
+								<option value="{{ val }}" {% if target_user.desired_salutation == val %}selected{% endif %}>{{ label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12">
+							<label class="form-label">User Type</label>
+							<select class="form-select" name="usertype">
+								<option value="">---------</option>
+								{% for ut in all_usertypes %}
+								<option value="{{ ut.id }}" {% if target_user.usertype and target_user.usertype.id == ut.id %}selected{% endif %}>{{ ut.name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12 d-flex align-items-end">
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if target_user.is_active %}checked{% endif %}>
+								<label class="form-check-label" for="is_active">Active</label>
+							</div>
+						</div>
+						{% if is_super_admin %}
+						<div class="col-lg-4 col-sm-6 col-12 d-flex align-items-end">
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" id="is_staff" name="is_staff" {% if target_user.is_staff %}checked{% endif %}>
+								<label class="form-check-label" for="is_staff">Staff</label>
+							</div>
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12 d-flex align-items-end">
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" id="is_superuser" name="is_superuser" {% if target_user.is_superuser %}checked{% endif %}>
+								<label class="form-check-label" for="is_superuser">Superuser</label>
+							</div>
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12 d-flex align-items-end">
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" id="is_approved" name="is_approved" {% if target_user.is_approved %}checked{% endif %}>
+								<label class="form-check-label" for="is_approved">Approved</label>
+							</div>
+						</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+
+			<div class="card mb-3">
+				<div class="card-header">
+					<h5 class="mb-0">Assignments</h5>
+				</div>
+				<div class="card-body">
+					<div class="row g-3">
+						<div class="col-lg-4 col-sm-12 col-12">
+							<label class="form-label">Center</label>
+							<select class="form-select" name="centre">
+								{% for c in all_centers %}
+								<option value="{{ c.id }}" {% if c.id in selected_center_ids %}selected{% endif %}>{{ c.name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-lg-4 col-sm-12 col-12">
+							<label class="form-label">Division</label>
+							<select class="form-select" name="divisions">
+								{% for d in all_divisions %}
+								<option value="{{ d.id }}" {% if d.id in selected_division_ids %}selected{% endif %}>{{ d.name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-lg-4 col-sm-12 col-12">
+							<label class="form-label">Role</label>
+							
+			
+							<select class="form-select select2-role" name="role">
+								<option value="">---------</option>
+								{% for r in all_roles %}
+								<option value="{{ r.id }}" {% if r.id in selected_role_ids %}selected{% endif %}>
+									{{ r.name }} 
+								</option>
+								{% endfor %}
+							</select>
+							<small class="text-muted">Select a role to assign to this user</small>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			
+
+			<div class="d-flex gap-2">
+				<button type="submit" class="btn btn-primary">Save changes</button>
+				<a href="{% url 'user-list' %}" class="btn btn-outline-secondary">Cancel</a>
+			</div>
+		</form>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function(){
+    const $role = $('.select2-role');
+    if ($role.length) {
+      // Debug: Log initial values
+      console.log('DEBUG: selected_role_ids from template:', '{{ selected_role_ids|safe }}');
+      console.log('DEBUG: all_roles count:', '{{ all_roles|length }}');
+      
+      $role.select2({
+        placeholder: 'Select role',
+        allowClear: true,
+        width: '100%',
+        // Ensure empty selection is handled properly
+        language: {
+          noResults: function() {
+            return "No roles found";
+          }
+        }
+      });
+      
+      // Debug: Check if any option is selected after Select2 initialization
+      setTimeout(function() {
+        const selectedOption = $role.find('option:selected');
+        console.log('DEBUG: Selected option after Select2 init:', selectedOption.val(), selectedOption.text());
+        console.log('DEBUG: Select2 value after init:', $role.val());
+      }, 100);
+      
+      // Handle form submission to ensure proper values
+      $('form').on('submit', function(e) {
+        const selectedValue = $role.val();
+        console.log('Form submission - Role value:', selectedValue);
+        
+        // If no role is selected, ensure the field is empty
+        if (!selectedValue || selectedValue === '' || selectedValue === null || selectedValue === '0') {
+          console.log('Clearing role selection');
+          $role.val('').trigger('change');
+        }
+        
+        // Additional validation
+        if (selectedValue === '0') {
+          e.preventDefault();
+          alert('Please select a valid role or leave it empty');
+          return false;
+        }
+      });
+      
+      // Debug role selection changes
+      $role.on('change', function() {
+        const value = $(this).val();
+        console.log('Role selection changed to:', value, 'Type:', typeof value);
+      });
+    }
+  });
+  </script>
+{% endblock %}
+
+

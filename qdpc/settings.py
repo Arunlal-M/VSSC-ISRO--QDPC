@@ -47,9 +47,9 @@ INSTALLED_APPS = [
     'consumable',
     'process',
     'component',
-
-
-
+    'stage_clearance',
+    'report',
+    'qdpc.apps.QdpcConfig',
 
 ]
 
@@ -61,7 +61,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'authentication.middleware.RedirectUnauthorizedMiddleware',
+    # 'authentication.middleware.RedirectUnauthorizedMiddleware',   
+    'authentication.middleware.ThreadLocalMiddleware',
 ]
 
 ROOT_URLCONF = 'qdpc.urls'
@@ -75,8 +76,12 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                        'django.contrib.auth.context_processors.auth',
+        'django.contrib.messages.context_processors.messages',
+        'qdpc.core.context_processors.user_permissions',
+        'qdpc.core.context_processors.user_context',
+        'qdpc.core.dynamic_sidebar_context.dynamic_sidebar_context',
+        
             ],
         },
     },
@@ -90,10 +95,21 @@ WSGI_APPLICATION = 'qdpc.wsgi.application'
 
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'vssc',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+    'sqlite_db': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    },
- 
+    }
+    }
 }
 
 # Password validation

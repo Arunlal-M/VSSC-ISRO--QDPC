@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Assessment Report</title>
+    {% load static %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .page {
+            width: 100%;
+            page-break-before: always;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .font-large {
+            font-size: 16px;
+        }
+
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .br-none {
+            border-right: none;
+        }
+
+        .bl-none {
+            border-left: none;
+        }
+
+        .text-end {
+            text-align: end;
+        }
+
+        .title {
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .bold {
+            font-weight: 600;
+        }
+
+        .min-w {
+            width: 150px;
+        }
+
+        .min-w-50 {
+            width: 250px;
+        }
+
+        .m-0 {
+            margin: 0;
+        }
+
+        .mt-1 {
+            margin-top: 1em;
+        }
+
+        .max-width-50 {
+            max-width: 50px;
+            width: 50px;
+        }
+
+        .pl-1 {
+            padding-left: 1em;
+        }
+
+        .pl-15 {
+            padding-left: 1.5em !important;
+        }
+
+        .mw-adjust {
+            margin-left: 1.5em;
+            width: 97%;
+        }
+
+        .p-0 {
+            padding: 0;
+        }
+
+        .line-height-1 {
+            line-height: 1.8;
+        }
+
+        .br-solid-5 {
+            border: 5px solid;
+        }
+
+        .footer-line {
+            border-top: 1px solid skyblue;
+            padding-top: 0.3em;
+            margin-top: 2em;
+        }
+        .container-br{
+            padding: 0 1em 1em;
+            border: 1px solid;
+        }
+        .bullet-list {
+            list-style-type: none;
+            padding-left: 1.5em;
+        }
+        .bullet-list li::before {
+            content: "•";
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+        .subsection-title {
+            font-weight: bold;
+            margin-top: 0.8em;
+        }
+        .subsubsection-title {
+            font-style: italic;
+            margin-top: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page container-br">
+            <table>
+                <tr>
+                    <th class="br-none">Report No: VSSC/QPDC/QAR/Product-A/2024/Rec: 2451</th>
+                    <th class="bl-none text-end">Date: 25-10-2024</th>
+                </tr>
+            </table>
+            <p class="title">गुणवत्ता प्रभाग नोदक एवं रसायन / QUALITY DIVISION PROPELLANTS & CHEMICALS<br />
+                क्यू.आर.पी.जी/ एस.आर.एस / QRPG/SRS<br />
+                विक्रम साराभाई अंतरिक्ष केंद्र / VIKRAM SARABHAI SPACE CENTRE<br />
+                तिरुवनंतपुरम-६९५०२२ / THIRUVANANTHAPURAM – 695022<br />
+            </p>
+            <div class="image-container">
+                <img src="{% static 'assets/images/logo.png' %}" alt="Header Image" width="auto" height="120px">
+            </div>
+            <table>
+                <tr>
+                    <th colspan="2" class="text-center">Quality Assessment Report</th>
+                </tr>
+            </table>
+            
+            <div class="section-title">1. Introduction</div>
+            <ul class="bullet-list">
+                <li>Brief introduction about the product and purpose of this report</li>
+                <li>Scope of the quality assessment</li>
+                <li>Summary of the batches/units covered in this report</li>
+            </ul>
+            
+            <div class="section-title">2. Item Identification</div>
+            <table>
+                <tr>
+                    <td class="bold">Product Name</td>
+                    <td>{{ batch.product.name}}</td>
+                </tr>
+                <tr>
+                    <td class="bold">Batch Identification No./Unit Identification No.</td>
+                    <td>{% if batch.batch_id %}{{ batch.batch_id }}{% elif batch.unit_id %}{{ batch.unit_id }} {% else %}   N/A {% endif %}</td>
+                </tr>
+                <tr>
+                    <td class="bold">Manufacturing date</td>
+                    <td>{{ batch.manufacturing_start }}</td>
+                </tr>
+                <tr>
+                    <td class="bold">Expiry date</td>
+                    <td>{{ batch.manufacturing_end }}</td>
+                </tr>
+            </table>
+            
+            <div class="section-title">3. End use</div>
+            <p>For PSLV launch vehicle (Specific use)</p>
+            
+            <div class="section-title">4. Processing agency</div>
+           
+<p>{{ processing_agency_name }}</p>
+
+            
+            <div class="section-title">5. Changes</div>
+            <ul class="bullet-list">
+                <li>Summary of any changes in process, materials, or specifications</li>
+                <li>Impact assessment of changes</li>
+            </ul>
+            
+            <div class="footer text-end footer-line">Page | 1</div>
+        </div>
+        
+        <div class="page container-br mt-1">
+            <div class="section-title">6. QA observations and remarks</div>
+            
+            <div class="subsection-title">6.1. Raw material</div>
+            <ul class="bullet-list">
+                <li>All raw materials were within specification limits</li>
+                <li>Certificates of analysis available for all materials</li>
+            </ul>
+            
+            <div class="subsection-title">6.2. Components</div>
+            <ul class="bullet-list">
+                <li>All components were inspected and found acceptable</li>
+                <li>Traceability maintained for all critical components</li>
+            </ul>
+            
+            <div class="subsection-title">6.3. In-process checks</div>
+            <ul class="bullet-list">
+                <li>All in-process parameters were monitored and recorded</li>
+                <li>No deviations observed during processing</li>
+            </ul>
+            
+            <div class="subsection-title">6.4. Inspections</div>
+            
+            <div class="subsubsection-title">6.4.1. NDT Inspection</div>
+            <ul class="bullet-list">
+                <li>NDT inspection results were satisfactory</li>
+                <li>No indications found beyond acceptable limits</li>
+            </ul>
+            
+            <div class="subsubsection-title">6.4.2. Visual Inspection</div>
+            <ul class="bullet-list">
+                <li>No visual defects observed</li>
+                <li>Surface finish meets requirements</li>
+            </ul>
+            
+            <div class="subsubsection-title">6.4.3. Dimensional Inspection</div>
+            <ul class="bullet-list">
+                <li>All critical dimensions within tolerance</li>
+                <li>Measurement records maintained</li>
+            </ul>
+            
+            <div class="subsection-title">6.5. Product acceptance tests</div>
+            <ul class="bullet-list">
+                <li>All acceptance test results meet specification requirements</li>
+                <li>Test reports attached in Annexure</li>
+            </ul>
+            
+            <div class="section-title">7. Non-conformances</div>
+            <table>
+                <tr>
+                    <th>NC No.</th>
+                    <th>Description</th>
+                    <th>Disposition</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>NC-001</td>
+                    <td>Minor deviation in parameter X</td>
+                    <td>Accepted with concession</td>
+                    <td>Closed</td>
+                </tr>
+                <tr>
+                    <td>NC-002</td>
+                    <td>Documentation error in batch record</td>
+                    <td>Corrected</td>
+                    <td>Closed</td>
+                </tr>
+            </table>
+            
+            <div class="footer text-end footer-line">Page | 2</div>
+        </div>
+        
+        <div class="page container-br mt-1">
+            <div class="section-title">8. Reviews</div>
+            <ul class="bullet-list">
+                <li>Reviewed by Quality Review Board on 20-10-2024</li>
+                <li>All observations addressed</li>
+                <li>No open items pending</li>
+            </ul>
+            
+            <div class="section-title">9. Storage</div>
+            <ul class="bullet-list">
+                <li>Product to be stored in controlled environment</li>
+                <li>Temperature range: 20°C to 30°C</li>
+                <li>Relative humidity: <60%</li>
+                <li>Protection from direct sunlight required</li>
+            </ul>
+            
+            <div class="section-title">10. Packaging and transportation</div>
+            <ul class="bullet-list">
+                <li>Use approved packaging materials</li>
+                <li>Ensure proper cushioning during transport</li>
+                <li>Maintain temperature control during transit if required</li>
+                <li>Seal all packages with tamper-evident seals</li>
+            </ul>
+            
+            <div class="section-title">11. Pending actions</div>
+            <table>
+                <tr>
+                    <th>Action No.</th>
+                    <th>Description</th>
+                    <th>Target Date</th>
+                    <th>Responsible</th>
+                </tr>
+                <tr>
+                    <td>ACT-001</td>
+                    <td>Update procedure XYZ based on lessons learned</td>
+                    <td>30-11-2024</td>
+                    <td>Engineer-1</td>
+                </tr>
+                <tr>
+                    <td>ACT-002</td>
+                    <td>Conduct additional testing on retained samples</td>
+                    <td>15-11-2024</td>
+                    <td>Lab Team</td>
+                </tr>
+            </table>
+            
+            <div class="section-title">12. QA Recommendations</div>
+            <ul class="bullet-list">
+                <li>Product meets all quality requirements</li>
+                <li>Recommended for use in intended application</li>
+                <li>Monitor performance during initial use</li>
+            </ul>
+            
+            <div class="footer text-end footer-line">Page | 3</div>
+        </div>
+        
+        <div class="page container-br mt-1">
+            <div class="section-title">13. Any other remarks</div>
+            <ul class="bullet-list">
+                <li>Special handling instructions for product use</li>
+                <li>Note on shelf-life monitoring requirements</li>
+            </ul>
+            
+            <div class="section-title">14. Disposition</div>
+            <table>
+                <tr>
+                    <td class="line-height-1 br-solid-5">
+                        <strong>Product-A with batch nos.</strong> Div-1/Product-A/0116/2024 <strong>to</strong> Div-1/Product-A/0120/2024
+                        <strong>(5 batches) are cleared for further use.</strong>
+                        <br/><strong>The following points are to be noted:</strong>
+                        <ul class="bullet-list">
+                            <li>Use within specified shelf life</li>
+                            <li>Follow all handling and storage instructions</li>
+                            <li>Report any anomalies during use</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="section-title">15. Applicable References/Documents</div>
+            <ul class="bullet-list">
+                <li>Process document for product-A, Document No: ABCD/DiV2/PD/01/2021 dated July 2021</li>
+                <li>Quality manual QM-001 Rev. 3</li>
+                <li>Test procedure TP-0456 Rev. 2</li>
+            </ul>
+            
+            <div class="footer text-end footer-line">Page | 4</div>
+        </div>
+        
+        <div class="page container-br mt-1">
+            <p class="text-end bold font-large"><u>Annexure-I</u></p>
+            <p class="text-center font-large bold">List of raw materials used and their expiry dates</p>
+            
+            <table>
+                <tr>
+                    <th>Sl. No.</th>
+                    <th>Raw Material</th>
+                    <th>Batch No.</th>
+                    <th>Expiry Date</th>
+                </tr>
+                  {% for rm in rawmaterial_section %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ rm.raw_material_name }}</td>
+                    <td>{{ rm.batch_id }}</td>
+                    <td>{{ rm.expiry_date }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            
+            <div class="footer text-end footer-line">Page | 5</div>
+        </div>
+        
+        <div class="page container-br mt-1">
+    <p class="text-end bold font-large"><u>Annexure-II</u></p>
+    <p class="text-center font-large bold">Raw Material batch acceptance test details</p>
+
+  <table border="1">
+    <thead>
+        <tr>
+            <th>Sl. No.</th>
+            <th>Raw Materials</th>
+            <th>Batch No.</th>
+            <th>Test Parameter</th>
+            <th>Specification</th>
+            <th>Result</th>
+            <th>Test Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for rmaterial in rawmaterial_section %}
+            {% for test in rmaterial.tests %}
+                <tr>
+                    {% if forloop.first %}
+                        <td rowspan="{{ rmaterial.tests|length }}">{{ forloop.parentloop.counter }}</td>
+                        <td rowspan="{{ rmaterial.tests|length }}">{{ rmaterial.raw_material_name }}</td>
+                        <td rowspan="{{ rmaterial.tests|length }}">{{ rmaterial.batch_no }}</td>
+                    {% endif %}
+                    <td>{{ test.parameter }}</td>
+                    <td>{{ test.specification }}</td>
+                    <td>{{ test.result }}</td>
+                    <td>{{ test.test_date }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+
+    <div class="footer text-end footer-line">Page | 6</div>
+</div>
+
+        
+        <div class="page container-br mt-1">
+            <p class="text-end bold font-large"><u>Annexure-III</u></p>
+            <p class="text-center font-large bold">Product batch acceptance test details</p>
+            
+           <h3>Product Acceptance Test Report</h3>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Sl. No.</th>
+            <th>Batch No.</th>
+            <th>Test Parameter</th>
+            <th>Specification</th>
+            <th>Result</th>
+            <th>Test Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for test in product_tests %}
+        <tr>
+            <td>{{ test.sl_no }}</td>
+            <td>{{ test.batch_no }}</td>
+            <td>{{ test.parameter }}</td>
+            <td>{{ test.specification }}</td>
+            <td>{{ test.result }}</td>
+            <td>{{ test.test_date }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No product tests available.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+            
+            <div class="footer text-end footer-line">Page | 7</div>
+        </div>
+    </div>
+</body>
+
+</html>

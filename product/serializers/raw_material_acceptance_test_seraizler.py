@@ -97,6 +97,7 @@ class RawMaterialAcceptanceTestSerializer(serializers.ModelSerializer):
     suppliers = serializers.PrimaryKeyRelatedField(queryset=Suppliers.objects.all())
     grade = serializers.PrimaryKeyRelatedField(queryset=Grade.objects.all(), required=False, allow_null=True)
     acceptance_test = serializers.PrimaryKeyRelatedField(queryset=AcceptanceTest.objects.all())
+    file = serializers.FileField(required=False, allow_null=True)
 
     def create(self, validated_data):
         return RawMaterialAcceptanceTest.objects.create(**validated_data)

@@ -27,6 +27,9 @@ RAW_MATERIAL_FETCH_FAILED="Raw material fetch failed"
 
 RAW_MATERIAL_BACTCH_ADDED="Raw matrial Batch added"
 RAW_MATERIAL_BATCH_FAILD="Raw matrial batch add faild"
+RAW_MATERIAL_BATCH_DELETE_SUCCESSFULLY="Raw Material Batch Deleted Successfully"
+
+ACCEPTANCETEST_DELETE_SUCCESSFULLY="Acceptance test deleted sucessfully"
 
 SOURCE_CREATION_FAILED="Source creation failed due to invalid data."
 SOURCE_CREATION_SUCESSFULLY="Source created successfully."
@@ -66,17 +69,86 @@ ENDUSE_CREATION_FAILED="Enduse creation failed due to invalid data."
 ENDUSE_CREATION_SUCESSFULLY="Enduse created successfully."
 ENDUSE_DELETE_SUCCESSFULLY="Enduse deleted sucessfully"
 
+PRODUCT_CATEGORY_CREATION_FAILED="Product Category creation failed due to invalid data."
+PRODUCT_CATEGORY_CREATION_SUCESSFULLY="Product Category created successfully."
+PRODUCT_CATEGORY_DELETE_SUCCESSFULLY="Product Category deleted sucessfully"
+
 
 CONSUMABLE_FETCH_FAILED="Consumable Fetch Failed"
 CONSUMABLE_BATCH_FAILD="Consumable batch Failed"
 CONSUMABLE_DELETE_SUCCESSFULLY="Consumable  Deleted Successfully"
+CONSUMABLE_BATCH_DELETE_SUCCESSFULLY="Consumable Batch Deleted Successfully"
 
 COMPONENT_FETCH_FAILED="Component Fetch Failed"
 COMPONENT_BATCH_FAILED="Component batch Failed"
 COMPONENT_DELETE_SUCCESSFULLY="Component  Deleted Successfully"
+COMPONENT_BATCH_DELETE_SUCCESSFULLY="Component Batch Deleted Successfully"
 
 PROCESS_STEP_DELETE_SUCCESSFULLY="Process Step deleted sucessfully"
 
 DOCUMENT_CREATION_FAILED="Document creation failed due to invalid data."
 DOCUMENT_CREATION_SUCESSFULLY="Document created successfully."
 DOCUMENT_DELETE_SUCCESSFULLY="Document deleted sucessfully"
+
+# Default Django auth groups to seed on fresh installs
+DEFAULT_AUTH_GROUPS = [
+   # Guest role
+                'Guest',
+
+                # In-house/Project roles
+                'Roles- In house process',
+                'DPD Project',
+                'Engineer Project',
+
+                # SDA roles
+                'Division Head SDA',
+                'Section Head SDA',
+                'Engineer SDA',
+                'Technical/Scientific staff SDA',
+                'Operator/Technicians SDA',
+
+                # QA roles
+                'Division Head QA',
+                'Section Head QA',
+                'Engineer QA',
+                'Technical/Scientific staff QA',
+
+                # QC roles
+                'Division Head QC',
+                'Section Head QC',
+                'Engineer QC',
+                'Technical/Scientific staff QC',
+
+                # Testing agency roles
+                'Division Head Testing agency',
+                'Section Head Testing agency',
+                'Engineer Testing agency',
+                'Technical/Scientific staff Testing agency',
+
+                # LSC roles
+                'Member secretary, LSC',
+                'Chairman, LSC',
+
+                # NCRB roles
+                'Member secretary, NCRB',
+                'Chairman, NCRB',
+
+                # Industry process roles
+                'Roles- Industry process',
+                'Operator/Technician industry',
+                'Process Manager industry',
+                'QC Manager industry',
+                'QA Manager industry',
+
+                # GOCO roles
+                'Roles- GOCO',
+                'GOCO operator',
+                'GOCO supervisor',
+
+                # System administrator roles
+                'Roles- System administrator',
+                'Master Admin/Super Admin',
+                'System Administrator-1',
+                'System Administrator-2',
+                'System Administrator-3'
+]

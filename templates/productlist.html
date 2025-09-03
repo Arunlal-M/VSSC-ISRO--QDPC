@@ -1,31 +1,27 @@
 {% extends 'index.html' %}
 {% block content %}
 {% load static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
 
 <div class="page-wrapper">
     <div class="content">
-        <div class="page-header">
-            <div class="page-title">
-                <h4>Product Add</h4>
-            </div>
-        </div>
+        
 
         <div class="card">
             <div class="card-body">
                 <div class="row">
                     <!-- Section-1: Name, Category, Owner -->
-                    <div class="col-lg-12 mb-4">
-                        <h5>Section-1</h5>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Name</label>
-                            <input type="text" id="name" name="name">
+                            <input type="text" id="name" name="name" class="form-control">
                         </div>
                     </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
-                            <label>Category</label>
+                            <label>Category </label>
                             <select id="category" name="category" class="form-control">
                                 <option>Choose Category</option>
                                 {% for cat in category %}
@@ -34,7 +30,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Owner</label>
                             <select id="product_owner" name="product_owner" class="form-control">
@@ -47,10 +43,8 @@
                     </div>
 
                     <!-- Section-2: End Use, Specific Use -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-2</h5>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>End Use</label>
                             <select id="end_uses" name="end_uses" class="form-control">
@@ -61,18 +55,25 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Specific Use</label>
-                            <input type="text" id="specific_use" name="specific_use">
+                            <input type="text" id="specific_use" name="specific_use" class="form-control">
                         </div>
                     </div>
+                    {% comment %} <div class="col-md-6 col-lg-4">
+                        <label for="acceptance_test" class="form-label">Acceptance Test</label>
+                        <select class="select" id="acceptance_test" name="acceptance_test" multiple
+                            onchange="handleSelection()">
+                            {% for acc in acceptancetest %}
+                            <option value="{{ acc.id }}">{{ acc.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div> {% endcomment %}
 
                     <!-- Section-3: Processing Agencies, Testing Agencies -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-3</h5>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Processing Agencies</label>
                             <select id="processing_agencies" name="processing_agencies" class="form-control">
@@ -83,7 +84,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Testing Agencies</label>
                             <select id="testing_agencies" name="testing_agencies" class="form-control">
@@ -96,10 +97,8 @@
                     </div>
 
                     <!-- Section-4: Shelf Life Value, Shelf Life Unit -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-4</h5>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label for="shelf_life_type">Shelf Life</label>
                             <select id="shelf_life_type" name="shelf_life_type" class="form-control">
@@ -111,7 +110,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
+                    <div class="col-lg-3 col-md-6 col-12" id="shelf_life_duration_group" style="display: none;">
                         <div class="form-group">
                             <label for="shelf_life_value">Shelf Life Duration</label>
                             <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control"
@@ -119,7 +118,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
+                    <div class="col-lg-3 col-md-6 col-12" id="shelf_life_period_group" style="display: none;">
                         <div class="form-group">
                             <label for="unit">Shelf Life Period</label>
                             <select id="unit" name="unit" class="form-control">
@@ -129,14 +128,11 @@
                         </div>
                     </div>
 
-
                     <!-- Section-5: Drawing Applicable, Drawing Number, Drawing Status -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-5</h5>
-                    </div>
+                    
 
                     <!-- Drawing Applicable Checkbox -->
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Drawing Applicable</label>
                             <div class="form-check">
@@ -147,28 +143,24 @@
                         </div>
                     </div>
 
-                    <!-- Container for Drawing Sections -->
-
-                    <div id="drawing-sections-container" style="display: none;">
-                        <div class="drawing-section">
-                            <hr>
-                            <div class="row">
-                                <div class="col-lg-4 col-sm-6 col-12">
-                                    <div class="form-group">
+                    
+                        <div id="drawing-sections-container" style="display: none;">
+                            <div class="drawing-section">
+                                <div class="row align-items-end">
+                                    <!-- Drawing Number -->
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
                                         <label>Drawing Number</label>
                                         <input type="text" name="drawing_number[]" class="form-control">
                                     </div>
-                                </div>
 
-                                <div class="col-lg-4 col-sm-6 col-12">
-                                    <div class="form-group">
+                                    <!-- Drawing Title -->
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
                                         <label>Drawing Title</label>
                                         <input type="text" name="drawing_title[]" class="form-control">
                                     </div>
-                                </div>
 
-                                <div class="col-lg-4 col-sm-6 col-12">
-                                    <div class="form-group">
+                                    <!-- Drawing Status -->
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
                                         <label>Drawing Status</label>
                                         <select name="drawing_status[]" class="form-control">
                                             <option>Choose Status</option>
@@ -176,147 +168,154 @@
                                             <option value="CCB approved">CCB approved</option>
                                         </select>
                                     </div>
-                                </div>
 
-                                <div class="col-lg-4 col-sm-6 col-12">
-                                    <div class="form-group">
-                                        <label>Upload Drawing Document</label>
+                                    <!-- Drawing Document -->
+                                    <div class="col-lg-3 col-md-6 col-sm-6 mb-2">
+                                        <label>Upload Drawing</label>
                                         <input type="file" name="drawing_document[]" class="form-control">
                                     </div>
-                                </div>
 
-                                <div class="col-lg-4 col-sm-6 col-12 mt-1 d-flex align-items-center">
-                                    <button type="button" class="btn btn-success add-drawing-step me-3">+</button>
-                                    <button type="button" class="btn btn-danger remove-drawing-step ">-</button>
+                                    <!-- Buttons -->
+                                    <div class="col-lg-3 col-md-6 col-sm-6 d-flex align-items-end mb-2">
+                                        <button type="button" class="btn btn-success add-drawing-step me-2">+</button>
+                                        <button type="button" class="btn btn-danger remove-drawing-step">-</button>
+                                    </div>
                                 </div>
                             </div>
-                            <hr>
                         </div>
-                    </div>
-
-
-
-
-
 
 
 
 
                     <!-- Section-6: Components, Raw Materials, Consumables, Equipment Used -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-6</h5>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Components</label>
-                            <select id="components" name="components" class="form-control">
-                                <option>Choose components</option>
+                            <select id="components" name="components" class="form-control" >
+                                <option value="">Choose components</option>
                                 {% for comp in components %}
-                                <option value="{{ comp.id }}">{{ comp.component_name }}</option>
+                                <option value="{{ comp.id }}">{{ comp.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Raw Materials</label>
                             {% comment %} <input type="text" id="raw_materials" name="raw_materials"> {% endcomment %}
                             <select id="raw_material" name="raw_material" class="form-control">
-                                <option>Choose rawmaterials</option>
+                                <option value="">Choose rawmaterials</option>
                                 {% for rwm in rawmaterial %}
                                 <option value="{{ rwm.id }}">{{ rwm.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Consumable</label>
                             {% comment %} <input type="text" id="consumable" name="consumable"> {% endcomment %}
                             <select id="consumable" name="consumable" class="form-control">
-                                <option>Choose consumables</option>
+                                <option value="">Choose consumables</option>
                                 {% for con in consumable %}
                                 <option value="{{ con.id }}">{{ con.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Equipment Used</label>
                             {% comment %} <input type="text" id="equipment_used" name="equipment_used"> {% endcomment %}
                             <select id="equipment" name="equipment" class="form-control">
-                                <option>Choose equipment</option>
+                                <option value="">Choose equipment</option>
                                 {% for equ in equipment %}
                                 <option value="{{ equ.id }}">{{ equ.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="col-lg-3 col-md-6 col-12">
+                            
+                        </div>
                     </div>
 
-                    <!-- Section-7: Method of Identification, Prefix, Suffix -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-7</h5>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
-                            <label>Method of Identification</label>
-                            <select id="identification_method" name="identification_method" class="form-control">
-                                <option value="">Select a method</option>
-                                <option value="Batch Number">Batch Number</option>
-                                <option value="Identification Number">Identification Number</option>
+                            <label>Process</label>
+                            <!-- <select id="process" name="process[]" class="select" multiple onchange="handleSelectionP()"> -->
+                            <select id="process" name="process[]" class="select" multiple >
+                                {% for pro in process %}
+                                <option value="{{ pro.id }}">{{ pro.process_title }}</option>
+                                {% endfor %}
                             </select>
                         </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Prefix</label>
-                            <input type="text" id="prefix" name="prefix">
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Suffix</label>
-                            <input type="text" id="suffix" name="suffix">
-                        </div>
-                    </div>
+                       
 
-                    <!-- Section-8: Add Documents -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-8</h5>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label for="document_category" class="form-label">Add Documents</label>
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="document_category"
-                                    name="document_category">
-                                <label class="form-check-label" for="document_category">Check if Product
-                                    Document</label>
-                            </div>
-                        </div>
-                    </div>
+                     
+                {% comment %} <!-- Section-7: Method of Identification, Prefix, Suffix -->
+                <div class="col-lg-12 mt-4 mb-4">
+                    <h5>Section-7</h5>
+                </div> {% endcomment %}
+
+               
 
 
-                    <!-- Submit and Cancel Buttons -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <a href="product.html" id="submit-btn" class="btn btn-submit me-2">Submit</a>
-                        <a href="{% url 'product-add' %}" class="btn btn-cancel">Cancel</a>
+<div class="col-lg-12">
+    <div class="form-group">
+        <label for="acceptance_test" class="form-label">Acceptance Test</label>
+        <select class="select" id="acceptance_test" name="acceptance_test" multiple onchange="handleSelection()">
+            {% for acc in acceptancetest %}
+            <option value="{{ acc.id }}">{{ acc.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<div class="col-lg-12">
+    <div class="form-group">
+        <div class="content" id="acceptance_test_table" style="display: none;">
+            <!-- Table will be generated dynamically by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- Section-8: Add Documents -->
+
+                
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="document_category" class="form-label">Add Documents</label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="document_category"
+                                name="document_category">
+                            <label class="form-check-label" for="document_category">Check if Product
+                                Document</label>
+                        </div>
                     </div>
+                </div>
+
+
+                <!-- Submit and Cancel Buttons -->
+                <div class="col-lg-12 mt-4 mb-2">
+                    <button id="submit-btn" class="btn btn-submit me-2" type="button">Save Product</button>
+                    <a href="{% url 'product-view' %}" class="btn btn-cancel">Cancel</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+</div>
 
 <!-- Add Document Modal -->
 <div class="modal fade" id="addProductDocumentModal" tabindex="-1" aria-labelledby="addDocumentLabel"
-    aria-hidden="true">
+    aria-hidden="true" data-bs-dismiss="static"  data-bs-backdrop="static" data-bs-keyboard="false" >
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form id="addDocumentForm">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addDocumentLabel">Add Product Document</h5>
+                    <h5 class="modal-title" id="addDocumentLabel"> Product Document</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
                 </div>
                 <div class="modal-body">
@@ -368,10 +367,16 @@
                     </div>
 
                     <!-- Document Upload Field -->
+                     <!-- Dropzone Upload -->
                     <div class="mb-3">
-                        <label for="document" class="form-label">Upload Document</label>
-                        <input type="file" class="form-control" id="document" name="document" required>
+                        <label class="form-label">Upload Document</label>
+                        <div id="dropzoneArea" class="dropzone"name="document_files"></div>
                     </div>
+
+                    <!-- <div class="mb-3">
+                        <label for="document" class="form-label">Upload Document</label>
+                        <input type="file" class="form-control" id="document" name="document_files" multiple required>
+                    </div> -->
 
                     <!-- Validity Field -->
                     <div class="mb-3">
@@ -392,15 +397,114 @@
 
 
 {% block scripts %}
+
 <script>
-    $(document).ready(function () {
-        // Handle checkbox click to show modal
-        $('#document_category').change(function () {
-            if ($(this).prop('checked')) {
-                // Open the modal when checked
-                $('#addProductDocumentModal').modal('show');
-            }
+
+    Dropzone.autoDiscover = false;
+
+let uploadedFiles = [];
+
+const myDropzone = new Dropzone("#dropzoneArea", {
+    url: "#",  
+    autoProcessQueue: false,
+    uploadMultiple: true,
+    parallelUploads: 5,
+    maxFiles: 10,
+    addRemoveLinks: true,
+    acceptedFiles: ".pdf,.doc,.docx,.png,.jpg,.jpeg",
+
+    init: function () {
+        this.on("addedfile", function (file) {
+            uploadedFiles.push(file);
         });
+
+        this.on("removedfile", function (file) {
+            uploadedFiles = uploadedFiles.filter(f => f !== file);
+        });
+    }
+});
+
+      function handleSelection() {
+    const dropdown = document.getElementById("acceptance_test");
+    const selectedValues = Array.from(dropdown.selectedOptions).map(option => option.value);
+     const tableContainer = document.getElementById("acceptance_test_table");
+     if (selectedValues.length > 0) {
+         const lastSelectedValue = selectedValues[selectedValues.length - 1]; 
+         if (!document.getElementById(`acceptanceTestTableBody_${lastSelectedValue}`)) {
+                console.log(`URL being called: {% url "acceptance-list" %}?id=${lastSelectedValue}`);
+             $.ajax({
+                     url: `{% url "acceptance-list" %}?id=${lastSelectedValue}`, 
+                     type: 'GET',
+                     headers: {
+                         'X-CSRFToken': '{{ csrf_token }}'
+                     },
+                     success: function (response) {
+                         if (response) {
+                             console.log("Received response:", response);
+                             const contentDiv = $('#acceptance_test_table');
+                             contentDiv.show(); 
+                             if (contentDiv.children().length === 0) {
+                                 const table = `
+                             <table class="table table-striped">
+                                 <thead>
+                                     <tr>
+                                        <th>Specification</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody id="mainAcceptanceTestTableBody"></tbody>
+                             </table>
+                         `;
+                                 contentDiv.append(table);
+                             }
+                             const tableBody = $('#mainAcceptanceTestTableBody');
+                             const tableBodyForNewTest = $(`
+                         <tbody id="acceptanceTestTableBody_${lastSelectedValue}"></tbody>
+                     `);
+
+                             response.acceptance_tests.forEach(test => {
+                                 const reevaluationFrequency = `${test.reevaluation_frequency_value} ${test.reevaluation_frequency_unit}`;
+                                 tableBodyForNewTest.append(`
+                             <tr id="test_${test.id}">                          <td>
+                                     <strong>${test.name}</strong>
+                                     <br>Min: <input type="number" value="${test.min_value}" class="form-control min-value">
+                                     Max: <input type="number" value="${test.max_value}" class="form-control max-value">
+                                     Unit: <input type="text" value="${test.unit_name}" class="form-control unit-name">
+                                 </td>
+                             </tr                     `);
+                             });
+
+                         tableBody.append(tableBodyForNewTest); 
+                     } else {
+                         alert('No acceptance tests found.');
+                        }
+                 },
+                 error: function () {
+                     alert('Failed to fetch acceptance tests. Please try again.');
+                 }
+             });
+         }
+     } else {
+         tableContainer.style.display = "none"; 
+        }
+     }
+
+function updateDrawingButtons() {
+    const drawingSections = $('.drawing-section');
+    drawingSections.each(function (index, section) {
+        const addBtn = $(section).find('.add-drawing-step');
+        const removeBtn = $(section).find('.remove-drawing-step');
+        addBtn.toggle(index === drawingSections.length - 1);
+        removeBtn.toggle(drawingSections.length > 1);
+    });
+}
+
+$(document).ready(function () {
+    
+    $('#document_category').change(function () {
+        if ($(this).prop('checked')) {
+            $('#addProductDocumentModal').modal('show');
+        }
+    });
 
         $('#shelf_life_duration_group').hide();
         $('#shelf_life_period_group').hide();
@@ -418,132 +522,271 @@
                 $('#shelf_life_period_group').hide();
             }
         });
-
-        $('#drawing_applicable').change(function () {
-            if ($(this).is(':checked')) {
-                $('#drawing-sections-container').show();
-            } else {
-                $('#drawing-sections-container').hide();
-                $('#drawing-sections-container').find('input, select').val('');
-            }
-        });
-
-        // Add new drawing step when clicking the "Add Step" inside a section
-        $(document).on('click', '.add-drawing-step', function () {
-            let newSection = $('.drawing-section:first').clone();
-            newSection.find('input, select').val('');
-            $('#drawing-sections-container').append(newSection);
-        });
-
-        // Remove a drawing step
-        $(document).on('click', '.remove-drawing-step', function () {
-            if ($('.drawing-section').length > 1) {
-                $(this).closest('.drawing-section').remove();
-            } else {
-                alert('At least one drawing section is required.');
-            }
-        });
-
-        // Function to get CSRF token from cookies
-        function getCSRFToken() {
-            let csrfToken = null;
-            if (document.cookie) {
-                document.cookie.split(';').forEach(function (cookie) {
-                    const [key, value] = cookie.trim().split('=');
-                    if (key === 'csrftoken') {
-                        csrfToken = value;
-                    }
-                });
-            }
-            return csrfToken;
+    // Drawing toggle logic
+    $('#drawing_applicable').change(function () {
+        const isChecked = $(this).is(':checked');
+        $('#drawing-sections-container').toggle(isChecked);
+        if (!isChecked) {
+            $('#drawing-sections-container').find('input, select').val('');
         }
+        updateDrawingButtons();
+    });
+    $(document).on('click', '.add-drawing-step', function () {
+        const newSection = $('.drawing-section:first').clone();
+        newSection.find('input, select').val('');
+        $('#drawing-sections-container').append(newSection);
+        updateDrawingButtons();
+    });
+    $(document).on('click', '.remove-drawing-step', function () {
+        if ($('.drawing-section').length > 1) {
+            $(this).closest('.drawing-section').remove();
+            updateDrawingButtons();
+        } else {
+            alert('At least one drawing section is required.');
+        }
+    });
+    updateDrawingButtons();
+    $('#shelf_life_duration_group').hide();
+    $('#shelf_life_period_group').hide();
+    $('#shelf_life_type').change(function () {
+        const val = $(this).val();
+        $('#shelf_life_duration_group, #shelf_life_period_group').toggle(val === 'add_duration');
+    });
 
-        // Handle product form submission
-        $('#submit-btn').click(function (event) {
-            event.preventDefault();
+    let productDocuments = [];
+    let documentFiles = [];
 
-            const productData = new FormData();
-            productData.append('name', $('#name').val());
-            productData.append('category', $('#category').val());
-            productData.append('product_owner', $('#product_owner').val());
-            productData.append('end_uses', $('#end_uses').val());
-            productData.append('specific_use', $('#specific_use').val());
-            productData.append('shelf_life_value', $('#shelf_life_value').val());
-            productData.append('shelf_life_unit', $('#unit').val());
-            productData.append('shelf_life_type', $('#shelf_life_type').val());
-            productData.append('processing_agencies', $('#processing_agencies').val());
-            productData.append('testing_agencies', $('#testing_agencies').val());
-            productData.append('components', $('#components').val());
-            productData.append('raw_material', $('#raw_material').val());
-            productData.append('consumable', $('#consumable').val());
-            productData.append('equipment', $('#equipment').val());
-            productData.append('drawing_applicable', $('input[name="drawing_applicable"]:checked').val());
-            productData.append('identification_method', $('#identification_method').val());
-            productData.append('prefix', $('#prefix').val());
-            productData.append('suffix', $('#suffix').val());
+    // CSRF token from cookies
+    function getCSRFToken() {
+        let csrfToken = null;
+        document.cookie.split(';').forEach(function (cookie) {
+            const [key, value] = cookie.trim().split('=');
+            if (key === 'csrftoken') csrfToken = decodeURIComponent(value);
+        });
+        return csrfToken;
+    }
+                $('#addDocumentForm').submit(function (e) {
+                    e.preventDefault();
 
-            // Handle multiple drawing sections
-            $('.drawing-section').each(function (index, section) {
-                productData.append('drawing_number[]', $(section).find('input[name="drawing_number[]"]').val());
-                productData.append('drawing_title[]', $(section).find('input[name="drawing_title[]"]').val());
-                productData.append('drawing_status[]', $(section).find('select[name="drawing_status[]"]').val());
-                const drawingDocument = $(section).find('input[name="drawing_document[]"]')[0].files[0];
-                if (drawingDocument) {
-                    productData.append('drawing_document[]', drawingDocument);
-                }
-            });
+                    const docData = {
+                        title: $('#title').val(),
+                        category: $('#addDocumentForm select[name="category"]').val(),
+                        issue_no: $('#issue_no').val(),
+                        revision_no: $('#revision_no').val(),
+                        release_date: $('#release_date').val(),
+                        approved_by: $('#approved_by').val(),
+                        validity: $('#validity').val()
+                    };
 
-            const csrfToken = getCSRFToken();
-            $.ajax({
-                url: '{% url "product-add" %}',
-                type: 'POST',
-                data: productData,
-                contentType: false,
-                processData: false,
-                headers: {
-                    'X-CSRFToken': csrfToken
-                },
-                success: function (response) {
-                    if (response.success) {
-                        window.location.href = "{% url 'product-view' %}";
-                    } else {
-                        $('#error-message').text(response.message).show();
+                    // Append Dropzone files
+                    if (uploadedFiles.length > 0) {
+                        uploadedFiles.forEach((file, i) => {
+                            const fileKey = `document_file_${productDocuments.length}_${i}`;
+                            documentFiles.push({ key: fileKey, file: file });
+                            docData[`file_key_${i}`] = fileKey;
+                        });
                     }
-                },
-                error: function (error) {
-                    alert('Error adding product: ' + error.responseText);
-                }
+
+                    productDocuments.push(docData);
+
+                    // Close modal and reset form
+                    $('#addProductDocumentModal').modal('hide');
+                    $('#addDocumentForm')[0].reset();
+                    myDropzone.removeAllFiles(); // Reset Dropzone area
+                });
+
+
+
+
+    // Submit product form
+    $('#submit-btn').click(function (event) {     
+        event.preventDefault();
+        
+        // Frontend validation
+        const validationErrors = [];
+        
+        // Check required fields
+        if (!$('#name').val().trim()) {
+            validationErrors.push('Product name is required');
+        }
+        if (!$('#category').val()) {
+            validationErrors.push('Product category is required');
+        }
+        if (!$('#product_owner').val()) {
+            validationErrors.push('Product owner is required');
+        }
+        
+        // Check for placeholder text in select fields
+        const selectFields = [
+            { id: 'components', name: 'Components' },
+            { id: 'raw_material', name: 'Raw Materials' },
+            { id: 'consumable', name: 'Consumables' },
+            { id: 'equipment', name: 'Equipment' },
+            { id: 'process', name: 'Process' }
+        ];
+        
+        selectFields.forEach(field => {
+            const value = $(`#${field.id}`).val();
+            if (value && typeof value === 'string' && value.startsWith('Choose')) {
+                validationErrors.push(`Please select a valid ${field.name} instead of '${value}'`);
+            }
+        });
+        
+        // Show validation errors if any
+        if (validationErrors.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Failed',
+                html: validationErrors.map(error => `<div>• ${error}</div>`).join(''),
+                confirmButtonText: 'OK'
             });
+            return;
+        }
+        
+        const productData = new FormData();
+        productData.append('name', $('#name').val());
+        productData.append('category', $('#category').val());
+        productData.append('product_owner', $('#product_owner').val());
+        productData.append('end_uses', $('#end_uses').val());
+        productData.append('specific_use', $('#specific_use').val());
+        productData.append('shelf_life_value', $('#shelf_life_value').val());
+        productData.append('shelf_life_unit', $('#unit').val());
+        productData.append('shelf_life_type', $('#shelf_life_type').val());
+        productData.append('processing_agencies', $('#processing_agencies').val());
+        productData.append('testing_agencies', $('#testing_agencies').val());
+        productData.append('drawing_applicable', $('input[name="drawing_applicable"]:checked').val() || '');
+
+        // Correct field ID mapping
+        [
+            { id: 'components', key: 'components' },
+            { id: 'raw_material', key: 'raw_material' },
+            { id: 'consumable', key: 'consumable' },
+            { id: 'equipment', key: 'equipment' },
+            { id: 'process', key: 'process' }
+        ].forEach(({ id, key }) => {
+            const values = $(`#${id}`).val();
+            if (Array.isArray(values)) {
+                values.forEach(val => productData.append(key, val));
+            } else if (values) {
+                productData.append(key, values);
+            }
         });
 
-        // Handle document form submission
-        $('#addDocumentForm').submit(function (e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            formData.append('product', $('#name').val());
+              // Acceptance tests
+        let acceptanceTests = [];
+        $('#acceptance_test_table tr[id^="test_"]').each(function () {
+            let testId = this.id.replace('test_', '');
+            acceptanceTests.push({
+                id: testId,
+                min_value: $(this).find('.min-value').val(),
+                max_value: $(this).find('.max-value').val(),
+                unit_name: $(this).find('.unit-name').val()
+            });
+        });
+        productData.append('acceptance_tests', JSON.stringify(acceptanceTests));
+    // Drawings
+      let drawings = [];
+        $('.drawing-section').each(function (index) {
+            let drawing_number = $(this).find('input[name="drawing_number[]"]').val();
+            let drawing_title = $(this).find('input[name="drawing_title[]"]').val();
+            let drawing_status = $(this).find('select[name="drawing_status[]"]').val();
+            let fileInput = $(this).find('input[name="drawing_document[]"]')[0];
 
-            const csrfToken = getCSRFToken();
-            $.ajax({
-                url: '{% url "add-product-document" %}',
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                headers: {
-                    'X-CSRFToken': csrfToken
-                },
-                success: function (response) {
+            drawings.push({ drawing_number,drawing_title,drawing_status, index });
+
+            if (fileInput && fileInput.files[0]) {
+                productData.append(`drawing_document_${index}`, fileInput.files[0]);
+            }
+        });
+        productData.append('drawings', JSON.stringify(drawings));
+
+        // DEBUG: log form data
+        for (let pair of productData.entries()) {
+            console.log(`${pair[0]}:`, pair[1]);
+        }
+        //product documents
+         productData.append('documents', JSON.stringify(productDocuments));
+            documentFiles.forEach(item => {
+                productData.append(item.key, item.file);
+            });
+
+        // Show loading state
+        const submitBtn = $(this);
+        const originalText = submitBtn.text();
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+        
+        $.ajax({
+            url: '{% url "product-add" %}',
+            type: 'POST',
+            data: productData,
+            contentType: false,
+            processData: false,
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            },
+            success: function (response) {
+                    // Reset button state
+                    submitBtn.prop('disabled', false).text(originalText);
+                    
                     if (response.success) {
-                        $('#addProductDocumentModal').modal('hide');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            // Redirect to product list or refresh page
+                            window.location.href = '{% url "product-view" %}';
+                        });
                     } else {
-                        alert(response.message);
+                        let errorMessage = 'Validation failed.';
+                        if (response.data && Array.isArray(response.data)) {
+                            errorMessage = response.data.join('<br>• ');
+                        } else if (response.data && typeof response.data === 'object') {
+                            errorMessage = Object.values(response.data).flat().join('<br>• ');
+                        }
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validation Failed',
+                            html: errorMessage,
+                            confirmButtonText: 'OK'
+                        });
                     }
                 },
-                error: function () {
-                    alert('Error adding document. Please try again.');
+                error: function (xhr) {
+                    // Reset button state
+                    submitBtn.prop('disabled', false).text(originalText);
+                    
+                    let message = 'Something went wrong.';
+                    
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON.data && Array.isArray(xhr.responseJSON.data)) {
+                            message = xhr.responseJSON.data.join('<br>• ');
+                        } else if (xhr.responseJSON.data && typeof xhr.responseJSON.data === 'object') {
+                            message = Object.values(xhr.responseJSON.data).flat().join('<br>• ');
+                        }
+                    } else if (xhr.status === 500) {
+                        message = 'Internal server error. Please try again later.';
+                    } else if (xhr.status === 404) {
+                        message = 'Resource not found. Please refresh the page.';
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        html: message,
+                        confirmButtonText: 'OK'
+                    });
                 }
-            });
         });
     });
+
+  
+});
 </script>
+
+
 {% endblock %}

@@ -1,6 +1,10 @@
 {% extends 'index.html' %}
-{% block content %}
 {% load static %}
+
+{% block content %}
+<!-- SweetAlert2 CDN for better alerts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -9,387 +13,366 @@
                 <h6>Equipment Configuration</h6>
             </div>
         </div>
-        <!-- /add -->
+
         <div class="card">
             <div class="card-body">
-                <div class="row">
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Name</label>
-                            <input type="text" id="name" name="name">
-                        </div>
-                    </div>
+                <form id="equipmentForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
 
-
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Equipment Owner</label>
-                            <select id="owner" name="owner" class="select">
-                                <option value="">Choose owner</option>
-                                {% for own in equipment_owner %}
-                                <option value="{{ own.id }}">{{ own.name }}</option>
-                                <!-- Adjust field name if necessary -->
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Serial No</label>
-                            <input type="text" id="serial_no" name="serial_no">
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Make</label>
-                            <input type="text" id="make" name="make">
-                        </div>
-                    </div>
-                    {% comment %} <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Last Calibration Date</label>
-                            <div class="input-groupicon">
-                                <input type="text" id="last_calibration_date" name="last_calibration_date"
-                                    placeholder="Choose Date" class="datetimepicker">
-                                <a class="addonset">
-                                    <img src="{% static 'assets/img/icons/calendars.svg' %}" alt="img">
-                                </a>
+                        <!-- Name -->
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Name <span class="text-danger">*</span></label>
+                                <input type="text" id="name" name="name" class="form-control" required>
                             </div>
                         </div>
-                    </div> {% endcomment %}
 
-
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Last Calibration Date</label>
-                            <input type="date" id="last_calibration_date" name="last_calibration_date"
-                                placeholder="Choose Date" class="form-control">
+                        <!-- Owner -->
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Equipment Owner <span class="text-danger">*</span></label>
+                                <select id="owner" name="equipment_owner" class="form-select" required>
+                                    <option value="">Choose owner</option>
+                                    {% for own in equipment_owner %}
+                                    <option value="{{ own.id }}">{{ own.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
+                        <!-- Serial No -->
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Serial No <span class="text-danger">*</span></label>
+                                <input type="text" id="serial_no" name="serial_no" class="form-control" required>
+                            </div>
+                        </div>
 
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Calibration Validity Duration Type</label>
-                            <div class="row">
-                                <div class="col-10">
-                                    <select id="calibration_validity_duration_type"
-                                        name="calibration_validity_duration_type" class="form-control">
-                                        <option value="" disabled selected>Select duration type</option>
-                                        <option value="days">Days</option>
-                                        <option value="months">Months</option>
-                                        <option value="years">Years</option>
-                                    </select>
+                        <!-- Make -->
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Make <span class="text-danger">*</span></label>
+                                <input type="text" id="make" name="make" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <!-- Last Calibration Date -->
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Last Calibration Date <span class="text-danger">*</span></label>
+                                <input type="date" id="last_calibration_date" name="last_calibration_date" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <!-- Validity Duration Type -->
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Calibration Validity Duration Type <span class="text-danger">*</span></label>
+                                <select id="calibration_validity_duration_type" name="calibration_validity_duration_type" class="form-select" required>
+                                    <option value="">Select duration type</option>
+                                    <option value="days">Days</option>
+                                    <option value="months">Months</option>
+                                    <option value="years">Years</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Validity Duration Value -->
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Calibration Validity Duration Value <span class="text-danger">*</span></label>
+                                <input type="number" min="1" id="calibration_validity_duration_value" name="calibration_validity_duration_value" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <!-- Due Date (auto-calculated) -->
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Calibration Due Date</label>
+                                <input type="date" id="calibration_due_date" name="calibration_due_date" class="form-control" readonly>
+                                <small class="form-text text-muted">Auto-calculated based on calibration date and validity</small>
+                            </div>
+                        </div>
+
+                        <!-- Calibration Certificate Checkbox -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-group">
+                                <label class="form-label">Upload Calibration Certificate</label>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input" id="calibration_certificate" name="precertified">
+                                    <label class="form-check-label" for="calibration_certificate">Check if Calibration Certificate</label>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Calibration Validity Duration Value</label>
-                            <div class="row">
-                                <div class="col-10">
-                                    <input type="text" id="calibration_validity_duration_value"
-                                        name="calibration_validity_duration_value" class="form-control">
+                        <!-- Conditional Document Section -->
+                        <div id="document-section" class="row mt-3" style="display: none;">
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Document Title</label>
+                                    <input type="text" name="title" class="form-control">
                                 </div>
-
+                            </div>
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Release Date</label>
+                                    <input type="date" name="release_date" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Approved By</label>
+                                    <input type="text" name="approved_by" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>Upload Document</label>
+                                    <input type="file" name="documentFile" class="form-control">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-
-
-
-
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Calibration Due Date</label>
-                            <input type="date" id="calibration_due_date" name="calibration_due_date"
-                                placeholder="Choose Date" class="form-control" disabled>
+                        <!-- Submit/Cancel -->
+                        <div class="col-lg-12 mt-4">
+                            <button type="submit" id="submitBtn" class="btn btn-primary me-2">
+                                <span class="btn-text">Submit</span>
+                                <span class="btn-loading" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i> Submitting...
+                                </span>
+                            </button>
+                            <a href="{% url 'equipment-add' %}" class="btn btn-secondary">Cancel</a>
                         </div>
-                    </div>
 
-
-
-
-                    <div class="col-md-6 col-lg-4">
-                        <div class="form-group">
-                            <label for="calibration_certificate" class="form-label">Upload Calibration
-                                Certificate</label>
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="calibration_certificate"
-                                    name="precertified">
-                                <label class="form-check-label" for="calibration_certificate">Check if Calibration
-                                    Certificate</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-12">
-                        <a href="equipment-list.html" id="submit-btn" class="btn btn-submit me-2">Submit</a>
-                        <a href="{% url 'equipment-add' %}" class="btn btn-cancel">Cancel</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- /add -->
-    </div>
-</div>
-
-<!-- Add Document Modal -->
-<div class="modal fade" id="addEquipmentDocumentModal" tabindex="-1" aria-labelledby="addDocumentLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form id="addDocumentForm">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addDocumentLabel">Add Equipment Document</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
-                </div>
-                <div class="modal-body">
-                    <!-- Hidden field for Raw Material -->
-                    <input type="hidden" id="equipmentField" name="equipment">
-
-                    <!-- Title Field -->
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="title" name="title"
-                            placeholder="Enter document title" required>
-                    </div>
-
-                    <!-- Category Dropdown -->
-                    <div class="mb-3">
-                        <label for="category" class="form-label">Category</label>
-                        <select class="form-select" id="category" name="category" required>
-                            <option>Choose Document Type</option>
-                            {% for doc_type in document_types %}
-                            <option value="{{ doc_type.id }}">{{ doc_type.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <!-- Issue Number Field -->
-                    <div class="mb-3">
-                        <label for="issue_no" class="form-label">Issue Number</label>
-                        <input type="text" class="form-control" id="issue_no" name="issue_no"
-                            placeholder="Enter issue number" required>
-                    </div>
-
-                    <!-- Revision Number Field -->
-                    <div class="mb-3">
-                        <label for="revision_no" class="form-label">Revision Number</label>
-                        <input type="text" class="form-control" id="revision_no" name="revision_no"
-                            placeholder="Enter revision number" required>
-                    </div>
-
-                    <!-- Release Date Field -->
-                    <div class="mb-3">
-                        <label for="release_date" class="form-label">Release Date</label>
-                        <input type="date" class="form-control" id="release_date" name="release_date" required>
-                    </div>
-
-                    <!-- Approved By Field -->
-                    <div class="mb-3">
-                        <label for="approved_by" class="form-label">Approved By</label>
-                        <input type="text" class="form-control" id="approved_by" name="approved_by"
-                            placeholder="Enter approver's name" required>
-                    </div>
-
-                    <!-- Document Upload Field -->
-                    <div class="mb-3">
-                        <label for="document" class="form-label">Upload Document</label>
-                        <input type="file" class="form-control" id="document" name="document" required>
-                    </div>
-
-                    <!-- Validity Field -->
-                    <div class="mb-3">
-                        <label for="validity" class="form-label">Validity (Years)</label>
-                        <input type="number" class="form-control" id="validity" name="validity"
-                            placeholder="Enter validity in years" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Save Document</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-
-</div>
+                    </div> <!-- .row -->
+                </form>
+            </div> <!-- .card-body -->
+        </div> <!-- .card -->
+    </div> <!-- .content -->
+</div> <!-- .page-wrapper -->
 {% endblock %}
 
 {% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
-
-        // Handle the checkbox click
-
-
-        // Handle checkbox click to show modal
-        $('#calibration_certificate').change(function () {
-            if ($(this).prop('checked')) {
-                // Open the modal when checked
-                $('#addEquipmentDocumentModal').modal('show');
+        // Form validation and submission
+        $('#equipmentForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return false;
             }
+            
+            submitForm();
         });
 
-
-
-
-        // Function to calculate the calibration due date
-        function calculateDueDate() {
-            var lastCalibrationDate = $('#last_calibration_date').val();
-            var durationType = $('#calibration_validity_duration_type').val();
-            var durationValue = parseInt($('#calibration_validity_duration_value').val());
-
-            if (lastCalibrationDate && durationType && durationValue) {
-                var dueDate = new Date(lastCalibrationDate);
-
-                switch (durationType) {
-                    case 'days':
-                        dueDate.setDate(dueDate.getDate() + durationValue);
-                        break;
-                    case 'months':
-                        dueDate.setMonth(dueDate.getMonth() + durationValue);
-                        break;
-                    case 'years':
-                        dueDate.setFullYear(dueDate.getFullYear() + durationValue);
-                        break;
-                }
-
-                var formattedDueDate = dueDate.toISOString().split('T')[0];
-                $('#calibration_due_date').val(formattedDueDate);
-            }
-        }
-
-        // Attach event listeners to the relevant fields
-        $('#last_calibration_date, #calibration_validity_duration_type, #calibration_validity_duration_value').change(function () {
-            calculateDueDate();
-        });
-
-
-
-
-
-
-        $('#submit-btn').click(function (event) {
-            //alert("Test")
-            //alert("button   clicked")
-
-            event.preventDefault(); // Prevent the default form submission
-
-            var formData = new FormData(); // Use FormData to handle file uploads
-
-            // Get form values
-            formData.append('name', $('#name').val());
-            formData.append('equipment_owner', parseInt($('#owner').val()));
-            formData.append('serial_no', $('#serial_no').val());
-            formData.append('make', $('#make').val());
-            formData.append('last_calibration_date', $('#last_calibration_date').val());
-            formData.append('calibration_validity_duration_type', $('#calibration_validity_duration_type').val());
-            formData.append('calibration_validity_duration_value', $('#calibration_validity_duration_value').val());
-            formData.append('calibration_due_date', $('#calibration_due_date').val());
-
-            // Check if calibration_certificate checkbox is checked
-            var calibrationCertificateChecked = $('#calibration_certificate').is(':checked');
-            formData.append('calibration_certificate', calibrationCertificateChecked ? 'checked' : 'not_checked');
-
-
-            $.ajax({
-                type: 'POST',
-                url: '{% url "equipment-add" %}', // Update this with your Django URL
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for security
-                },
-                data: formData, // Pass the FormData object
-                contentType: false, // Required for file uploads
-                processData: false, // Required for file uploads
-                success: function (response) {
-
-                    showAlert('Data Submitted Successfully !', 'success');
-                    setTimeout(function () {
-                        window.location.href = "{% url 'equipment-list' %}"; // Redirect after success
-                    }, 3000);
-                },
-
-
-                error: function (xhr, status, error) {
-                    showAlert('Data Submission Unsuccessful! Please try again.', 'error');
-                    // Show error message in case of failure
+        // Form validation function
+        function validateForm() {
+            let isValid = true;
+            let errorMessage = '';
+            
+            // Clear previous error styling
+            $('.form-control, .form-select').removeClass('is-invalid');
+            
+            // Required field validation
+            const requiredFields = [
+                { id: 'name', label: 'Equipment Name' },
+                { id: 'owner', label: 'Equipment Owner' },
+                { id: 'serial_no', label: 'Serial Number' },
+                { id: 'make', label: 'Make' },
+                { id: 'last_calibration_date', label: 'Last Calibration Date' },
+                { id: 'calibration_validity_duration_type', label: 'Calibration Validity Duration Type' },
+                { id: 'calibration_validity_duration_value', label: 'Calibration Validity Duration Value' }
+            ];
+            
+            requiredFields.forEach(field => {
+                const value = $(`#${field.id}`).val().trim();
+                if (!value) {
+                    $(`#${field.id}`).addClass('is-invalid');
+                    errorMessage += `• ${field.label} is required\n`;
+                    isValid = false;
                 }
             });
-        });
-
-
-
-
-
-
-        // Populate Category Dropdown Dynamically (Optional if already done in the template)
-        // Populate Category Dropdown Dynamically (Optional if already done in the template)
-        //const categoryChoices = [
-        //{ value: "", label: "Select a Value" },
-        //{ value: "DOC/DOCX", label: ".doc/.docx" },
-        // { value: "PDF", label: ".pdf" },
-        // { value: "TXT", label: ".txt" },
-        // { value: "XLS/XLSX", label: ".xls/.xlsx" },
-        // { value: "CSV", label: ".csv" },
-        // { value: "PPT/PPTX", label: ".ppt/.pptx" },
-        // { value: "ODP", label: ".odp" },
-        //  { value: "JPG/JPEG", label: ".jpg/.jpeg" },
-        // { value: "PNG", label: ".png" },
-        // { value: "ZIP", label: ".zip" },
-        // { value: "RAR", label: ".rar" }
-        //];
-
-        //const categoryDropdown = $('#category');
-        // categoryChoices.forEach(choice => {
-        //     categoryDropdown.append(new Option(choice.label, choice.value));
-        // });
-
-        // Submit Document Form
-        $('#addDocumentForm').submit(function (e) {
-            e.preventDefault();
-            var formData = new FormData(this);
-            var equipment = $('#name').val();
-
-            formData.append('equipment', equipment);
-
-            for (var pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-
+            
+            // Validate calibration validity value
+            const validityValue = $('#calibration_validity_duration_value').val();
+            if (validityValue && (isNaN(validityValue) || parseInt(validityValue) <= 0)) {
+                $('#calibration_validity_duration_value').addClass('is-invalid');
+                errorMessage += '• Calibration validity value must be a positive number\n';
+                isValid = false;
             }
+            
+            // Validate calibration date is not in the future
+            const calibrationDate = $('#last_calibration_date').val();
+            if (calibrationDate) {
+                const today = new Date().toISOString().split('T')[0];
+                if (calibrationDate > today) {
+                    $('#last_calibration_date').addClass('is-invalid');
+                    errorMessage += '• Calibration date cannot be in the future\n';
+                    isValid = false;
+                }
+            }
+            
+            if (!isValid) {
+                showErrorAlert('Validation Error', errorMessage);
+            }
+            
+            return isValid;
+        }
 
+        // Form submission function
+        function submitForm() {
+            const submitBtn = $('#submitBtn');
+            const btnText = submitBtn.find('.btn-text');
+            const btnLoading = submitBtn.find('.btn-loading');
+            
+            // Show loading state
+            submitBtn.prop('disabled', true);
+            btnText.hide();
+            btnLoading.show();
+            
+            // Create FormData object
+            const formData = new FormData($('#equipmentForm')[0]);
+            
             $.ajax({
-                url: '{% url "add-equipment-document" %}',
+                url: '{% url "equipment-add" %}',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
                 headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val(),
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                success: function (response) {
+                success: function(response) {
                     if (response.success) {
-                        // alert(response.message);
-                        $('#addEquipmentDocumentModal').modal('hide');
+                        showSuccessAlert('Success!', 'Equipment has been added successfully.');
+                        // Reset form after success
+                        setTimeout(() => {
+                            window.location.href = "{% url 'equipment-list' %}";
+                        }, 2000);
                     } else {
-                        // alert(response.message);
+                        showErrorAlert('Error', response.message || 'Failed to add equipment.');
                     }
                 },
-                error: function () {
-                    // alert('Error adding document. Please try again.');
+                error: function(xhr, status, error) {
+                    let errorMessage = 'An error occurred while adding equipment.';
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        errorMessage = xhr.responseJSON.errors.join('\n');
+                    } else if (xhr.status === 400) {
+                        errorMessage = 'Bad request. Please check your input.';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error. Please try again later.';
+                    }
+                    
+                    showErrorAlert('Error', errorMessage);
+                },
+                complete: function() {
+                    // Reset button state
+                    submitBtn.prop('disabled', false);
+                    btnText.show();
+                    btnLoading.hide();
                 }
             });
+        }
+
+        // Alert functions
+        function showSuccessAlert(title, message) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+        }
+
+        function showErrorAlert(title, message) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+
+        // Auto-calculate due date
+        function calculateDueDate() {
+            const start = $('#last_calibration_date').val();
+            const unit = $('#calibration_validity_duration_type').val();
+            const value = parseInt($('#calibration_validity_duration_value').val());
+
+            if (start && unit && !isNaN(value) && value > 0) {
+                const due = new Date(start);
+                if (unit === 'days') due.setDate(due.getDate() + value);
+                else if (unit === 'months') due.setMonth(due.getMonth() + value);
+                else if (unit === 'years') due.setFullYear(due.getFullYear() + value);
+
+                const formatted = due.toISOString().split('T')[0];
+                $('#calibration_due_date').val(formatted);
+            } else {
+                $('#calibration_due_date').val('');
+            }
+        }
+
+        // Event listeners
+        $('#last_calibration_date, #calibration_validity_duration_type, #calibration_validity_duration_value').on('change', calculateDueDate);
+
+        $('#calibration_certificate').on('change', function () {
+            $('#document-section').toggle(this.checked);
+        });
+
+        // Real-time validation feedback
+        $('.form-control, .form-select').on('blur', function() {
+            const field = $(this);
+            const value = field.val().trim();
+            
+            if (field.hasClass('required') || field.prop('required')) {
+                if (!value) {
+                    field.addClass('is-invalid');
+                } else {
+                    field.removeClass('is-invalid').addClass('is-valid');
+                }
+            }
         });
     });
-
-
 </script>
+
+<style>
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .form-control.is-valid,
+    .form-select.is-valid {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    
+    .text-danger {
+        color: #dc3545 !important;
+    }
+    
+    .form-text {
+        font-size: 0.875em;
+        color: #6c757d;
+    }
+    
+    .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+    
+    .btn-loading {
+        display: inline-block;
+    }
+</style>
 {% endblock %}

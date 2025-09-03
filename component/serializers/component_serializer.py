@@ -15,7 +15,7 @@ class ComponentSerializer(serializers.ModelSerializer):
     grade = serializers.PrimaryKeyRelatedField(queryset=Grade.objects.all(), many=True)
     
     # SerializerMethodFields to provide readable names
-    calculate_expiry_date = serializers.SerializerMethodField()
+    # calculate_expiry_date = serializers.SerializerMethodField()
     source_names = serializers.SerializerMethodField()
     supplier_names = serializers.SerializerMethodField()
     acceptance_test_names = serializers.SerializerMethodField()
@@ -34,11 +34,11 @@ class ComponentSerializer(serializers.ModelSerializer):
             'shelf_life_value',
             'acceptance_test',
             'shelf_life_unit',
-            'user_defined_date',
+            # 'user_defined_date',
             'source_names',
             'supplier_names',
             'grade_names',
-            'calculate_expiry_date',
+            # 'calculate_expiry_date',
             'acceptance_test_names'
         ]
 
@@ -48,8 +48,8 @@ class ComponentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Shelf life value must be a numeric type.")
         return value
     
-    def get_calculate_expiry_date(self, obj):
-        return obj.calculate_expiry_date
+    # def get_calculate_expiry_date(self, obj):
+    #     return obj.calculate_expiry_date
 
     def get_source_names(self, obj):
         return [source.name for source in obj.sources.all()]
@@ -96,7 +96,7 @@ class ComponentSerializer(serializers.ModelSerializer):
         instance.name = validated_data.get('name', instance.name)
         instance.shelf_life_value = validated_data.get('shelf_life_value', instance.shelf_life_value)
         instance.shelf_life_unit = validated_data.get('shelf_life_unit', instance.shelf_life_unit)
-        instance.user_defined_date = validated_data.get('user_defined_date', instance.user_defined_date)
+        # instance.user_defined_date = validated_data.get('user_defined_date', instance.user_defined_date)
         instance.save()
 
         if sources is not None:

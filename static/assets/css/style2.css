@@ -4955,6 +4955,10 @@ span.select2-container.select2-container--default.select2-container--open {
   .mini-sidebar .page-wrapper {
     margin-left: 80px;
   }
+  /* When hovering/expanding mini-sidebar, restore full left space so content isn't hidden */
+  .mini-sidebar.expand-menu .page-wrapper {
+    margin-left: 260px;
+  }
   .mini-sidebar .header-left #toggle_btn {
     opacity: 0;
   }

@@ -1,0 +1,733 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<!-- SweetAlert2 for better error handling -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  .form-group label {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+  
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .current-data {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+</style>
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title">
+        <h4>Edit Product</h4>
+      </div>
+      <div class="page-btn">
+        <a href="{% url 'product-view' %}" class="btn btn-added">Back to List</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-lg-4 col-sm-6 col-12">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="name" class="form-control" />
+            </div>
+          </div>
+          <div class="col-lg-4 col-sm-6 col-12">
+            <div class="form-group">
+              <label>Category</label>
+              <select id="category" class="form-control">
+                <option value="">Choose Category</option>
+                {% for cat in category %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-lg-4 col-sm-6 col-12">
+            <div class="form-group">
+              <label>Owner</label>
+              <select id="product_owner" class="form-control">
+                <option value="">Choose owner</option>
+                {% for own in owner %}
+                <option value="{{ own.id }}">{{ own.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-sm-6 col-12">
+            <div class="form-group">
+              <label>End Use</label>
+              <select id="end_uses" class="form-control">
+                <option value="">Choose end use</option>
+                {% for end in enduse %}
+                <option value="{{ end.id }}">{{ end.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-lg-8 col-sm-6 col-12">
+            <div class="form-group">
+              <label>Specific Use</label>
+              <input type="text" id="specific_use" class="form-control" />
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-sm-6 col-12">
+            <div class="form-group">
+              <label for="shelf_life_type">Shelf Life</label>
+              <select id="shelf_life_type" class="form-control">
+                <option value="">Choose Type</option>
+                <option value="tbd">TBD (To Be Decided)</option>
+                <option value="not_applicable">Not Applicable</option>
+                <option value="add_duration">Add Duration</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-4" id="shelf_life_duration_group" style="display: none;">
+            <div class="form-group">
+              <label for="shelf_life_value">Shelf Life Duration</label>
+              <input type="number" id="shelf_life_value" class="form-control" />
+            </div>
+          </div>
+          <div class="col-md-4" id="shelf_life_period_group" style="display: none;">
+            <div class="form-group">
+              <label for="unit">Shelf Life Period</label>
+              <select id="unit" class="form-control">
+                <option value="days">Days</option>
+                <option value="months">Months</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Section: Components, Raw Materials, Consumables, Equipment Used -->
+          <div class="col-lg-12 mt-4 mb-2">
+            <h5 class="section-header">Components, Raw Materials, Consumables & Equipment</h5>
+          </div>
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="form-group">
+              <label>Components</label>
+              <select id="components" class="form-control">
+                <option value="">Choose components</option>
+                {% for comp in components %}
+                <option value="{{ comp.id }}">{{ comp.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="form-group">
+              <label>Raw Materials</label>
+              <select id="raw_material" class="form-control">
+                <option value="">Choose rawmaterials</option>
+                {% for rwm in rawmaterial %}
+                <option value="{{ rwm.id }}">{{ rwm.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="form-group">
+              <label>Consumable</label>
+              <select id="consumable" class="form-control">
+                <option value="">Choose consumables</option>
+                {% for con in consumable %}
+                <option value="{{ con.id }}">{{ con.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="form-group">
+              <label>Equipment Used</label>
+              <select id="equipment" class="form-control">
+                <option value="">Choose equipment</option>
+                {% for equ in equipment %}
+                <option value="{{ equ.id }}">{{ equ.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="form-group">
+              <label>Process</label>
+              <select id="process" class="form-control">
+                <option value="">Choose process</option>
+                {% for pro in process %}
+                <option value="{{ pro.id }}">{{ pro.process_title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="col-lg-12 mt-4 mb-2">
+            <h5 class="section-header">Drawings</h5>
+            <div id="current_drawings" class="border p-2 rounded bg-light mb-2"></div>
+            <div id="drawing_edit_container">
+              <div class="row align-items-end drawing-edit-row">
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
+                  <label>Drawing Number</label>
+                  <input type="text" class="form-control drawing-number-input">
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
+                  <label>Drawing Title</label>
+                  <input type="text" class="form-control drawing-title-input">
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
+                  <label>Status</label>
+                  <select class="form-control drawing-status-input">
+                    <option value="Provisional">Provisional</option>
+                    <option value="CCB approved">CCB approved</option>
+                  </select>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-6 mb-2">
+                  <label>Upload Drawing</label>
+                  <input type="file" class="form-control drawing-file-input">
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-6 d-flex align-items-end mb-2">
+                  <button type="button" class="btn btn-success me-2 add-drawing-row">+</button>
+                  <button type="button" class="btn btn-danger remove-drawing-row">-</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-12 mt-2 mb-2">
+            <h5 class="section-header">Product Documents</h5>
+            <div id="current_documents" class="border p-2 rounded bg-light mb-2"></div>
+            <div id="document_edit_container">
+              <div class="row align-items-end document-edit-row">
+                <div class="col-md-3 mb-2">
+                  <label>Title</label>
+                  <input type="text" class="form-control doc-title-input">
+                </div>
+                <div class="col-md-3 mb-2">
+                  <label>Category</label>
+                  <select class="form-control doc-category-input">
+                    {% for doc_type in document_types %}
+                    <option value="{{ doc_type.id }}">{{ doc_type.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                  <label>Issue No</label>
+                  <input type="text" class="form-control doc-issue-input">
+                </div>
+                <div class="col-md-2 mb-2">
+                  <label>Revision No</label>
+                  <input type="text" class="form-control doc-revision-input">
+                </div>
+                <div class="col-md-2 mb-2">
+                  <label>Release Date</label>
+                  <input type="date" class="form-control doc-release-date-input">
+                </div>
+                <div class="col-md-3 mb-2">
+                  <label>Approved By</label>
+                  <input type="text" class="form-control doc-approved-by-input">
+                </div>
+                <div class="col-md-2 mb-2">
+                  <label>Validity (Years)</label>
+                  <input type="number" class="form-control doc-validity-input">
+                </div>
+                <div class="col-md-3 mb-2">
+                  <label>Upload Files</label>
+                  <input type="file" class="form-control doc-file-input" multiple>
+                </div>
+                <div class="col-md-2 d-flex align-items-end mb-2">
+                  <button type="button" class="btn btn-success me-2 add-doc-row">+</button>
+                  <button type="button" class="btn btn-danger remove-doc-row">-</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-12">
+            <button class="btn btn-submit me-2" id="saveBtn">Save</button>
+            <a href="{% url 'product-view' %}" class="btn btn-cancel">Cancel</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function() {
+    const productId = '{{ product_id }}';
+
+    function getCSRFToken() {
+      return '{{ csrf_token }}';
+    }
+
+    function toggleShelfLifeGroups(val) {
+      const show = val === 'add_duration';
+      $('#shelf_life_duration_group').toggle(show);
+      $('#shelf_life_period_group').toggle(show);
+    }
+
+    $(document).ready(function() {
+      // Show loading state
+      const saveBtn = $('#saveBtn');
+      saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+      
+      // Prefill data
+      $.ajax({
+        type: 'POST',
+        url: `/product/view-product/${productId}/`,
+        headers: { 'X-CSRFToken': getCSRFToken() },
+                success: function(response) {
+          if (!response.success) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Data Loading Failed',
+              text: response.message || 'Failed to load product data',
+              confirmButtonText: 'OK'
+            });
+            return;
+          }
+          const d = response.data;
+          
+          try {
+            $('#name').val(d.name);
+            $('#category').val(d.category?.id);
+            $('#product_owner').val(d.product_owner?.id);
+            $('#end_uses').val(d.end_uses?.id);
+            $('#specific_use').val(d.specific_use);
+            $('#shelf_life_type').val(d.shelf_life_type);
+            toggleShelfLifeGroups(d.shelf_life_type);
+            $('#shelf_life_value').val(d.shelf_life_value);
+            $('#unit').val(d.shelf_life_unit);
+            
+            // Set many-to-many fields
+            if (d.components && Array.isArray(d.components)) {
+              d.components.forEach(comp => {
+                $(`#components option[value="${comp.id}"]`).prop('selected', true);
+              });
+            }
+            if (d.rawmaterial && Array.isArray(d.rawmaterial)) {
+              d.rawmaterial.forEach(rm => {
+                $(`#raw_material option[value="${rm.id}"]`).prop('selected', true);
+              });
+            }
+            if (d.consumable && Array.isArray(d.consumable)) {
+              d.consumable.forEach(con => {
+                $(`#consumable option[value="${con.id}"]`).prop('selected', true);
+              });
+            }
+            if (d.equipment && Array.isArray(d.equipment)) {
+              d.equipment.forEach(equ => {
+                $(`#equipment option[value="${equ.id}"]`).prop('selected', true);
+              });
+            }
+            if (d.process && Array.isArray(d.process)) {
+              d.process.forEach(pro => {
+                $(`#process option[value="${pro.id}"]`).prop('selected', true);
+              });
+            }
+
+            // Render current drawings
+            const drawingsContainer = $('#current_drawings');
+            drawingsContainer.empty();
+            if (Array.isArray(d.drawings) && d.drawings.length > 0) {
+              d.drawings.forEach(function(dr) {
+                const fileHtml = dr.drawing_document
+                  ? `<a href="${dr.drawing_document}" target="_blank">Download</a>`
+                  : 'No file';
+                drawingsContainer.append(`
+                  <div class="mb-2">
+                    <strong>Title:</strong> ${dr.drawing_title || ''}<br/>
+                    <strong>Number:</strong> ${dr.drawing_number || ''}<br/>
+                    <strong>Status:</strong> ${dr.drawing_status || ''}<br/>
+                  ${fileHtml}
+                  </div>
+                  <hr/>
+                `);
+              });
+              // Prefill drawing edit rows with existing entries
+              const drawEdit = $('#drawing_edit_container');
+              const baseDrawRow = drawEdit.find('.drawing-edit-row:first');
+              drawEdit.find('.drawing-edit-row').not(':first').remove();
+              baseDrawRow.find('.drawing-number-input').val(d.drawings[0].drawing_number || '');
+              baseDrawRow.find('.drawing-title-input').val(d.drawings[0].drawing_title || '');
+              baseDrawRow.find('.drawing-status-input').val(d.drawings[0].drawing_status || 'Provisional');
+              for (let i = 1; i < d.drawings.length; i++) {
+                const dr = d.drawings[i];
+                const clone = baseDrawRow.clone();
+                clone.find('input[type="text"]').val('');
+                clone.find('.drawing-number-input').val(dr.drawing_number || '');
+                clone.find('.drawing-title-input').val(dr.drawing_title || '');
+                clone.find('.drawing-status-input').val(dr.drawing_status || 'Provisional');
+                clone.find('.drawing-file-input').val('');
+                drawEdit.append(clone);
+              }
+            } else {
+              drawingsContainer.html('<p>No drawings available.</p>');
+              const baseDrawRow = $('#drawing_edit_container .drawing-edit-row:first');
+              baseDrawRow.find('input[type="text"]').val('');
+              baseDrawRow.find('.drawing-status-input').val('Provisional');
+            }
+          } catch (error) {
+            console.error('Error processing product data:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Data Processing Error',
+              text: 'Failed to process product data. Please refresh the page.',
+              confirmButtonText: 'OK'
+            });
+          }
+
+          // Render product documents if any
+          const docsContainer = $('#current_documents');
+          if (docsContainer.length) {
+            docsContainer.empty();
+            if (Array.isArray(d.documents) && d.documents.length > 0) {
+              d.documents.forEach(function(doc) {
+                const filesList = (doc.files || []).map(function(f) {
+                  return `<li><a href="${f.file_url}" target="_blank">${f.file_name}</a></li>`;
+                }).join('');
+                docsContainer.append(`
+                  <div class="mb-2">
+                    <strong>Title:</strong> ${doc.title} ${doc.category ? `(${doc.category})` : ''}<br/>
+                    <strong>Issue No:</strong> ${doc.issue_no} | <strong>Revision No:</strong> ${doc.revision_no}<br/>
+                    <strong>Release Date:</strong> ${doc.release_date} | <strong>Approved By:</strong> ${doc.approved_by}<br/>
+                    <strong>Validity:</strong> ${doc.validity} years<br/>
+                    ${(filesList ? `<strong>Files:</strong><ul>${filesList}</ul>` : '<em>No files</em>')}
+                  </div>
+                  <hr/>
+                `);
+              });
+              // Prefill document edit rows with existing entries
+              const docEdit = $('#document_edit_container');
+              const baseDocRow = docEdit.find('.document-edit-row:first');
+              docEdit.find('.document-edit-row').not(':first').remove();
+              const d0 = d.documents[0];
+              baseDocRow.find('.doc-title-input').val(d0.title || '');
+              baseDocRow.find('.doc-category-input').val(d0.category_id || '');
+              baseDocRow.find('.doc-issue-input').val(d0.issue_no || '');
+              baseDocRow.find('.doc-revision-input').val(d0.revision_no || '');
+              baseDocRow.find('.doc-release-date-input').val(d0.release_date || '');
+              baseDocRow.find('.doc-approved-by-input').val(d0.approved_by || '');
+              baseDocRow.find('.doc-validity-input').val(d0.validity || '');
+              baseDocRow.find('.doc-file-input').val('');
+              for (let i = 1; i < d.documents.length; i++) {
+                const di = d.documents[i];
+                const clone = baseDocRow.clone();
+                clone.find('input').val('');
+                clone.find('select').prop('selectedIndex', 0);
+                clone.find('.doc-title-input').val(di.title || '');
+                clone.find('.doc-category-input').val(di.category_id || '');
+                clone.find('.doc-issue-input').val(di.issue_no || '');
+                clone.find('.doc-revision-input').val(di.revision_no || '');
+                clone.find('.doc-release-date-input').val(di.release_date || '');
+                clone.find('.doc-approved-by-input').val(di.approved_by || '');
+                clone.find('.doc-validity-input').val(di.validity || '');
+                clone.find('.doc-file-input').val('');
+                docEdit.append(clone);
+              }
+            } else {
+              docsContainer.html('<p>No product documents available.</p>');
+              const baseDocRow = $('#document_edit_container .document-edit-row:first');
+              baseDocRow.find('input').val('');
+              baseDocRow.find('select').prop('selectedIndex', 0);
+            }
+          }
+          
+          // Enable save button after data is loaded
+          saveBtn.prop('disabled', false).text('Save');
+        },
+        error: function(xhr) {
+          let message = 'Failed to load product data.';
+          
+          if (xhr.responseJSON) {
+            if (xhr.responseJSON.message) {
+              message = xhr.responseJSON.message;
+            } else if (xhr.responseJSON.data && Array.isArray(xhr.responseJSON.data)) {
+              message = xhr.responseJSON.data.join('<br>• ');
+            } else if (xhr.responseJSON.data && typeof xhr.responseJSON.data === 'object') {
+              message = Object.values(xhr.responseJSON.data).flat().join('<br>• ');
+            }
+          } else if (xhr.status === 500) {
+            message = 'Internal server error. Please try again later.';
+          } else if (xhr.status === 404) {
+            message = 'Product not found. Please check the URL.';
+          }
+          
+          Swal.fire({
+            icon: 'error',
+            title: 'Data Loading Error',
+            html: message,
+            confirmButtonText: 'OK'
+          });
+          
+          // Enable save button even on error
+          saveBtn.prop('disabled', false).text('Save');
+        }
+      });
+
+      $('#shelf_life_type').on('change', function() {
+        toggleShelfLifeGroups($(this).val());
+      });
+
+      $('#saveBtn').on('click', function(e) {
+        e.preventDefault();
+        
+        // Frontend validation
+        const validationErrors = [];
+        
+        // Check required fields
+        if (!$('#name').val().trim()) {
+          validationErrors.push('Product name is required');
+        }
+        if (!$('#category').val()) {
+          validationErrors.push('Product category is required');
+        }
+        if (!$('#product_owner').val()) {
+          validationErrors.push('Product owner is required');
+        }
+        
+        // Check shelf life validation
+        const shelfLifeType = $('#shelf_life_type').val();
+        if (shelfLifeType === 'add_duration') {
+          if (!$('#shelf_life_value').val()) {
+            validationErrors.push('Shelf life duration is required when duration type is selected');
+          }
+          if (!$('#unit').val()) {
+            validationErrors.push('Shelf life period is required when duration type is selected');
+          }
+        }
+        
+        // Show validation errors if any
+        if (validationErrors.length > 0) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Validation Failed',
+            html: validationErrors.map(error => `<div>• ${error}</div>`).join(''),
+            confirmButtonText: 'OK'
+          });
+          return;
+        }
+        
+        const formData = new FormData();
+        formData.append('name', $('#name').val());
+        formData.append('category', $('#category').val());
+        formData.append('product_owner', $('#product_owner').val());
+        formData.append('end_uses', $('#end_uses').val());
+        formData.append('specific_use', $('#specific_use').val());
+        formData.append('shelf_life_type', $('#shelf_life_type').val());
+        formData.append('shelf_life_value', $('#shelf_life_value').val());
+        formData.append('shelf_life_unit', $('#unit').val());
+        
+        // Collect many-to-many field values
+        const components = $('#components').val();
+        const rawMaterial = $('#raw_material').val();
+        const consumable = $('#consumable').val();
+        const equipment = $('#equipment').val();
+        const process = $('#process').val();
+        
+        if (components) formData.append('components', components);
+        if (rawMaterial) formData.append('raw_material', rawMaterial);
+        if (consumable) formData.append('consumable', consumable);
+        if (equipment) formData.append('equipment', equipment);
+        if (process) formData.append('process', process);
+
+        // Collect drawing edits
+        const drawingsPayload = [];
+        $('#drawing_edit_container .drawing-edit-row').each(function(index) {
+          const row = $(this);
+          const dn = row.find('.drawing-number-input').val();
+          const dt = row.find('.drawing-title-input').val();
+          const ds = row.find('.drawing-status-input').val();
+          const fileInput = row.find('.drawing-file-input')[0];
+          
+          // Validate drawing data
+          if (dn && dt) { // Only add if both number and title are provided
+            drawingsPayload.push({ index, drawing_number: dn, drawing_title: dt, drawing_status: ds });
+            if (fileInput && fileInput.files[0]) {
+              formData.append(`drawing_document_${index}`, fileInput.files[0]);
+            }
+          }
+        });
+        formData.append('drawings', JSON.stringify(drawingsPayload));
+
+        // Collect document edits
+        const documentsPayload = [];
+        $('#document_edit_container .document-edit-row').each(function(docIndex) {
+          const row = $(this);
+          const title = row.find('.doc-title-input').val();
+          const cat = row.find('.doc-category-input').val();
+          const issue = row.find('.doc-issue-input').val();
+          const rev = row.find('.doc-revision-input').val();
+          const rel = row.find('.doc-release-date-input').val();
+          const appr = row.find('.doc-approved-by-input').val();
+          const valYrs = row.find('.doc-validity-input').val();
+          
+          // Validate document data - only add if title and category are provided
+          if (title && cat) {
+            documentsPayload.push({ title, category: cat, issue_no: issue, revision_no: rev, release_date: rel, approved_by: appr, validity: valYrs });
+
+            const files = row.find('.doc-file-input')[0]?.files || [];
+            Array.from(files).forEach(function(file, i) {
+              formData.append(`document_file_${docIndex}_${i}`, file);
+            });
+          }
+        });
+        formData.append('documents', JSON.stringify(documentsPayload));
+
+        // Show loading state
+        const saveBtn = $('#saveBtn');
+        const originalText = saveBtn.text();
+        saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+        
+        // Add timeout protection
+        const timeoutId = setTimeout(() => {
+          saveBtn.prop('disabled', false).text(originalText);
+          Swal.fire({
+            icon: 'warning',
+            title: 'Request Timeout',
+            text: 'The request is taking longer than expected. Please try again.',
+            confirmButtonText: 'OK'
+          });
+        }, 30000); // 30 seconds timeout
+
+        $.ajax({
+          url: `/product/product/${productId}/edit/`,
+          type: 'POST',
+          data: formData,
+          contentType: false,
+          processData: false,
+          headers: { 'X-CSRFToken': getCSRFToken() },
+          success: function(resp) {
+            // Clear timeout
+            clearTimeout(timeoutId);
+            
+            // Reset button state
+            saveBtn.prop('disabled', false).text(originalText);
+            
+            if (resp.success) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: resp.message || 'Product updated successfully!',
+                confirmButtonText: 'OK'
+              }).then(() => {
+                window.location.href = '{% url "product-view" %}';
+              });
+            } else {
+              let errorMessage = 'Update failed.';
+              if (resp.data && Array.isArray(resp.data)) {
+                errorMessage = resp.data.join('<br>• ');
+              } else if (resp.data && typeof resp.data === 'object') {
+                errorMessage = Object.values(resp.data).flat().join('<br>• ');
+              } else if (resp.message) {
+                errorMessage = resp.message;
+              }
+              
+              Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                html: errorMessage,
+                confirmButtonText: 'OK'
+              });
+            }
+          },
+          error: function(xhr) {
+            // Clear timeout
+            clearTimeout(timeoutId);
+            
+            // Reset button state
+            saveBtn.prop('disabled', false).text(originalText);
+            
+            let message = 'Something went wrong.';
+            
+            if (xhr.responseJSON) {
+              if (xhr.responseJSON.message) {
+                message = xhr.responseJSON.message;
+              } else if (xhr.responseJSON.data && Array.isArray(xhr.responseJSON.data)) {
+                message = xhr.responseJSON.data.join('<br>• ');
+              } else if (xhr.responseJSON.data && typeof xhr.responseJSON.data === 'object') {
+                message = Object.values(xhr.responseJSON.data).flat().join('<br>• ');
+              }
+            } else if (xhr.status === 500) {
+              message = 'Internal server error. Please try again later.';
+            } else if (xhr.status === 404) {
+              message = 'Product not found. Please refresh the page.';
+            }
+            
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              html: message,
+              confirmButtonText: 'OK'
+            });
+          }
+        });
+      });
+    });
+
+    // Dynamic add/remove rows for drawings
+    $(document).on('click', '.add-drawing-row', function() {
+      const currentRow = $(this).closest('.drawing-edit-row');
+      const clone = currentRow.clone();
+      clone.find('input[type="text"]').val('');
+      clone.find('input[type="file"]').val('');
+      clone.find('.drawing-status-input').val('Provisional');
+      currentRow.after(clone);
+    });
+    $(document).on('click', '.remove-drawing-row', function() {
+      if ($('.drawing-edit-row').length > 1) {
+        $(this).closest('.drawing-edit-row').remove();
+      }
+    });
+
+    // Dynamic add/remove rows for documents
+    $(document).on('click', '.add-doc-row', function() {
+      const currentRow = $(this).closest('.document-edit-row');
+      const clone = currentRow.clone();
+      clone.find('input').val('');
+      clone.find('input[type="file"]').val('');
+      clone.find('select').prop('selectedIndex', 0);
+      currentRow.after(clone);
+    });
+    $(document).on('click', '.remove-doc-row', function() {
+      if ($('.document-edit-row').length > 1) {
+        $(this).closest('.document-edit-row').remove();
+      }
+    });
+  })();
+</script>
+{% endblock %}
+
+

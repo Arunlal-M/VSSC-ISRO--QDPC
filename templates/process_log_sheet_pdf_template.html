@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Process Log-Sheet - Batch {{ batch.batch_id }}</title>
+    {% load json_filters %}
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+        .header h2 {
+            margin: 5px 0;
+            font-size: 18px;
+            color: #666;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .info-table th,
+        .info-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .info-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 10px;
+        }
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        .status-approved {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-active {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+        .status-pending {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .status-rejected {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .no-data {
+            color: #999;
+            font-style: italic;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Process Log-Sheet</h1>
+        <h2>Batch ID: {{ batch.batch_id }}</h2>
+        <p>Generated on: {{ generated_date|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <!-- Batch Information -->
+    <div class="section">
+        <div class="section-title">Batch Information</div>
+        <table class="info-table">
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td><strong>Batch ID</strong></td>
+                <td>{{ batch.batch_id }}</td>
+            </tr>
+            <tr>
+                <td><strong>Product Name</strong></td>
+                <td>{{ batch.product.name }}</td>
+            </tr>
+            <tr>
+                <td><strong>Unit</strong></td>
+                <td>{{ batch.unit|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Manufacturing Start</strong></td>
+                <td>{{ batch.manufacturing_start|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Manufacturing End</strong></td>
+                <td>{{ batch.manufacturing_end|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Created At</strong></td>
+                <td>{{ batch.created_at|date:"d/m/Y H:i" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Status</strong></td>
+                <td class="status-{{ batch.status }}">{{ batch.status|title }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Raw Materials -->
+    <div class="section">
+        <div class="section-title">Raw Materials</div>
+        {% if raw_materials %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Material Name</th>
+                        <th>Grade</th>
+                        <th>Source</th>
+                        <th>Supplier</th>
+                        <th>Batch ID</th>
+                        <th>Date Added</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in raw_materials %}
+                    <tr>
+                        <td>{{ material.rawmaterial_name }}</td>
+                        <td>{{ material.grade|default:"N/A" }}</td>
+                        <td>{{ material.sources|default:"N/A" }}</td>
+                        <td>{{ material.suppliers|default:"N/A" }}</td>
+                        <td>{{ material.batch_id|default:"N/A" }}</td>
+                        <td>{{ material.date_added|date:"d/m/Y"|default:"N/A" }}</td>
+                        <td>{{ material.status|default:"N/A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No raw materials found for this batch.</p>
+        {% endif %}
+    </div>
+
+    <!-- Components -->
+    <div class="section">
+        <div class="section-title">Components</div>
+        {% if components %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Component Name</th>
+                        <th>Grade</th>
+                        <th>Source</th>
+                        <th>Supplier</th>
+                        <th>Batch ID</th>
+                        <th>Date Added</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for component in components %}
+                    <tr>
+                        <td>{{ component.component_name }}</td>
+                        <td>{{ component.grade|default:"N/A" }}</td>
+                        <td>{{ component.sources|default:"N/A" }}</td>
+                        <td>{{ component.suppliers|default:"N/A" }}</td>
+                        <td>{{ component.batch_id|default:"N/A" }}</td>
+                        <td>{{ component.date_added|date:"d/m/Y"|default:"N/A" }}</td>
+                        <td>{{ component.status|default:"N/A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No components found for this batch.</p>
+        {% endif %}
+    </div>
+
+    <!-- Consumables -->
+    <div class="section">
+        <div class="section-title">Consumables</div>
+        {% if consumables %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Consumable Name</th>
+                        <th>Grade</th>
+                        <th>Source</th>
+                        <th>Supplier</th>
+                        <th>Batch ID</th>
+                        <th>Date Added</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consumable in consumables %}
+                    <tr>
+                        <td>{{ consumable.consumable_name }}</td>
+                        <td>{{ consumable.grade|default:"N/A" }}</td>
+                        <td>{{ consumable.sources|default:"N/A" }}</td>
+                        <td>{{ consumable.suppliers|default:"N/A" }}</td>
+                        <td>{{ consumable.batch_id|default:"N/A" }}</td>
+                        <td>{{ consumable.date_added|date:"d/m/Y"|default:"N/A" }}</td>
+                        <td>{{ consumable.status|default:"N/A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No consumables found for this batch.</p>
+        {% endif %}
+    </div>
+
+    <!-- Equipment -->
+    <div class="section">
+        <div class="section-title">Equipment Used</div>
+        {% if equipment_list %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Equipment Name</th>
+                        <th>Type</th>
+                        <th>Date Added</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for equipment in equipment_list %}
+                    <tr>
+                        <td>{{ equipment.name }}</td>
+                        <td>{{ equipment.equipment_type|default:"N/A" }}</td>
+                        <td>{{ equipment.date_added|date:"d/m/Y"|default:"N/A" }}</td>
+                        <td>Available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No equipment information available for this batch.</p>
+        {% endif %}
+    </div>
+
+    <!-- Dynamic Tables -->
+    {% if dynamic_tables %}
+    <div class="section page-break">
+        <div class="section-title">Additional Data Tables</div>
+        {% for table in dynamic_tables %}
+        <div style="margin-bottom: 20px;">
+            <h4 style="color: #333; margin-bottom: 10px;">{{ table.title }}</h4>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        {% for column in table.columns %}
+                        <th>{{ column }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in table.rows %}
+                    <tr>
+                        {% for column_index in table.columns %}
+                        <td>{{ row|get_item:forloop.counter0|default:"" }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</body>
+</html>
+

@@ -1,12 +1,17 @@
 from qdpc.core.modelviewset import BaseModelViewSet
 from rest_framework.response import Response
 from django.shortcuts import render, get_object_or_404, redirect
-from process.serializers.process_serializer import ProcessStepSerializer
+from process.serializers.process_serializer import ProcessStepSerializer,ProcessNewSerializer
 from qdpc_core_models.models.process import Process, ProcessStep
+from qdpc_core_models.models.product import Product
 from qdpc_core_models.models.equipment import Equipment
 from qdpc_core_models.models.consumable import Consumable
 from qdpc_core_models.models.raw_material import RawMaterial
 from qdpc_core_models.models.component import Component
+from qdpc_core_models.models.raw_materialbach import RawMaterialBatch
+from qdpc_core_models.models.consumablebatch import ConsumableBatch
+from qdpc_core_models.models.componentbatch import ComponentBatch
+from qdpc_core_models.models.unit import Unit
 from rest_framework import status
 from qdpc.core import constants
 from django.utils.timezone import now
@@ -24,121 +29,160 @@ class ProcessView(BaseModelViewSet):
     template_name = 'process_detail.html'
 
     def get(self, request, process_title):
-        process = ProcessStep.objects.filter(process=process_title)  # Using filter to allow multiple results
-        print(process)
-        return render(request, self.template_name, {'process': process,'process_title': process_title})
+        try:
+            # First find the Process object by process_title
+            process_obj = Process.objects.get(process_title=process_title)
+            # Then filter ProcessStep objects by the found Process object with prefetch_related for ManyToMany fields
+            process_steps = ProcessStep.objects.filter(process=process_obj).prefetch_related(
+                'raw_material_batch',
+                'consumable_batch', 
+                'component_batch',
+                'equipment',
+                'unit'
+            )
+            print(f"Found {process_steps.count()} process steps for process: {process_title}")
+            
+            # Debug: Print each step and its related data
+            for step in process_steps:
+                print(f"Step {step.step_id}:")
+                print(f"  Raw Materials: {list(step.raw_material_batch.all())}")
+                print(f"  Consumables: {list(step.consumable_batch.all())}")
+                print(f"  Components: {list(step.component_batch.all())}")
+                print(f"  Equipment: {list(step.equipment.all())}")
+            
+            return render(request, self.template_name, {'process': process_steps, 'process_title': process_title})
+        except Process.DoesNotExist:
+            # Handle case where process_title doesn't exist
+            print(f"Process with title '{process_title}' not found")
+            return render(request, self.template_name, {'process': [], 'process_title': process_title, 'error': 'Process not found'})
+        except Exception as e:
+            # Handle any other unexpected errors
+            print(f"Error in ProcessView.get(): {str(e)}")
+            return render(request, self.template_name, {'process': [], 'process_title': process_title, 'error': f'An error occurred: {str(e)}'})
 
 
 class ProcessCreateView(BaseModelViewSet):
     template_name = 'process_create.html'
 
     def get(self, request):
-        raw_materials = RawMaterial.objects.all()
+        data=request.data
+        print(data)
+        raw_material_batch = RawMaterialBatch.objects.all()
         equipment = Equipment.objects.all()
-        consumables = Consumable.objects.all()
-        component = Component.objects.all()
+        consumable_batch = ConsumableBatch.objects.all()
+        component_batch = ComponentBatch.objects.all()
+        units = Unit.objects.all()
         today = now().date()
 
-        # Add expiry status to each raw material
-        raw_materials_with_status = [
-            {
-                'material': material,
-                'is_expired': material.calculate_expiry_date < today
-            }
-            for material in raw_materials
-        ]
-        consumables_with_status = [
-            {
-                'consum': consum,
-                'is_expired': consum.calculate_expiry_date < today
-            }
-            for consum in consumables
-        ]
-        equipment_with_status = [
-            {
-                'equip': equip,
-                'is_expired': equip.calibration_due_date < today
-            }
-            for equip in equipment
-        ]
-        component_with_status = [
-            {
-                'comp': comp,
-                'is_expired': comp.calculate_expiry_date < today
-            }
-            for comp in component
-        ]
-
         return render(request, self.template_name, {
-            'raw_materials_with_status': raw_materials_with_status,
-            'consumables_with_status': consumables_with_status,
-            'equipment_with_status': equipment_with_status,
-            'component_with_status': component_with_status,
+            'raw_material_batch': raw_material_batch,
+            'consumable_batch': consumable_batch,
             'equipment': equipment,
-            'consumables': consumables,
-            'component': component,
+            'component_batch': component_batch,
+            # 'equipment': equipment,
+            # 'consumables': consumables,
+            # 'component': component,
+            'units':units,
             'today': today,
         })
 
     def post(self, request):
-        print(request.data)
-        # Process-level data
+        print("POST data received:")
+        for key, value in request.POST.items():
+            print(f"  {key}: {value}")
+        
         process_title = request.POST.get('process_title')
         if not process_title:
             return render(request, self.template_name, {
                 'error': 'Process title is required.',
-                'raw_materials': RawMaterial.objects.all(),
+                'raw_material_batch': RawMaterialBatch.objects.all(),
                 'equipment': Equipment.objects.all(),
-                'consumables': Consumable.objects.all(),
-                'component': Component.objects.all(),
-                
+                'consumable_batch': ConsumableBatch.objects.all(),
+                'component_batch': ComponentBatch.objects.all(),
+                'units': Unit.objects.all(),
             })
 
         process, created = Process.objects.get_or_create(process_title=process_title)
 
-        # Handle dynamically added steps
         step_counter = 1
         while True:
-            # Fetch step-specific data
             step_description = request.POST.get(f'step_{step_counter}_description')
             if not step_description:
-                break  # Exit loop if no more steps are provided
+                break
+                
+            print(f"\nProcessing step {step_counter}:")
+            print(f"  Description: {step_description}")
+            print(f"  Test Result: {request.POST.get(f'step_{step_counter}_test_result')}")
+            print(f"  Specification Result: {request.POST.get(f'step_{step_counter}_specification_result')}")
 
             step_date = request.POST.get(f'step_{step_counter}_date')
             rm_status = request.POST.get(f'step_{step_counter}_rm_status')
             equipment_status = request.POST.get(f'step_{step_counter}_equipment_status')
-            step_specifications = request.POST.get(f'step_{step_counter}_specifications')
-            measured_value = request.POST.get(f'step_{step_counter}_measured_value')
+            consumable_status = request.POST.get(f'step_{step_counter}_consumable_status')
+            component_status = request.POST.get(f'step_{step_counter}_component_status')
+            # step_specifications = request.POST.get(f'step_{step_counter}_specifications')
+            # measured_value = request.POST.get(f'step_{step_counter}_measured_value')
             remarks = request.POST.get(f'step_{step_counter}_remarks')
+            test_result = request.POST.get(f'step_{step_counter}_test_result', '')[:50]  # Limit to 50 chars
+            specification_result = request.POST.get(f'step_{step_counter}_specification_result', '')[:50]  # Limit to 50 chars
+            process_type = request.POST.get(f'step_{step_counter}_test_type')
 
-            # Many-to-Many relationships
-            raw_material_ids = request.POST.getlist(f'step_{step_counter}_raw_material[]')
-            equipment_ids = request.POST.getlist(f'step_{step_counter}_equipment[]')
-            consumable_ids = request.POST.getlist(f'step_{step_counter}_consumable[]')
-            component_ids = request.POST.getlist(f'step_{step_counter}_component[]')
+            min_value = request.POST.get(f'step_{step_counter}_min_value')
+            max_value = request.POST.get(f'step_{step_counter}_max_value')
+            
+            if process_type != "quantitative":
+                min_value = None
+                max_value = None
 
-            # Create a new step
-            process_step = ProcessStep.objects.create(
-                process=process,
-                process_description=step_description,
-                process_date=step_date,
-                rm_status=rm_status,
-                equipment_status=equipment_status,
-                process_step_spec=step_specifications,
-                measured_value_observation=measured_value,
-                remarks=remarks,
-            )
+            raw_material_ids = [id for id in request.POST.getlist(f'step_{step_counter}_raw_material_batch[]') if id]
+            equipment_ids = [id for id in request.POST.getlist(f'step_{step_counter}_equipment[]') if id]
+            consumable_ids = [id for id in request.POST.getlist(f'step_{step_counter}_consumable_batch[]') if id]
+            component_ids = [id for id in request.POST.getlist(f'step_{step_counter}_component_batch[]') if id]
+            units_ids = [id for id in request.POST.getlist(f'step_{step_counter}_unit[]') if id]
 
-            # Add Many-to-Many relationships
-            process_step.raw_material.add(*RawMaterial.objects.filter(id__in=raw_material_ids))
-            process_step.equipment.add(*Equipment.objects.filter(id__in=equipment_ids))
-            process_step.consumable.add(*Consumable.objects.filter(id__in=consumable_ids))
-            process_step.component.add(*Component.objects.filter(id__in=component_ids))
+            try:
+                process_step = ProcessStep.objects.create(
+                    process=process,
+                    process_description=step_description,
+                    process_date=step_date,
+                    rm_status=rm_status,
+                    equipment_status=equipment_status,
+                    consumable_status=consumable_status,
+                    component_status=component_status,
+                    # process_step_spec=step_specifications,
+                    # measured_value_observation=measured_value,
+                    remarks=remarks,
+                    min_value=min_value,
+                    max_value=max_value,
+                    test_result=test_result,
+                    specification_result=specification_result,
+                    process_type=process_type,
+                )
+            except Exception as e:
+                print(f"Error creating process step: {e}")
+                return render(request, self.template_name, {
+                    'error': f'Failed to create process step: {str(e)}',
+                    'raw_material_batch': RawMaterialBatch.objects.all(),
+                    'equipment': Equipment.objects.all(),
+                    'consumable_batch': ConsumableBatch.objects.all(),
+                    'component_batch': ComponentBatch.objects.all(),
+                    'units': Unit.objects.all(),
+                })
+
+            if process_step:
+                process_step.raw_material_batch.add(*RawMaterialBatch.objects.filter(id__in=raw_material_ids))
+                process_step.equipment.add(*Equipment.objects.filter(id__in=equipment_ids))
+                process_step.consumable_batch.add(*ConsumableBatch.objects.filter(id__in=consumable_ids))
+                process_step.component_batch.add(*ComponentBatch.objects.filter(id__in=component_ids))
+                process_step.unit.add(*Unit.objects.filter(id__in=units_ids))
+                
+            else:
+                return render(request, self.template_name, {'error': 'Failed to create process step.'})
 
             step_counter += 1
 
         return redirect('process_list')
-    
+
 class EditProcessStepView(BaseModelViewSet):
     """
     View to handle editing of a Process Step using the PUT method.
@@ -146,20 +190,24 @@ class EditProcessStepView(BaseModelViewSet):
     
     def get(self, request, process_title, stepId):
         try:
-            process = ProcessStep.objects.get(process__process_title=process_title,step_id=stepId)  # Using filter to allow multiple results
+            # First find the Process object by process_title, then get the ProcessStep
+            process_obj = Process.objects.get(process_title=process_title)
+            process = ProcessStep.objects.get(process=process_obj, step_id=stepId)
             print(process)
               
             # Get all raw materials, equipment, consumables, and components
-            all_raw_materials = RawMaterial.objects.all()
+            all_raw_material_batch = RawMaterialBatch.objects.all()
             all_equipment = Equipment.objects.all()
-            all_consumables = Consumable.objects.all()
-            all_components = Component.objects.all()
+            all_consumable_batch = ConsumableBatch.objects.all()
+            all_component_batch = ComponentBatch.objects.all()
+            all_units = Unit.objects.all()
             
             # Get the selected raw materials, equipment, consumables, and components for the current process step
-            selected_raw_materials = process.raw_material.all()
+            selected_raw_material_batch = process.raw_material_batch.all()
             selected_equipment = process.equipment.all()
-            selected_consumables = process.consumable.all()
-            selected_components = process.component.all()
+            selected_consumable_batch = process.consumable_batch.all()
+            selected_component_batch = process.component_batch.all()
+            selected_units = process.unit.all()
             
             # Create a dictionary to store the data
             data = {
@@ -167,17 +215,23 @@ class EditProcessStepView(BaseModelViewSet):
                 'process_description': process.process_description,
                 'rm_status': process.rm_status,
                 'equipment_status': process.equipment_status,
-                'process_step_spec': process.process_step_spec,
-                'measured_value_observation': process.measured_value_observation,
+                'consumable_status': process.consumable_status,
+                'component_status': process.component_status,
+                # 'process_step_spec': process.process_step_spec,
+                # 'measured_value_observation': process.measured_value_observation,
+                'all_raw_material_batch': [{'id': material.id, 'name': material.name} for material in all_raw_material_batch],
                 'remarks': process.remarks,
-                'all_raw_materials': [{'id': material.id, 'name': material.name} for material in all_raw_materials],
+                'min_value': process.min_value,
+                'max_value': process.max_value,
+                'specification_result': process.specification_result,
+                'remarks': process.remarks,
                 'all_equipment': [{'id': equip.id, 'name': equip.name} for equip in all_equipment],
-                'all_consumables': [{'id': consum.id, 'name': consum.name} for consum in all_consumables],
-                'all_components': [{'id': comp.id, 'name': comp.name} for comp in all_components],
-                'raw_materials': [{'id': material.id, 'name': material.name} for material in selected_raw_materials],
+                'all_consumable_batch': [{'id': consum.id, 'name': consum.name} for consum in all_consumable_batch],
+                'all_component_batch': [{'id': comp.id, 'name': comp.name} for comp in all_component_batch],
+                'raw_material_batch': [{'id': material.id, 'name': material.name} for material in selected_raw_material_batch],
                 'equipment': [{'id': equip.id, 'name': equip.name} for equip in selected_equipment],
-                'consumables': [{'id': consum.id, 'name': consum.name} for consum in selected_consumables],
-                'components': [{'id': comp.id, 'name': comp.name} for comp in selected_components],
+                'consumable_batch': [{'id': consum.id, 'name': consum.name} for consum in selected_consumable_batch],
+                'component_batch': [{'id': comp.id, 'name': comp.name} for comp in selected_component_batch],
             }
             
             return Response({'data': data}, status=status.HTTP_200_OK)  # Return serialized data
@@ -187,9 +241,13 @@ class EditProcessStepView(BaseModelViewSet):
         
     def put(self, request, process_title, stepId):
             try:
-                processstep = ProcessStep.objects.get(process__process_title=process_title, step_id=stepId)
+                # First find the Process object by process_title, then get the ProcessStep
+                process_obj = Process.objects.get(process_title=process_title)
+                processstep = ProcessStep.objects.get(process=process_obj, step_id=stepId)
+            except Process.DoesNotExist:
+                return Response({'detail': 'Process not found'}, status=status.HTTP_404_NOT_FOUND)
             except ProcessStep.DoesNotExist:
-                return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'detail': 'Process step not found'}, status=status.HTTP_404_NOT_FOUND)
 
             serializer = ProcessStepSerializer(processstep, data=request.data, partial=True)
             if serializer.is_valid():
@@ -215,13 +273,20 @@ class DeleteProcessStepView(BaseModelViewSet):
 
     def post(self, request, stepId,process_title, format=None):
         try:
-           step= ProcessStep.objects.get(process__process_title=process_title, step_id=stepId)
+           # First find the Process object by process_title, then get the ProcessStep
+           process_obj = Process.objects.get(process_title=process_title)
+           step= ProcessStep.objects.get(process=process_obj, step_id=stepId)
            print(step)
            step.delete()
            return Response({
                 'success': True,
                 'message': constants.PROCESS_STEP_DELETE_SUCCESSFULLY
             }, status=status.HTTP_200_OK)
+        except Process.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Process not found'
+            }, status=status.HTTP_404_NOT_FOUND)
         except ProcessStep.DoesNotExist:
             return Response({
                 'success': False,
@@ -233,3 +298,74 @@ class DeleteProcessStepView(BaseModelViewSet):
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
             
+class ProcessViewSet(BaseModelViewSet):
+   
+    def get(self,request,productId):
+        print(productId)
+        processes =Product.objects.filter(id=productId)
+        serializer = ProcessNewSerializer(processes, many=True)
+        print(serializer.data)
+        return Response({
+            'status': 'success',
+            'processes': serializer.data
+        })
+  
+
+
+class ProcessStepViewSet(BaseModelViewSet):
+   
+     def get(self, request, process_title):
+        print("enterd Get")
+        print(process_title)
+        try:
+            # First find the Process object by process_title
+            process_obj = Process.objects.get(process_title=process_title)
+            # Then filter ProcessStep objects by the found Process object
+            process_steps = ProcessStep.objects.filter(process=process_obj)
+            print(process_steps)
+            serializer = ProcessStepSerializer(process_steps,many=True)
+            # Get all raw materials, equipment, consumables, and components
+            # all_raw_material_batch = RawMaterialBatch.objects.all()
+            # all_equipment = Equipment.objects.all()
+            # all_consumable_batch = ConsumableBatch.objects.all()
+            # all_component_batch = ComponentBatch.objects.all()
+            # all_units = Unit.objects.all()
+            
+            # # Get the selected raw materials, equipment, consumables, and components for the current process step
+            # selected_raw_material_batch = process.raw_material_batch.all()
+            # selected_equipment = process.equipment.all()
+            # selected_consumable_batch = process.consumable_batch.all()
+            # selected_component_batch = process.component_batch.all()
+            # selected_units = process.unit.all()
+            
+            # # Create a dictionary to store the data
+            # data = {
+            #     'id': process.id,
+            #     'process_description': process.process_description,
+            #     'rm_status': process.rm_status,
+            #     'equipment_status': process.equipment_status,
+            #     'consumable_status': process.consumable_status,
+            #     'component_status': process.component_status,
+            #     # 'process_step_spec': process.process_step_spec,
+            #     # 'measured_value_observation': process.measured_value_observation,
+            #     'all_raw_material_batch': [{'id': material.id, 'name': material.raw_material.name} for material in all_raw_material_batch],
+            #     'remarks': process.remarks,
+            #     'min_value': process.min_value,
+            #     'max_value': process.max_value,
+            #     'specification_result': process.specification_result,
+            #     'remarks': process.remarks,
+            #     'all_equipment': [{'id': equip.id, 'name': equip.name} for equip in all_equipment],
+            #     'all_consumable_batch': [{'id': consum.id, 'name': consum.consumable.name} for consum in all_consumable_batch],
+            #     'all_component_batch': [{'id': comp.id, 'name': comp.component.name} for comp in all_component_batch],
+            #     'raw_material_batch': [{'id': material.id, 'name': material.raw_material.name} for material in selected_raw_material_batch],
+            #     'equipment': [{'id': equip.id, 'name': equip.name} for equip in selected_equipment],
+            #     'consumable_batch': [{'id': consum.id, 'name': consum.consumable.name} for consum in selected_consumable_batch],
+            #     'component_batch': [{'id': comp.id, 'name': comp.component.name} for comp in selected_component_batch],
+            # }
+            print(serializer.data)
+
+            
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)  # Return serialized data
+        
+        except ProcessStep.DoesNotExist:
+            return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)

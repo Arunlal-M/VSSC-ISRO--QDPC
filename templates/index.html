@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,10 +12,11 @@
     <meta name="robots" content="noindex, nofollow">
     {% load static %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-9ndCyUa1zYzBSlzLlNZOSfBu4cuZX3PB1z7xO1pqb4hlrjjoC1lzI3LOWjBlBi8M" crossorigin="anonymous">
+    <!-- Bootstrap CSS - Using local file instead of CDN to avoid integrity issues -->
 
     <!-- jQuery (required for Select2) -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Favicon -->
@@ -38,13 +40,290 @@
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="{% static 'assets/css/style2.css' %}">
-    
+
     <!-- Alert CSS -->
     <link rel="stylesheet" href="{% static 'assets/css/alert.css' %}">
 
     <!-- Include Select2 CSS from CDN -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+    <!-- Simple CSS for Role Display -->
+    <style>
+        .user-role {
+            display: block;
+            margin-top: 2px;
+            font-size: 11px;
+            color: #888;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+            font-size: 14px;
+        }
+        
+        .user-detail {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 120px;
+        }
+        
+        .user-role-display {
+            font-size: 11px;
+            color: #888;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-letter {
+            flex-shrink: 0;
+        }
+        
+        .user-letter img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        /* Notification count pulse animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        #notification-count.pulse {
+            animation: pulse 0.6s ease-in-out;
+        }
+        
+        /* Ensure notification count is visible */
+        #notification-count {
+            transition: all 0.3s ease;
+            font-weight: bold;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            min-width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 11px;
+            border-radius: 10px;
+            z-index: 1000;
+            background-color: #dc3545;
+            color: white;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Make sure the notification bell has relative positioning */
+        #notification-bell {
+            position: relative;
+        }
+        
+        /* Notification dropdown header styling */
+        .topnav-dropdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .refresh-noti {
+            color: #6c757d;
+            text-decoration: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+        
+        .refresh-noti:hover {
+            color: #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        .clear-noti {
+            color: #dc3545;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .clear-noti:hover {
+            color: #c82333;
+            text-decoration: underline;
+        }
+        
+        /* Notification list styling */
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .notification-message {
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .notification-message:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-message a {
+            display: block;
+            padding: 15px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        
+        .notification-message a:hover {
+            background-color: #f8f9fa;
+            text-decoration: none;
+        }
+        
+        .avatar.flex-shrink-0 {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .avatar.flex-shrink-0 i {
+            font-size: 16px;
+        }
+        
+        .noti-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .notification-time {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        /* Enhanced role display with gradient badges */
+        .user-role {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-role-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-top: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Hover effects */
+        .user-info:hover .user-role {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
+        }
+        
+        .user-info:hover .user-name {
+            color: #4e73df;
+            transition: color 0.2s ease;
+        }
+        
+        /* Mobile menu enhancements */
+        .mobile-user-menu .dropdown-toggle {
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .mobile-user-menu .dropdown-toggle:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .mobile-user-menu .dropdown-toggle img {
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Mobile role display adjustments */
+        .mobile-user-menu .user-role-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            display: inline-block;
+            margin-bottom: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .user-detail {
+                min-width: 100px;
+            }
+            
+            .user-name {
+                font-size: 13px;
+            }
+            
+            .user-role {
+                font-size: 10px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .user-info {
+                gap: 8px;
+            }
+            
+            .user-detail {
+                min-width: 80px;
+            }
+        }
+    </style>
 
 </head>
 
@@ -60,13 +339,13 @@
 
             <!-- Logo -->
             <div class="header-left active">
-                <a href="index.html" class="logo logo-normal">
+                <a href="{% url 'user-dashboard' %}" class="logo logo-normal">
                     <img src="{% static 'assets/img/neww.png' %}" alt="">
                 </a>
-                <a href="index.html" class="logo logo-white">
+                <a href="{% url 'user-dashboard' %}" class="logo logo-white">
                     <img src="{% static 'assets/img/logo-white.png' %}" alt="">
                 </a>
-                <a href="index.html" class="logo-small">
+                <a href="{% url 'user-dashboard' %}" class="logo logo-small">
                     <img src="{% static 'assets/img/logo-small.png' %}" alt="">
                 </a>
                 <a id="toggle_btn" href="javascript:void(0);">
@@ -106,10 +385,56 @@
                 </li>
                 <!-- /Search -->
 
+                <!-- Notifications -->
+                <li class="nav-item dropdown has-arrow nav-item-box">
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);" role="button" id="notification-bell">
+                        <i data-feather="bell"></i>
+                        <span class="badge rounded-pill bg-danger" id="notification-count" style="display: none;">0</span>
+                    </a>
+                    <div class="dropdown-menu notifications dropdown-menu-right">
+                        <div class="topnav-dropdown-header">
+                            <span class="notification-title">Notifications</span>
+                            <div class="d-flex gap-2">
+                                <a href="javascript:void(0)" class="refresh-noti" onclick="loadNotifications()" title="Refresh">
+                                    <i class="fas fa-sync-alt"></i>
+                                </a>
+                                <a href="javascript:void(0)" class="clear-noti" onclick="markAllNotificationsRead()"> Clear All </a>
+                            </div>
+                        </div>
+                        <div class="noti-content" id="notification-dropdown-content">
+                            <ul class="notification-list" id="notification-list">
+                                <li class="notification-message">
+                                    <div class="media d-flex">
+                                        <div class="media-body flex-grow-1">
+                                            <p class="noti-details">
+                                                <span class="noti-title">Loading notifications...</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="topnav-dropdown-footer">
+                            <a href="/notifications/">View all Notifications</a>
+                        </div>
+                    </div>
+                </li>
+                <!-- /Notifications -->
+
+                <li class="nav-item nav-item-box">
+                    <a href="javascript:void(0);" id="btnFullscreen">
+                        <i data-feather="maximize"></i>
+                    </a>
+                </li>
+                <li class="nav-item nav-item-box">
+                    <a href="email.html">
+                        <i data-feather="mail"></i>
+                        <span class="badge rounded-pill">1</span>
+                    </a>
+                </li>
                 <!-- Flag -->
                 <li class="nav-item dropdown has-arrow flag-nav nav-item-box">
-                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);"
-                        role="button">
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);" role="button">
                         <i data-feather="globe"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right">
@@ -129,119 +454,9 @@
                 </li>
                 <!-- /Flag -->
 
-                <li class="nav-item nav-item-box">
-                    <a href="javascript:void(0);" id="btnFullscreen">
-                        <i data-feather="maximize"></i>
-                    </a>
-                </li>
-                <li class="nav-item nav-item-box">
-                    <a href="email.html">
-                        <i data-feather="mail"></i>
-                        <span class="badge rounded-pill">1</span>
-                    </a>
-                </li>
-                <!-- Notifications -->
-                <li class="nav-item dropdown nav-item-box">
-                    <a href="javascript:void(0);" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-                        <i data-feather="bell"></i><span class="badge rounded-pill">2</span>
-                    </a>
-                    <div class="dropdown-menu notifications">
-                        <div class="topnav-dropdown-header">
-                            <span class="notification-title">Notifications</span>
-                            <a href="javascript:void(0)" class="clear-noti"> Clear All </a>
-                        </div>
-                        <div class="noti-content">
-                            <ul class="notification-list">
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="{% static 'assets/img/profiles/avatar-02.jpg' %}">
-                                            </span>
-                                            <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">John Doe</span> added
-                                                    new task <span class="noti-title">Patient appointment booking</span>
-                                                </p>
-                                                <p class="noti-time"><span class="notification-time">4 mins ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="{% static 'assets/img/profiles/avatar-03.jpg' %}">
-                                            </span>
-                                            <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Tarah Shropshire</span>
-                                                    changed the task name <span class="noti-title">Appointment booking
-                                                        with payment gateway</span></p>
-                                                <p class="noti-time"><span class="notification-time">6 mins ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="{% static 'assets/img/profiles/avatar-06.jpg' %}">
-                                            </span>
-                                            <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Misty Tison</span>
-                                                    added <span class="noti-title">Domenic Houston</span> and <span
-                                                        class="noti-title">Claire Mapes</span> to project <span
-                                                        class="noti-title">Doctor available module</span></p>
-                                                <p class="noti-time"><span class="notification-time">8 mins ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="{% static 'assets/img/profiles/avatar-17.jpg' %}">
-                                            </span>
-                                            <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Rolland Webber</span>
-                                                    completed task <span class="noti-title">Patient and Doctor video
-                                                        conferencing</span></p>
-                                                <p class="noti-time"><span class="notification-time">12 mins ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media d-flex">
-                                            <span class="avatar flex-shrink-0">
-                                                <img alt="" src="{% static 'assets/img/profiles/avatar-13.jpg' %}">
-                                            </span>
-                                            <div class="media-body flex-grow-1">
-                                                <p class="noti-details"><span class="noti-title">Bernardo Galaviz</span>
-                                                    added new task <span class="noti-title">Private chat module</span>
-                                                </p>
-                                                <p class="noti-time"><span class="notification-time">2 days ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="topnav-dropdown-footer">
-                            <a href="activities.html">View all Notifications</a>
-                        </div>
-                    </div>
-                </li>
-                <!-- /Notifications -->
 
+
+                
                 <li class="nav-item nav-item-box">
                     <a href="generalsettings.html"><i data-feather="settings"></i></a>
                 </li>
@@ -249,27 +464,52 @@
                     <a href="javascript:void(0);" class="dropdown-toggle nav-link userset" data-bs-toggle="dropdown">
                         <span class="user-info">
                             <span class="user-letter">
-                                <img src="{% static 'assets/img/profiles/avator1.jpg' %}" alt="" class="img-fluid">
+                                <img src="{% static 'assets/img/profiles/download.jpg' %}" alt="" class="img-fluid">
                             </span>
                             <span class="user-detail">
-                                <span class="user-detail">
-                                    <span class="user-name">Test User</span>
-                                    <span class="user-role">Super Admin</span>
+                                <!-- DEBUG INFO -->
+                                <!-- user_role_name: {{ user_role_name|default:"NOT SET" }} -->
+                                <!-- user_group_names: {{ user_group_names|default:"NOT SET" }} -->
+                                <!-- user.groups.all: {{ user.groups.all|default:"NOT SET" }} -->
+                                <!-- user.is_superuser: {{ user.is_superuser }} -->
+                                
+                                <span class="user-role">
+                                    {% if user.is_superuser %}
+                                        SUPER ADMIN
+                                    {% elif user_role_name %}
+                                        {{ user_role_name|upper }}
+                                    {% elif user_group_names and user_group_names.0 %}
+                                        {{ user_group_names.0|upper }}
+                                    {% elif user.groups.all %}
+                                        {{ user.groups.all.0.name|upper }}
+                                    {% else %}
+                                        NO ROLE ASSIGNED
+                                    {% endif %}
                                 </span>
-
+                                <span class="user-name">{{ user.username }}</span>
                             </span>
                         </span>
                     </a>
                     <div class="dropdown-menu menu-drop-user">
                         <div class="profilename">
                             <div class="profileset">
-                                <span class="user-img"><img src="{% static 'assets/img/profiles/avator1.jpg' %}" alt="">
+                                <span class="user-img"><img src="{% static 'assets/img/profiles/download.jpg' %}" alt="">
                                     <span class="status online"></span></span>
                                 <div class="profilesets">
-                                    <div class="profilesets">
-                                        <h6>Test User</h6>
-                                        <h5>Super Admin</h5>
-                                    </div>
+                                    <h6>{{ user.username }}</h6>
+                                    <span class="user-role-display">
+                                        {% if user.is_superuser %}
+                                            SUPER ADMIN
+                                        {% elif user_role_name %}
+                                            {{ user_role_name|upper }}
+                                        {% elif user_group_names and user_group_names.0 %}
+                                            {{ user_group_names.0|upper }}
+                                        {% elif user.groups.all %}
+                                            {{ user.groups.all.0.name|upper }}
+                                        {% else %}
+                                            NO ROLE ASSIGNED
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                             <hr class="m-0">
@@ -291,7 +531,27 @@
             <!-- Mobile Menu -->
             <div class="dropdown mobile-user-menu">
                 <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
-                    aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
+                    aria-expanded="false">
+                    <div class="d-flex align-items-center">
+                        <img src="{% static 'assets/img/profiles/download.jpg' %}" alt="" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                        <div class="d-flex flex-column">
+                            <span class="user-role-display" style="font-size: 9px; padding: 2px 6px; margin-bottom: 4px;">
+                                {% if user.is_superuser %}
+                                    SUPER ADMIN
+                                {% elif user_role_name %}
+                                    {{ user_role_name|upper }}
+                                {% elif user_group_names and user_group_names.0 %}
+                                    {{ user_group_names.0|upper }}
+                                {% elif user.groups.all %}
+                                    {{ user.groups.all.0.name|upper }}
+                                {% else %}
+                                    NO ROLE ASSIGNED
+                                {% endif %}
+                            </span>
+                            <span class="fw-bold">{{ user.username }}</span>
+                        </div>
+                    </div>
+                </a>
                 <div class="dropdown-menu dropdown-menu-right">
                     <a class="dropdown-item" href="profile.html">My Profile</a>
                     <a class="dropdown-item" href="generalsettings.html">Settings</a>
@@ -322,9 +582,435 @@
         <!-- Popper.js -->
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 
-        <!-- Bootstrap Core JS -->
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+        <!-- Bootstrap Core JS - Using local file to avoid integrity issues -->
         <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+
+        <!-- Notification System JS -->
+        <script>
+        // Notification System Functions - Database-based System
+        function loadNotifications() {
+            console.log('Loading notifications from database...');
+            
+            // Show loading state
+            const notificationList = document.getElementById('notification-list');
+            if (notificationList) {
+                notificationList.innerHTML = `
+                    <li class="notification-message">
+                        <div class="media d-flex">
+                            <div class="media-body flex-grow-1">
+                                <p class="noti-details">
+                                    <span class="noti-title">Loading notifications...</span>
+                                </p>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            }
+            
+            // Load notifications from the database API
+            fetch('/notifications/api/?limit=5')
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Notification data received:', data);
+                if (data.success && data.notifications) {
+                    updateNotificationDropdown(data.notifications);
+                    updateNotificationCount(data.unread_count || 0);
+                    console.log('Notifications loaded successfully from database. Count:', data.unread_count);
+                } else {
+                    console.error('Notification API returned error:', data.error);
+                    // Show empty state
+                    updateNotificationDropdown([]);
+                    updateNotificationCount(0);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading notifications from API:', error);
+                
+                // Try test endpoint as fallback
+                console.log('Trying test notification endpoint...');
+                fetch('/notifications/test/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.test_data) {
+                        console.log('Using test notification data:', data.test_data);
+                        updateNotificationDropdown(data.test_data.notifications);
+                        updateNotificationCount(data.test_data.unread_count);
+                    } else {
+                        // Show empty state
+                        updateNotificationDropdown([]);
+                        updateNotificationCount(0);
+                    }
+                })
+                .catch(testError => {
+                    console.error('Test endpoint also failed:', testError);
+                    // Show empty state
+                    updateNotificationDropdown([]);
+                    updateNotificationCount(0);
+                });
+            });
+        }
+
+        function updateNotificationDropdown(notifications) {
+            const notificationList = document.getElementById('notification-list');
+            if (!notificationList) {
+                console.error('Notification list element not found');
+                return;
+            }
+
+            notificationList.innerHTML = '';
+
+            if (!notifications || notifications.length === 0) {
+                notificationList.innerHTML = `
+                    <li class="notification-message">
+                        <div class="media d-flex">
+                            <div class="media-body flex-grow-1">
+                                <p class="noti-details">
+                                    <span class="noti-title">No notifications available</span>
+                                </p>
+                                <p class="noti-time">
+                                    <span class="notification-time">All caught up!</span>
+                                </p>
+                            </div>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+
+            notifications.forEach(notification => {
+                const li = document.createElement('li');
+                li.className = 'notification-message';
+                
+                // Get appropriate icon and color based on entity type and notification type
+                const iconInfo = getNotificationIcon(notification.entity_type, notification.type);
+                
+                li.innerHTML = `
+                    <a href="javascript:void(0);" onclick="markNotificationAsRead(${notification.id})">
+                        <div class="media d-flex">
+                            <span class="avatar flex-shrink-0">
+                                <i class="${iconInfo.icon} ${iconInfo.color}"></i>
+                            </span>
+                            <div class="media-body flex-grow-1">
+                                <p class="noti-details">
+                                    <span class="noti-title">${notification.title || notification.message || 'Notification'}</span>
+                                </p>
+                                <p class="noti-details">
+                                    <small class="text-muted">${notification.message || ''}</small>
+                                </p>
+                                <p class="noti-time">
+                                    <span class="notification-time">${notification.time_since || 'Just now'}</span>
+                                    <span class="badge badge-sm ${getBadgeClass(notification.type)} ml-2">${notification.entity_type || 'general'}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                `;
+                
+                notificationList.appendChild(li);
+            });
+        }
+
+        function getNotificationIcon(entityType, notificationType) {
+            // Define icons and colors based on entity type and notification type
+            const iconMap = {
+                'raw_material': {
+                    'create': { icon: 'fas fa-box text-success', color: 'text-success' },
+                    'update': { icon: 'fas fa-edit text-warning', color: 'text-warning' },
+                    'delete': { icon: 'fas fa-trash text-danger', color: 'text-danger' },
+                    'default': { icon: 'fas fa-box text-info', color: 'text-info' }
+                },
+                'consumable': {
+                    'create': { icon: 'fas fa-tint text-success', color: 'text-success' },
+                    'update': { icon: 'fas fa-edit text-warning', color: 'text-warning' },
+                    'warning': { icon: 'fas fa-exclamation-triangle text-warning', color: 'text-warning' },
+                    'default': { icon: 'fas fa-tint text-info', color: 'text-info' }
+                },
+                'component': {
+                    'create': { icon: 'fas fa-cogs text-success', color: 'text-success' },
+                    'update': { icon: 'fas fa-edit text-warning', color: 'text-warning' },
+                    'approve': { icon: 'fas fa-check-circle text-success', color: 'text-success' },
+                    'default': { icon: 'fas fa-cogs text-info', color: 'text-info' }
+                },
+                'equipment': {
+                    'warning': { icon: 'fas fa-exclamation-triangle text-warning', color: 'text-warning' },
+                    'info': { icon: 'fas fa-info-circle text-info', color: 'text-info' },
+                    'default': { icon: 'fas fa-tools text-info', color: 'text-info' }
+                },
+                'product_batch': {
+                    'create': { icon: 'fas fa-plus-circle text-success', color: 'text-success' },
+                    'update': { icon: 'fas fa-edit text-warning', color: 'text-warning' },
+                    'default': { icon: 'fas fa-boxes text-info', color: 'text-info' }
+                },
+                'acceptance_test': {
+                    'create': { icon: 'fas fa-clipboard-check text-success', color: 'text-success' },
+                    'delete': { icon: 'fas fa-trash text-danger', color: 'text-danger' },
+                    'default': { icon: 'fas fa-clipboard text-info', color: 'text-info' }
+                }
+            };
+            
+            const entityIcons = iconMap[entityType] || iconMap['default'] || {};
+            return entityIcons[notificationType] || entityIcons['default'] || { icon: 'fas fa-bell text-info', color: 'text-info' };
+        }
+
+        function getBadgeClass(notificationType) {
+            const badgeMap = {
+                'create': 'badge-success',
+                'update': 'badge-warning',
+                'delete': 'badge-danger',
+                'approve': 'badge-success',
+                'reject': 'badge-danger',
+                'warning': 'badge-warning',
+                'info': 'badge-info',
+                'error': 'badge-danger'
+            };
+            return badgeMap[notificationType] || 'badge-secondary';
+        }
+
+        function updateNotificationCount(count) {
+            console.log('Updating notification count to:', count);
+            const countElements = document.querySelectorAll('#notification-count');
+            
+            countElements.forEach((countElement, index) => {
+                if (countElement) {
+                    console.log(`Updating count element ${index}:`, countElement);
+                    countElement.textContent = count;
+                    if (count > 0) {
+                        countElement.style.display = 'inline-block';
+                        countElement.classList.add('pulse');
+                        console.log(`Count element ${index} now visible with count:`, count);
+                        setTimeout(() => {
+                            countElement.classList.remove('pulse');
+                        }, 2000);
+                    } else {
+                        countElement.style.display = 'none';
+                        console.log(`Count element ${index} now hidden`);
+                    }
+                }
+            });
+        }
+
+        function markNotificationAsRead(notificationId) {
+            if (!notificationId || notificationId === 0) {
+                console.log('Skipping mark as read for invalid notification ID:', notificationId);
+                return;
+            }
+            
+            console.log('Marking notification as read:', notificationId);
+            
+            // Call the API to mark notification as read
+            fetch('/notifications/api/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    action: 'mark_single_read',
+                    notification_id: notificationId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Notification marked as read successfully');
+                    // Reload notifications to update the display
+                    loadNotifications();
+                } else {
+                    console.error('Failed to mark notification as read:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notification as read:', error);
+            });
+        }
+
+        function markAllNotificationsRead() {
+            console.log('Marking all notifications as read...');
+            
+            // Call the API to mark all notifications as read
+            fetch('/notifications/api/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    action: 'mark_read'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('All notifications marked as read successfully');
+                    // Reload notifications to update the display
+                    loadNotifications();
+                } else {
+                    console.error('Failed to mark all notifications as read:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error marking all notifications as read:', error);
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Load notifications on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing notification system...');
+            
+            // Check if we have cached notifications first
+            const cachedNotifications = localStorage.getItem('cachedNotifications');
+            const cachedCount = localStorage.getItem('cachedNotificationCount');
+            
+            if (cachedNotifications && cachedCount) {
+                console.log('Found cached notifications, displaying them...');
+                updateNotificationDropdown(JSON.parse(cachedNotifications));
+                updateNotificationCount(parseInt(cachedCount));
+            } else {
+                console.log('No cached notifications found, loading from API...');
+                // Initial load with a small delay to ensure DOM is ready
+                setTimeout(loadNotifications, 500);
+            }
+            
+            // Refresh notifications every 30 seconds
+            setInterval(loadNotifications, 30000);
+        });
+        
+        // Also load notifications when the page becomes visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                loadNotifications();
+            }
+        });
+        
+        // Test function for debugging notifications (can be called from console)
+        window.testNotification = function() {
+            console.log('Testing notification system...');
+            loadNotifications();
+        };
+        
+        // Function to check notification system status
+        window.checkNotificationStatus = function() {
+            console.log('Checking notification system status...');
+            const countElement = document.getElementById('notification-count');
+            const dropdownElement = document.getElementById('notification-list');
+            
+            console.log('Notification count element:', countElement);
+            console.log('Notification dropdown element:', dropdownElement);
+            
+            if (countElement) {
+                console.log('Current notification count:', countElement.textContent);
+                console.log('Count element display style:', countElement.style.display);
+            }
+            
+            // Test API endpoint
+            fetch('/notifications/api/?limit=1')
+                .then(response => {
+                    console.log('API Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API Response data:', data);
+                })
+                .catch(error => {
+                    console.error('API Error:', error);
+                });
+        };
+        
+        // Create a test notification to verify the system works
+        window.createTestNotification = function() {
+            console.log('Creating test notification...');
+            
+            // Simulate a test notification
+            const testNotification = {
+                id: 999,
+                message: 'This is a test notification',
+                time_since: 'Just now',
+                icon_class: 'fas fa-bell text-info'
+            };
+            
+            // Update the dropdown with test notification
+            updateNotificationDropdown([testNotification]);
+            
+            // Update the count to 1
+            updateNotificationCount(1);
+            
+            console.log('Test notification created!');
+        };
+        
+        // Force show notification count for testing
+        window.forceShowNotificationCount = function(count = 5) {
+            console.log('Forcing notification count to show:', count);
+            updateNotificationCount(count);
+        };
+        
+        // Database-based notification system is now active
+        // All notifications are loaded from the backend database
+        console.log('Notification system initialized - using database backend');
+         
+                 // Additional debugging functions for database-based system
+        window.debugNotifications = function() {
+            console.log('=== Notification System Debug ===');
+            console.log('Notification count element:', document.getElementById('notification-count'));
+            console.log('Notification list element:', document.getElementById('notification-list'));
+            console.log('Notification bell element:', document.getElementById('notification-bell'));
+            
+            // Test API endpoints
+            fetch('/notifications/api/?limit=1')
+                .then(response => {
+                    console.log('Main API response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Main API data:', data);
+                })
+                .catch(error => {
+                    console.error('Main API error:', error);
+                });
+                
+            fetch('/notifications/test/')
+                .then(response => {
+                    console.log('Test API response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Test API data:', data);
+                })
+                .catch(error => {
+                    console.error('Test API error:', error);
+                });
+        };
+        
+        window.testNotificationSystem = function() {
+            console.log('Testing notification system...');
+            loadNotifications(); // This will load real notifications from database
+        };
+        
+        window.forceShowNotificationCount = function(count = 5) {
+            console.log('Forcing notification count to show:', count);
+            updateNotificationCount(count);
+        };
+        </script>
 
         <!-- Feather Icon JS -->
         <script src="{% static 'assets/js/feather.min.js' %}"></script>
@@ -350,9 +1036,7 @@
         <!-- Custom JS -->
         <script src="{% static 'assets/js/script.js' %}"></script>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-w76AqxarZxrWEsBhDbE6z3nmKaLQ0fvbXtKp752kRr9i9dtK5vf5RkM2R5iJoKtu"
-            crossorigin="anonymous"></script>
+        <!-- Bootstrap JS bundle loaded from local file above -->
 
         <div id="alertBox" class="alert"></div>
 
@@ -368,6 +1052,22 @@
         });
     });
 
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === name + '=') {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
     document.getElementById('log-out').addEventListener('click', function (e) {
         e.preventDefault(); // Prevent default link behavior
@@ -392,22 +1092,7 @@
             });
     });
 
-    // Helper function to get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) === name + '=') {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+
 
     function showAlert(message, type) {
         let alertBox = $('#alertBox');
@@ -416,6 +1101,42 @@
             alertBox.fadeOut();
         }, 2700); // Disappear after 3 seconds
     }
+
+    //for userprofile
+    $(document).ready(function() {
+        $.ajax({
+            type: "GET",
+            url: "{% url 'user-profile' %}",  // API endpoint
+            dataType: "json",
+            success: function(data) {
+                $("#user-name").text(data.username); // Update UI with username
+                $("#user-role").text(data.name); // Update UI with username
+            },
+            error: function() {
+                $("#user-name").text("User not found");
+                $("#user-role").text("User not found");
+            }
+        });
+        
+        // Add smooth hover effects for user info
+        $('.user-info').hover(
+            function() {
+                $(this).find('.user-role').addClass('hover-effect');
+            },
+            function() {
+                $(this).find('.user-role').removeClass('hover-effect');
+            }
+        );
+        
+        // Add click effect for mobile menu
+        $('.mobile-user-menu .dropdown-toggle').click(function() {
+            $(this).addClass('clicked');
+            setTimeout(() => {
+                $(this).removeClass('clicked');
+            }, 200);
+        });
+    });
+
 
     $(document).ready(function () {
         $('#successBtn').click(function () {
@@ -426,6 +1147,61 @@
             showAlert('Data submission failed!', 'error');
         });
     });
+
+
+    function markNotificationAsRead(notificationId) {
+    console.log('Marking notification as read: ' + notificationId); // Debugging
+
+    fetch(`/notifications/mark_as_read/${notificationId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'), // Ensure CSRF token is included
+        },
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('Notification marked as read successfully'); // Debugging
+
+                // Decrease the notification count
+                const notificationCount = document.getElementById('notification-count');
+                let count = parseInt(notificationCount.textContent);
+                if (count > 0) {
+                    count -= 1;
+                    notificationCount.textContent = count;
+                }
+
+                // Optionally, remove the notification from the dropdown
+                const notificationElement = document.querySelector(`li.notification-message a[onclick*="${notificationId}"]`);
+                if (notificationElement) {
+                    notificationElement.closest('li').remove();
+                }
+
+                // If no notifications are left, show a message
+                if (count === 0) {
+                    const notificationList = document.querySelector('.notification-list');
+                    notificationList.innerHTML = `
+                        <li class="notification-message">
+                            <div class="media d-flex">
+                                <div class="media-body flex-grow-1">
+                                    <p class="noti-details">
+                                        <span class="noti-title">No new notifications</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                    `;
+                }
+            } else {
+                console.error('Failed to mark notification as read:', response.statusText);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+
 </script>
 
 {% block scripts %} {% endblock %}

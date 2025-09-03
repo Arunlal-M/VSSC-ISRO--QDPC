@@ -1,0 +1,389 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load json_filters %}
+
+{% block title %}Editable QAR Report - Batch {{ batch.batch_id }}{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="page-title">Editable Quality Assessment Report</h3>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'user-dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'qar-report-list' %}">QAR Reports</a></li>
+                        <li class="breadcrumb-item active">Batch {{ batch.batch_id }}</li>
+                    </ul>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" form="qarForm" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save QAR Report
+                    </button>
+                    <a href="{% url 'generate_qar' batch.id %}?format=pdf" class="btn btn-danger">
+                        <i class="fas fa-download"></i> Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="row">
+            <div class="col-12">
+                <form id="qarForm" method="POST" action="{% url 'generate_qar' batch.id %}">
+                    {% csrf_token %}
+                    
+                                         <!-- Report Header Section -->
+                     <div class="card">
+                         <div class="card-header">
+                             <h4 class="card-title">Report Header Information</h4>
+                         </div>
+                         <div class="card-body">
+                             <div class="row">
+                                 <div class="col-md-6">
+                                     <div class="form-group">
+                                         <label for="report_number">Report Number</label>
+                                         <input type="text" class="form-control" id="report_number" name="report_number" 
+                                                value="{{ qar_data.report_number|default:'VSSC/QPDC/QAR/Product-A/2024/Rec: 2451' }}" required>
+                                     </div>
+                                 </div>
+                                 <div class="col-md-6">
+                                     <div class="form-group">
+                                         <label for="report_date">Report Date</label>
+                                         <input type="date" class="form-control" id="report_date" name="report_date" 
+                                                value="{{ qar_data.report_date|default:today|date:'Y-m-d' }}" required>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+
+                     <!-- Report Personnel Section -->
+                     <div class="card">
+                         <div class="card-header">
+                             <h4 class="card-title">Report Personnel</h4>
+                         </div>
+                         <div class="card-body">
+                             <div class="row">
+                                 <div class="col-md-4">
+                                     <div class="form-group">
+                                         <label for="engineer">Engineer</label>
+                                         <select class="form-control" id="engineer" name="engineer">
+                                             <option value="">Select Engineer</option>
+                                             {% for user in users %}
+                                                 <option value="{{ user.id }}" {% if qar_data.engineer.id == user.id %}selected{% endif %}>
+                                                     {{ user.username }} - {{ user.first_name }} {{ user.last_name }}
+                                                 </option>
+                                             {% endfor %}
+                                         </select>
+                                     </div>
+                                 </div>
+                                 <div class="col-md-4">
+                                     <div class="form-group">
+                                         <label for="division_head">Division Head</label>
+                                         <select class="form-control" id="division_head" name="division_head">
+                                             <option value="">Select Division Head</option>
+                                             {% for user in users %}
+                                                 <option value="{{ user.id }}" {% if qar_data.division_head.id == user.id %}selected{% endif %}>
+                                                     {{ user.username }} - {{ user.first_name }} {{ user.last_name }}
+                                                 </option>
+                                             {% endfor %}
+                                         </select>
+                                     </div>
+                                 </div>
+                                 <div class="col-md-4">
+                                     <div class="form-group">
+                                         <label for="section_head">Section Head</label>
+                                         <select class="form-control" id="section_head" name="section_head">
+                                             <option value="">Select Section Head</option>
+                                             {% for user in users %}
+                                                 <option value="{{ user.id }}" {% if qar_data.section_head.id == user.id %}selected{% endif %}>
+                                                     {{ user.username }} - {{ user.first_name }} {{ user.last_name }}
+                                                 </option>
+                                             {% endfor %}
+                                         </select>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+
+                    <!-- Introduction Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">1. Introduction</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="introduction">Introduction and Purpose</label>
+                                <textarea class="form-control" id="introduction" name="introduction" rows="4" 
+                                          placeholder="Brief introduction about the product and purpose of this report">{{ qar_data.introduction|default:'' }}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="scope">Scope of Quality Assessment</label>
+                                <textarea class="form-control" id="scope" name="scope" rows="3" 
+                                          placeholder="Scope of the quality assessment">{{ qar_data.scope|default:'' }}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="batch_summary">Batch/Unit Summary</label>
+                                <textarea class="form-control" id="batch_summary" name="batch_summary" rows="3" 
+                                          placeholder="Summary of the batches/units covered in this report">{{ qar_data.batch_summary|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item Identification Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">2. Item Identification</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Product Name</label>
+                                        <input type="text" class="form-control" value="{{ product.name }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Batch/Unit ID</label>
+                                        <input type="text" class="form-control" value="{{ batch.batch_id }} - {{ batch.unit|default:'N/A' }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Manufacturing Date</label>
+                                        <input type="text" class="form-control" value="{{ batch.manufacturing_start|date:'d/m/Y' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Expiry Date</label>
+                                        <input type="text" class="form-control" value="{{ batch.manufacturing_end|date:'d/m/Y' }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End Use Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">3. End Use</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="end_use">End Use Description</label>
+                                <textarea class="form-control" id="end_use" name="end_use" rows="3" 
+                                          placeholder="Describe the end use of this product">{{ qar_data.end_use|default:product.end_uses.name|default:product.specific_use|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Agency Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">4. Processing Agency</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="processing_agency">Processing Agency</label>
+                                <textarea class="form-control" id="processing_agency" name="processing_agency" rows="2" 
+                                          placeholder="Processing agency details">{{ qar_data.processing_agency|default:product.processing_agencies.name|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Changes Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">5. Changes</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="process_changes">Process Changes</label>
+                                <textarea class="form-control" id="process_changes" name="process_changes" rows="3" 
+                                          placeholder="Summary of any changes in process, materials, or specifications">{{ qar_data.process_changes|default:'' }}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="impact_assessment">Impact Assessment</label>
+                                <textarea class="form-control" id="impact_assessment" name="impact_assessment" rows="3" 
+                                          placeholder="Impact assessment of changes">{{ qar_data.impact_assessment|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                                         <!-- QA Observations and Remarks Section -->
+                     <div class="card">
+                         <div class="card-header">
+                             <h4 class="card-title">7. QA Observations and Remarks</h4>
+                         </div>
+                         <div class="card-body">
+                             
+                             <!-- Raw Materials QA -->
+                             <div class="form-group">
+                                 <label for="raw_materials_qa">7.1. Raw Materials QA Remarks</label>
+                                <textarea class="form-control" id="raw_materials_qa" name="raw_materials_qa" rows="4" 
+                                          placeholder="QA observations and remarks for raw materials">{{ qar_data.raw_materials_qa|default:'' }}</textarea>
+                            </div>
+
+                                                         <!-- Components QA -->
+                             <div class="form-group">
+                                 <label for="components_qa">7.2. Components QA Remarks</label>
+                                <textarea class="form-control" id="components_qa" name="components_qa" rows="4" 
+                                          placeholder="QA observations and remarks for components">{{ qar_data.components_qa|default:'' }}</textarea>
+                            </div>
+
+                                                         <!-- In-Process Checks QA -->
+                             <div class="form-group">
+                                 <label for="in_process_qa">7.3. In-Process Checks QA Remarks</label>
+                                <textarea class="form-control" id="in_process_qa" name="in_process_qa" rows="4" 
+                                          placeholder="QA observations and remarks for in-process checks">{{ qar_data.in_process_qa|default:'' }}</textarea>
+                            </div>
+
+                                                         <!-- Inspections QA -->
+                             <div class="form-group">
+                                 <label for="inspections_qa">7.4. Inspections QA Remarks</label>
+                                <textarea class="form-control" id="inspections_qa" name="inspections_qa" rows="4" 
+                                          placeholder="QA observations and remarks for inspections">{{ qar_data.inspections_qa|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                                         <!-- Test Results Section -->
+                     <div class="card">
+                         <div class="card-header">
+                             <h4 class="card-title">8. Test Results and Quality Assurance</h4>
+                         </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="test_results">Test Results Summary</label>
+                                <textarea class="form-control" id="test_results" name="test_results" rows="4" 
+                                          placeholder="Summary of test results and findings">{{ qar_data.test_results|default:'' }}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="quality_assurance">Quality Assurance Remarks</label>
+                                <textarea class="form-control" id="quality_assurance" name="quality_assurance" rows="4" 
+                                          placeholder="Quality assurance observations and recommendations">{{ qar_data.quality_assurance|default:'' }}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="conclusion">Conclusion and Recommendations</label>
+                                <textarea class="form-control" id="conclusion" name="conclusion" rows="4" 
+                                          placeholder="Overall conclusion and recommendations">{{ qar_data.conclusion|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                                         <!-- Additional Remarks Section -->
+                     <div class="card">
+                         <div class="card-header">
+                             <h4 class="card-title">9. Additional Remarks</h4>
+                         </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="additional_remarks">Additional Remarks</label>
+                                <textarea class="form-control" id="additional_remarks" name="additional_remarks" rows="4" 
+                                          placeholder="Any additional remarks or notes">{{ qar_data.additional_remarks|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Tables Section -->
+                    {% if dynamic_tables %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">10. Additional Data Tables</h4>
+                        </div>
+                        <div class="card-body">
+                            {% for table in dynamic_tables %}
+                            <div class="mb-4">
+                                <h6 class="text-primary">{{ table.title }}</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                {% for column in table.columns %}
+                                                <th>{{ column }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in table.rows %}
+                                            <tr>
+                                                {% for column_index in table.columns %}
+                                                <td>{{ row|get_item:forloop.counter0|default:"" }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Submit Buttons -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save"></i> Save QAR Report
+                                    </button>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <a href="{% url 'generate_qar' batch.id %}?format=pdf" class="btn btn-danger btn-lg">
+                                        <i class="fas fa-download"></i> Download PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Auto-save functionality
+    let autoSaveTimer;
+    $('textarea, input[type="text"]').on('input', function() {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(function() {
+            // Auto-save after 3 seconds of inactivity
+            console.log('Auto-saving...');
+        }, 3000);
+    });
+
+    // Form submission
+    $('#qarForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    toastr.success('QAR Report saved successfully!');
+                } else {
+                    toastr.error(response.message || 'Error saving QAR Report');
+                }
+            },
+            error: function() {
+                toastr.error('Error saving QAR Report');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

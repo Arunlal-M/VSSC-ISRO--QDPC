@@ -1,399 +1,506 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-    <meta name="description" content="POS - Bootstrap Admin Template">
-    <meta name="keywords" content="admin, estimates, bootstrap, business, corporate, creative, invoice, html5, responsive, Projects">
-    <meta name="author" content="Dreamguys - Bootstrap Admin Template">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Login - Pos admin template</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    {% load static %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+  <meta name="description" content="POS - Bootstrap Admin Template">
+  <meta name="keywords" content="admin, estimates, bootstrap, business, corporate, creative, invoice, html5, responsive, Projects">
+  <meta name="author" content="Dreamguys - Bootstrap Admin Template">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Register - Pos admin template</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  {% load static %}
 
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicon.png' %}">
+  <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicon.png' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
-
-    <!-- Fontawesome CSS -->
-    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
-
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
-
-    <!-- Custom CSS -->
-    <style>
-        .captcha-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 50px;
-            font-size: 25px;
-            font-weight: bold;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        #error-message {
-            color: red;
-            display: none; /* Initially hidden */
-        }
-    </style>
-
+  <style>
+    .captcha-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 50px;
+      font-size: 25px;
+      font-weight: bold;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    #error-message {
+      color: red;
+      display: none;
+      background-color: #ffe6e6;
+      border: 1px solid #ff9999;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+      text-align: center;
+    }
+    .success-message {
+      color: green;
+      background-color: #e6ffe6;
+      border: 1px solid #99ff99;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+      text-align: center;
+      display: none;
+    }
+  </style>
 </head>
 
 <body class="account-page">
-
-    <!-- Main Wrapper -->
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <h1 style="font-size:40px;font-weight: 800; background-color: none;"><b>Registration</b></h1>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header text-center">
+            <h1 style="font-size:40px;font-weight:800;"><b>Registration</b></h1>
+          </div>
+          <div class="card-body">
+            <form id="register-form" method="POST">
+              {% csrf_token %}
+              <h5 class="card-title">Personal Info</h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="d-block">Desired Salutation</label>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="desired_salutation" id="salutation_dr" value="Dr.">
+                      <label class="form-check-label" for="salutation_dr">Dr</label>
                     </div>
-                    <div class="card-body">
-
-                        <h5 class="card-title">Personal Info</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="d-block">Desired Salutation</label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="desired_salutation" id="salutation_dr" value="Dr">
-                                        <label class="form-check-label" for="salutation_dr">Dr</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="desired_salutation" id="salutation_mr" value="Mr">
-                                        <label class="form-check-label" for="salutation_mr">Mr</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="desired_salutation" id="salutation_ms" value="Ms">
-                                        <label class="form-check-label" for="salutation_ms">Ms</label>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Employee ID</label>
-                                        <input type="text" name="user_id" id="user_id" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>User Name</label>
-                                        <input type="text" name="user_name" id="user_name" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>First Name</label>
-                                        <input type="text" name="first_name" id="first_name" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Last Name</label>
-                                        <input type="text" name="last_name" id="last_name" class="form-control">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <h5 class="card-title">User Affiliation</h5>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>UserType</label>
-                                        <select class="form-control" id="user_type" name="user_type">
-                                            <option>Select</option>
-                                            {% for user_type in user_types %}
-                                            <option value="{{ user_type.id }}">{{ user_type.name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Center</label>
-                                        <select class="form-control" id="center" name="center">
-                                            <option>Select</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4" id="division-container" style="display:none;">
-                                    <div class="form-group">
-                                        <label>Division</label>
-                                        <select class="form-control" id="division" name="division">
-                                            <option>Select</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <h5 class="card-title">Contact Details</h5>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Email</label>
-                                        <input type="text" id="email" name="email" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Phone No</label>
-                                        <input type="text" id="phone_number" name="phone_number" class="form-control">
-                                    </div>
-                                </div>
-                            </div>
-                            <h5 class="card-title">Profile Password</h5>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Password</label>
-                                        <input type="password" id="profile_password" name="profile_password" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Re-enter Password</label>
-                                        <input type="password" id="renter_password" name="renter_password" class="form-control">
-                                    </div>
-                                </div>
-                            </div>
-                            <br>
-                            <h6>Please enter the characters without space(case sensitive) displayed below :</h6>
-                            <br>
-                            <br>
-
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <div id="captcha" class="captcha-container"></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <input type="text" id="captchaInput" required class="form-control">
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="error-message"></div>
-                        </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="desired_salutation" id="salutation_mr" value="Mr.">
+                      <label class="form-check-label" for="salutation_mr">Mr</label>
                     </div>
-
-                    <br>
-
-                    <div class="text-center">
-                        <button type="submit" id="subt-btn" class="btn btn-submit me-2">Submit</button>
-                        <a href="{% url 'sign-up' %}" type="reset" class="btn btn-submit me-3" style="color: #ffffff; background-color: #06BCFB;">Reset</a>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="desired_salutation" id="salutation_ms" value="Ms.">
+                      <label class="form-check-label" for="salutation_ms">Ms</label>
                     </div>
-                    </form>
+                  </div>
                 </div>
-            </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Employee ID</label>
+                    <input type="text" name="user_id" id="user_id" class="form-control">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>User Name</label>
+                    <input type="text" name="user_name" id="user_name" class="form-control">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" id="first_name" class="form-control">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" id="last_name" class="form-control">
+                  </div>
+                </div>
+              </div>
+
+              <h5 class="card-title">User Affiliation</h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>UserType</label>
+                    <select class="form-control" id="user_type" name="user_type">
+                      <option>Select</option>
+                      {% for user_type in user_types %}
+                      <option value="{{ user_type.id }}">{{ user_type.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Center</label>
+                    <select class="form-control" id="center" name="center">
+                      <option>Select</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4" id="division-container" style="display:none;">
+                  <div class="form-group">
+                    <label>Division</label>
+                    <select class="form-control" id="division" name="division">
+                      <option>Select</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <h5 class="card-title">Contact Details</h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" id="email" name="email" class="form-control">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Phone No</label>
+                    <input type="text" id="phone_number" name="phone_number" class="form-control">
+                  </div>
+                </div>
+              </div>
+
+              <h5 class="card-title">Profile Password</h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="profile_password" name="profile_password" class="form-control">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Re-enter Password</label>
+                    <input type="password" id="renter_password" name="renter_password" class="form-control">
+                  </div>
+                </div>
+              </div>
+
+              <br>
+              <h6>Please enter the characters without space (case sensitive) displayed below :</h6>
+              <br><br>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <div id="captcha" class="captcha-container"></div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <input type="text" id="captchaInput" required class="form-control">
+                  </div>
+                </div>
+              </div>
+
+              <div id="error-message"></div>
+              <div id="success-message" class="success-message"></div>
+              <br>
+
+              <div class="text-center">
+                <button type="submit" id="subt-btn" class="btn btn-submit me-2">Submit</button>
+                <a href="{% url 'sign-up' %}" type="reset" class="btn btn-submit me-3" style="color: #ffffff; background-color: #06BCFB;">Reset</a>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
-    <!-- /Main Wrapper -->
+  </div>
 
-    <!-- jQuery -->
-    <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+  <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+  <script src="{% static 'assets/js/feather.min.js' %}"></script>
+  <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
 
-    <!-- Feather Icon JS -->
-    <script src="{% static 'assets/js/feather.min.js' %}"></script>
-
-    <!-- Bootstrap Core JS -->
-    <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
-
-    <!-- Custom JS -->
-    <script>
-function generateCaptcha() {
+  <script>
+  
+    var desired_salutation = $('input[name="desired_salutation"]:checked').val();
+  </script>
+</body>
+</html>
+<script>
+  function generateCaptcha() {
     const charsArray = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const lengthOtp = 6;
-    let captchaString = '';
-    
-    // Generate the CAPTCHA string
+    let captchaString = '';            
     for (let i = 0; i < lengthOtp; i++) {
-        const index = Math.floor(Math.random() * charsArray.length);
-        captchaString += charsArray[index];
+      const index = Math.floor(Math.random() * charsArray.length);
+      captchaString += charsArray[index];
     }
 
     const canv = document.createElement("canvas");
-    canv.width = 330; // Increased width for better spacing
-    canv.height = 50; // Height remains the same
+    canv.width = 330;
+    canv.height = 50;
     const ctx = canv.getContext("2d");
 
-    // Draw a background rectangle with a gradient
     const gradient = ctx.createLinearGradient(0, 0, canv.width, canv.height);
     gradient.addColorStop(0, "#f0f0f0");
     gradient.addColorStop(1, "#d9d9d9");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canv.width, canv.height);
 
-    // Draw random lines for added noise
     for (let i = 0; i < 5; i++) {
-        ctx.strokeStyle = "rgba(0, 0, 0, 0.1)"; // Light gray lines
-        ctx.beginPath();
-        ctx.moveTo(Math.random() * canv.width, Math.random() * canv.height);
-        ctx.lineTo(Math.random() * canv.width, Math.random() * canv.height);
-        ctx.stroke();
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * canv.width, Math.random() * canv.height);
+      ctx.lineTo(Math.random() * canv.width, Math.random() * canv.height);
+      ctx.stroke();
     }
 
-    // Draw the CAPTCHA text
     ctx.font = "30px Arial";
-    ctx.fillStyle = "#007bff"; // Blue text color
+    ctx.fillStyle = "#007bff";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(captchaString, canv.width / 2, canv.height / 2); // Center the text
+    ctx.fillText(captchaString, canv.width / 2, canv.height / 2);
 
-    // Clear previous captcha and append new canvas
     document.getElementById("captcha").innerHTML = ""; 
     document.getElementById("captcha").appendChild(canv); 
-    return captchaString; // Return generated CAPTCHA string
-}
+    return captchaString;
+  }
 
-        $(document).ready(function () {
-            // Initialize dropdowns with default option
-            $('#center').append('<option value="">Select</option>');
-            $('#division').append('<option value="">Select</option>');
+  $(document).ready(function () {
+    $('#center').append('<option value="">Select</option>');
+    $('#division').append('<option value="">Select</option>');
 
-            $('#user_type').change(function () {
-                var userTypeId = $(this).val();
-                $.ajax({
-                    type: 'GET',
-                    url: '{% url "get_centers" %}',
-                    data: {
-                        'user_type_id': userTypeId
-                    },
-                    success: function (data) {
-                        $('#center').empty().append('<option value="">Select</option>'); // Reset center dropdown
-                        $.each(data, function (index, center) {
-                            $('#center').append('<option value="' + center.id + '">' + center.name + '</option>');
-                        });
-                    }
-                });
+    $('#user_type').change(function () {
+      var userTypeId = $(this).val();
+      $.ajax({
+        type: 'GET',
+        url: '{% url "get_centers" %}',
+        data: { 'user_type_id': userTypeId },
+        success: function (data) {
+          $('#center').empty().append('<option value="">Select</option>');
+          $.each(data, function (index, center) {
+            $('#center').append('<option value="' + center.id + '">' + center.name + '</option>');
+          });
+        }
+      });
+    });
+
+    $('#center').change(function () {
+      var centerId = $(this).val();
+      $('#division-container').show();
+
+      if (centerId) {
+        $.ajax({
+          type: 'GET',
+          url: '/divisions/center/' + centerId + '/',
+          success: function (data) {
+            const divisions = data.divisions;            
+            $('#division').empty().append('<option value="">Select</option>');
+            $.each(divisions, function (index, division) {
+              $('#division').append('<option value="' + division.id + '">' + division.name + '</option>');
             });
-
-            $('#center').change(function () {
-                var centerId = $(this).val(); // Get the selected center ID
-
-                $('#division-container').show(); // Always show the division container
-
-                if (centerId) {
-                    $.ajax({
-                        type: 'GET',
-                        url: '/divisions/center/' + centerId + '/', // Updated URL to match the new endpoint
-                        success: function (data) {
-                            $('#division').empty().append('<option value="">Select</option>'); // Reset division dropdown
-                            $.each(data, function (index, division) {
-                                $('#division').append('<option value="' + division.id + '">' + division.name + '</option>');
-                            });
-                        }
-                    });
-                } else {
-                    $('#division').empty().append('<option value="">Select</option>'); // Reset division dropdown if no center is selected
-                }
-            });
-
-            // Generate CAPTCHA on page load
-            let generatedCaptcha = generateCaptcha();
-
-            $('#subt-btn').click(function (event) {
-                event.preventDefault(); // Prevent the default form submission
-
-                // Initialize validation flag
-                var isValid = true;
-
-                // List of field IDs
-                var fields = ["user_id", "user_name", "first_name", "last_name", "user_type", "center", "email", "phone_number", "profile_password", "renter_password"];
-
-                // Validate text and select inputs
-                fields.forEach(function (field) {
-                    var input = $('#' + field);
-                    if (input.val().trim() === "") {
-                        input.css('border', '1px solid red');
-                        isValid = false;
-                    } else {
-                        input.css('border', '');
-                    }
-                });
-
-                // Validate the divisions field separately as it is a multi-select
-                var divisions = $('#division');
-                if (divisions.val() === null || divisions.val().length === 0) {
-                    divisions.css('border', '1px solid red');
-                    isValid = false;
-                } else {
-                    divisions.css('border', '');
-                }
-
-                // Validate CAPTCHA
-                const enteredCaptcha = document.getElementById("captchaInput").value;
-                if (enteredCaptcha !== generatedCaptcha) {
-                    alert("Invalid CAPTCHA. Please try again.");
-                    generatedCaptcha = generateCaptcha(); // Regenerate CAPTCHA if the validation fails
-                    isValid = false;
-                }
-
-                // If any field is invalid, stop the submission
-                if (!isValid) {
-                    $('#error-message').text('Please fill in all required fields.').show();
-                    return;
-                }
-
-                // Collect data for AJAX request
-                var desired_salutation = $('input[name="gender"]:checked').val();
-                var user_id = $('#user_id').val();
-                var username = $('#user_name').val();
-                var first_name = $('#first_name').val();
-                var last_name = $('#last_name').val();
-                var usertype = $('#user_type').val();
-                var centre = $('#center').val();
-                var divisions = $('#division').val() || [];  // Set to empty array if null or empty
-                var email = $('#email').val();
-                var phone_number = $('#phone_number').val();
-                var password = $('#profile_password').val();
-                var renter_password = $('#renter_password').val();
-
-                // Perform AJAX request
-                $.ajax({
-                    type: 'POST',
-                    url: '{% url "sign-up" %}', // Update this to your actual endpoint
-                    data: {
-                        'desired_salutation': desired_salutation,
-                        'user_id': user_id,
-                        'username': username,
-                        'first_name': first_name,
-                        'last_name': last_name,
-                        'usertype': usertype,
-                        'centre': centre,
-                        'divisions': divisions,
-                        'email': email,
-                        'phone_number': phone_number,
-                        'password': password,
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            window.location.href = "{% url 'login_view' %}"; // Redirect on success
-                        } else {
-                            $('#error-message').text(response.message).show(); // Show error message
-                        }
-                    },
-                    error: function () {
-                        $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
-                    }
-                });
-            });
+          }
         });
-    </script>
-</body>
+      } else {
+        $('#division').empty().append('<option value="">Select</option>');
+      }
+    });
 
-</html>
+    let generatedCaptcha = generateCaptcha();
+
+    $('#subt-btn').click(function (event) {
+      event.preventDefault();
+      var isValid = true;
+      var fields = ["user_id", "user_name", "first_name", "last_name", "user_type", "center", "email", "phone_number", "profile_password", "renter_password"];
+
+      fields.forEach(function (field) {
+        var input = $('#' + field);
+        if (input.val().trim() === "") {
+          input.css('border', '1px solid red');
+          isValid = false;
+        } else {
+          input.css('border', '');
+        }
+      });
+
+      var divisions = $('#division');
+      if (divisions.val() === null || divisions.val().length === 0) {
+        divisions.css('border', '1px solid red');
+        isValid = false;
+      } else {
+        divisions.css('border', '');
+      }
+
+      const enteredCaptcha = document.getElementById("captchaInput").value;
+      if (enteredCaptcha !== generatedCaptcha) {
+        alert("Invalid CAPTCHA. Please try again.");
+        generatedCaptcha = generateCaptcha();
+        isValid = false;
+      }
+
+      if (!isValid) {
+        $('#error-message').text('Please fill in all required fields.').show();
+        return;
+      }
+
+      var desired_salutation = $('input[name="desired_salutation"]:checked').val();
+      var user_id = $('#user_id').val();
+      var username = $('#user_name').val();
+      var first_name = $('#first_name').val();
+      var last_name = $('#last_name').val();
+      var usertype = $('#user_type').val();
+      var centre = $('#center').val();
+      var divisions = $('#division').val() || [];
+      var email = $('#email').val();
+      var phone_number = $('#phone_number').val();
+      var password = $('#profile_password').val();
+      var renter_password = $('#renter_password').val();
+
+      $.ajax({
+        type: 'POST',
+        url: '{% url "sign-up" %}',
+        data: {
+          'desired_salutation': desired_salutation,
+          'user_id': user_id,
+          'username': username,
+          'first_name': first_name,
+          'last_name': last_name,
+          'usertype': usertype,
+          'centre': centre,
+          'divisions': divisions,
+          'email': email,
+          'phone_number': phone_number,
+          'password': password,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        beforeSend: function() {
+          console.log('DEBUG: Sending signup data:', {
+            'desired_salutation': desired_salutation,
+            'user_id': user_id,
+            'username': username,
+            'first_name': first_name,
+            'last_name': last_name,
+            'usertype': usertype,
+            'centre': centre,
+            'divisions': divisions,
+            'email': email,
+            'phone_number': phone_number,
+            'password': password ? '[HIDDEN]' : 'MISSING'
+          });
+        },
+        success: function (response) {
+          console.log('DEBUG: Server response:', response);
+          
+          if (response.success) {
+            // Show success message before redirecting
+            $('#error-message').hide();
+            $('#success-message').html('Registration successful! Redirecting to login...').show();
+            setTimeout(function() {
+              window.location.href = "{% url 'login_view' %}";
+            }, 2000);
+          } else {
+            // Handle server-side validation errors
+            var errorMessage = response.message || 'Registration failed. Please check your information.';
+            
+            // Check if there are field-specific errors
+            if (response.result && response.result.length > 0) {
+              var firstError = response.result[0];
+              if (firstError.errors) {
+                // Display field-specific errors
+                var fieldErrors = [];
+                for (var field in firstError.errors) {
+                  if (firstError.errors.hasOwnProperty(field)) {
+                    var fieldName = field.replace('_', ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                    if (Array.isArray(firstError.errors[field])) {
+                      fieldErrors.push(fieldName + ': ' + firstError.errors[field].join(', '));
+                    } else {
+                      fieldErrors.push(fieldName + ': ' + firstError.errors[field]);
+                    }
+                  }
+                }
+                if (fieldErrors.length > 0) {
+                  errorMessage = fieldErrors.join('<br>');
+                }
+              }
+              
+              // Also check for direct error field
+              if (firstError.error) {
+                errorMessage = firstError.error;
+              }
+            }
+            
+            // Also check for direct error field
+            if (response.result && response.result.error) {
+              errorMessage = response.result.error;
+            }
+            
+            console.log('DEBUG: Displaying error message:', errorMessage);
+            $('#success-message').hide();
+            $('#error-message').html(errorMessage).show();
+          }
+        },
+        error: function (xhr, status, error) {
+          console.log('DEBUG: AJAX Error - Status:', xhr.status, 'Response:', xhr.responseText);
+          
+          var errorMessage = 'An error occurred during registration. Please try again.';
+          
+          // Handle different types of AJAX errors
+          if (xhr.status === 400) {
+            // Bad Request - validation errors
+            try {
+              var response = JSON.parse(xhr.responseText);
+              console.log('DEBUG: Parsed error response:', response);
+              
+              if (response.message) {
+                errorMessage = response.message;
+              }
+              
+              // Check for field-specific errors in result
+              if (response.result && response.result.length > 0) {
+                var firstError = response.result[0];
+                if (firstError.errors) {
+                  var fieldErrors = [];
+                  for (var field in firstError.errors) {
+                    if (firstError.errors.hasOwnProperty(field)) {
+                      var fieldName = field.replace('_', ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                      if (Array.isArray(firstError.errors[field])) {
+                        fieldErrors.push(fieldName + ': ' + firstError.errors[field].join(', '));
+                      } else {
+                        fieldErrors.push(fieldName + ': ' + firstError.errors[field]);
+                      }
+                    }
+                  }
+                  if (fieldErrors.length > 0) {
+                    errorMessage = fieldErrors.join('<br>');
+                  }
+                }
+                
+                // Check for direct error field
+                if (firstError.error) {
+                  errorMessage = firstError.error;
+                }
+              }
+              
+              // Check for direct error in result
+              if (response.result && response.result.error) {
+                errorMessage = response.result.error;
+              }
+              
+            } catch (e) {
+              console.log('DEBUG: Failed to parse error response:', e);
+              errorMessage = 'Invalid data submitted. Please check your information.';
+            }
+          } else if (xhr.status === 403) {
+            errorMessage = 'Access denied. Please check your permissions.';
+          } else if (xhr.status === 500) {
+            errorMessage = 'Server error. Please try again later.';
+          } else if (xhr.status === 0) {
+            errorMessage = 'Network error. Please check your connection.';
+          } else if (xhr.statusText === 'timeout') {
+            errorMessage = 'Request timed out. Please try again.';
+          }
+          
+          $('#success-message').hide();
+          $('#error-message').html(errorMessage).show();
+          
+          // Log detailed error information for debugging
+          console.error('AJAX Error Details:', {
+            status: xhr.status,
+            statusText: xhr.statusText,
+            responseText: xhr.responseText,
+            error: error
+          });
+        }
+      });
+    });
+  });
+</script>

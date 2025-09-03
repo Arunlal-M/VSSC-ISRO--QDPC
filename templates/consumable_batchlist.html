@@ -1,153 +1,432 @@
 {% extends 'index.html' %}
 {% block content %}
 {% load static %}
-	
-			<div class="page-wrapper">
-				<div class="content">
-					<div class="page-header">
-						<div class="page-title">
-							<h4>Consumable Batch</h4>
-							<!-- <h6>Manage your products</h6> -->
+
+<div class="page-wrapper">
+	<div class="content">
+		<div class="page-header">
+			<div class="page-title">
+				<h4>Consumable Batch</h4>
+				<!-- <h6>Manage your products</h6> -->
+			</div>
+			<div class="page-btn">
+				<a href="{% url 'consumable-batch-add' %}" class="btn btn-added"><img
+						src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Batch</a>
+			</div>
+		</div>
+
+
+		<!-- /product list -->
+		<div class="card">
+			<div class="card-body">
+				<div class="table-top">
+					<div class="search-set">
+						<div class="search-path">
+							<a class="btn btn-filter" id="filter_search">
+								<img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+								<span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+							</a>
 						</div>
-						<div class="page-btn">
-							<a href="{% url 'consumable-batch-add' %}" class="btn btn-added"><img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Batch</a>
+						<div class="search-input">
+							<a class="btn btn-searchset"><img src="{% static 'assets/img/icons/search-white.svg' %}"
+									alt="img"></a>
 						</div>
 					</div>
-					
-
-					<!-- /product list -->
-					<div class="card">
-						<div class="card-body">
-							<div class="table-top">
-								<div class="search-set">
-									<div class="search-path">
-										<a class="btn btn-filter" id="filter_search">
-											<img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
-											<span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
-										</a>
-									</div>
-									<div class="search-input">
-										<a class="btn btn-searchset"><img src="{% static 'assets/img/icons/search-white.svg' %}" alt="img"></a>
-									</div>
-								</div>
-								<div class="wordset">
-									<ul>
-										<li>
-											<a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
-										</li>
-										<li>
-											<a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
-										</li>
-										<li>
-											<a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
-										</li>
-									</ul>
-								</div>
-							</div>
-
-							<div class="table-responsive">
-								<table class="table  datanew">
-									<thead>
-										<tr>
-											<th>Consumable</th>
-											<th>Batch Id</th>
-											<th>Batch Size</th>
-											<th>Procurement Date</th>
-											<th>Packing Detials</th>
-											<th>Action</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for batch in batches %}
-										<tr>
-											<td class="clickable-row" data-batch-id="{{ batch.batch_id }}"><a href="#">{{ batch.consumable_name }}</a></td>
-											<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.batch_id }}</td>
-											<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.batch_size_value }}</td>
-											<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.procurement_date }}</td>
-               							    <td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.packing_details }}</td>
-																						<td>
-												<a class="me-3" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#materialpage">
-													<img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
-												</a>
-												<!-- <a class="me-3" href="editproduct.html">
-													<img src="assets/img/icons/edit.svg" alt="img">
-												</a>
-												<a class="confirm-text" href="javascript:void(0);">
-													<img src="assets/img/icons/delete.svg" alt="img">
-												</a> -->
-											</td>
-										</tr>
-										{% empty %}
-									{% endfor %}
-										
-									
-									</tbody>
-								</table>
-							</div>
-						</div>
+					<div class="wordset">
+						<ul>
+							<li>
+								<a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img
+										src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+							</li>
+							<li>
+								<a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img
+										src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+							</li>
+							<li>
+								<a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img
+										src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
+							</li>
+						</ul>
 					</div>
-					<!-- /product list -->
+				</div>
+
+				<div class="table-responsive">
+					<table class="table datanew table-striped table-hover text-center table-bordered">
+						<thead>
+							<tr>
+								<th>Consumable</th>
+								<th>Batch Id</th>
+								<th>Batch Size</th>
+								<th>Procurement / Manufacturing Date</th>
+								<th>Packing Detials</th>
+								<th>Expiry Date</th>
+								<th>Status</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for batch in batches %}
+							<tr>
+								<td class="clickable-row" data-batch-id="{{ batch.batch_id }}"><a class="clickable-row">{{ batch.consumable_name }}</a></td>
+								<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.batch_id }}</td>
+								<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.batch_size_value}} {{ batch.unit_name }}</td>
+								<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.procurement_date}}</td>
+								<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.packing_details}}</td>
+								<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.expiry_date }}</td>
+								<td class="clickable-row" data-batch-id="{{ batch.batch_id }}">{{ batch.status}}</td>
+								<td>
+									<a class="me-3 view-batch-btn" data-bs-toggle="modal" data-bs-target="#viewBatchModal" data-batch-id="{{ batch.batch_id }}">
+										<img src="{% static 'assets/img/icons/eye.svg' %}" alt="View">
+									</a>
+									<a class="me-3 view-user-btn" data-bs-toggle="modal"
+										data-bs-target="#consumablebatchpage" data-batch-id="{{ batch.batch_id }}">
+										<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+									</a>
+									<a id="delete-btn" data-id="{{ batch.batch_id }}">
+										<img src="{% static 'assets/img/icons/delete.svg' %}"
+											alt="img">
+									</a> 
+								</td>
+							</tr>
+							{% empty %}
+							{% endfor %}
+
+
+						</tbody>
+					</table>
 				</div>
 			</div>
-        </div>
-		<!-- /Main Wrapper -->
+		</div>
+		<!-- /product list -->
+	</div>
+</div>
+</div>
+<!-- /Main Wrapper -->
 
-        <div class="modal fade" id="materialpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Consumable Batch</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="container mt-5">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Consumable</label>
-                                <div id="username" class="form-control">Pink oxide</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">Batch Id</label>
-                                <div id="phone" class="form-control">12345745</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Batch Size</label>
-                                <div id="email" class="form-control">25 kg</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="role" class="form-label">Expiry Date</label>
-                                <div id="role" class="form-control">2024-08-08</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="createdOn" class="form-label">Packing Detials</label>
-                                <div id="createdOn" class="form-control">2024-08-08</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="status" class="form-label">Status</label>
-                                <div id="status" class="form-control">Active</div>
-                            </div>
-                            
-                        </div>
-                    </div>
-                    <!-- <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                    </div> -->
-                </div>
+<!-- VIEW CONSUMABLE BATCH MODAL -->
+<div class="modal fade" id="viewBatchModal" tabindex="-1" aria-labelledby="viewBatchLabel" aria-hidden="true">
+	<div class="modal-dialog">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h5 class="modal-title" id="viewBatchLabel">View Consumable Batch Details</h5>
+		  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+		</div>
+		<div class="modal-body">
+		  <div class="container">
+			<div class="row">
+			  <div class="col-6 mb-2">
+				<label>Batch ID</label>
+				<input type="text" id="view_batch_id" class="form-control" readonly>
+			  </div>
+			  <div class="col-6 mb-2">
+				<label>Consumable</label>
+				<input type="text" id="view_consumable" class="form-control" readonly>
+			  </div>
+			  <div class="col-6 mb-2">
+				<label>Procurement / Manufacturing Date</label>
+				<input type="text" id="view_procurement_date" class="form-control" readonly>
+			  </div>
+			  <div class="col-6 mb-2">
+				<label>Batch Size</label>
+				<input type="text" id="view_batch_size" class="form-control" readonly>
+			  </div>
+			  <div class="col-6 mb-2">
+				<label>Unit</label>
+				<input type="text" id="view_unit" class="form-control" readonly>
+			  </div>
+			  <div class="col-6 mb-2">
+				<label>Packing Details</label>
+				<input type="text" id="view_packing_details" class="form-control" readonly>
+			  </div>
+			  <div class="col-6 mb-2">
+				<label>Expiry Date</label>
+				<input type="text" id="view_expiry_date" class="form-control" readonly>
+			  </div>
+			</div>
+		  </div>
+		</div>
+	  </div>
+	</div>
+  </div>
+
+<!-- edit div -->
+<div class="modal fade" id="consumablebatchpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">Consumable Batch View</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+			</div>
+			<div class="modal-body">
+				<div class="container mt-2">
+					<form class="row">
+						<div class="col-6 mt-2">
+							<label>Batch ID</label>
+							<input type="text" id="batch-id" name="batch-id" class="form-control" readonly>
+						</div>
+
+						<div class="col-6 mt-2">
+							<label for="consumable" class="form-label">Consumable</label>
+							<input type="text" class="form-control" id="consumable" name="consumable"
+								placeholder="Consumable" readonly>
+						</div>
+
+						<div class="col-6 mt-2">
+							<label for="procurement_date">Procurement/Manufacturing Date</label>
+							<input type="date" id="procurement_date" name="procurement_date" class="form-control">
+						</div>
+
+						<div class="col-6 mt-2">
+							<label for="batch_size" class="form-label">Batch Size</label>
+							<input type="text" name="batch_size" id="batch_size" class="form-control">
+						</div>
+						<div class="col-6 mt-2">
+							<label for="packing_details" class="form-label">Packing Details</label>
+							<input type="text" name="packing_details" id="packing_details" class="form-control">
+						</div>
+						<!-- <div class="col-6 mt-2">
+									<label for="created_on" class="form-label">Created On</label>
+									<input type="text" name="created_on" id="created_on" class="form-control">
+								</div>
+								<div class="col-6 mt-2">
+									<label for="created_by" class="form-label">Created By</label>
+									<input type="text" name="created_by" id="created_by" class="form-control">
+								</div> -->
+						<div class="col-6 mt-2">
+							<label for="edit-status" class="form-label">Status</label>
+							<select name="status" id="edit-status" class="form-control">
+								<option value="available">Available</option>
+								<option value="exhausted">Exhausted</option>
+							</select>
+						</div>
+
+						<div class="d-flex justify-content-center mt-3">
+							<button type="button" class="btn btn-primary btn-sm"
+								id="updateConsumableBatch">Update</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- DELTE CONFIRMATION MODAL -->
+<div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center ">
+                <p>Are you sure you want to delete this Consumable?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button type="button" class="btn btn-danger text-right" id="confirm-delete">Delete</button>
+                <button type="button" class="btn btn-secondary text-right" id="cancel-delete"
+                    data-dismiss="modal">Cancel</button>
             </div>
         </div>
+    </div>
+</div>
+<script>
+	// REDIRECT DETAIL VIEW JQUERY
 
-		<script>
-			// REDIRECT DETAIL VIEW JQUERY
-			
-			$(document).on('click', '.clickable-row', function () {
-				// Access the batch ID using the correct data attribute
-				var batchId = $(this).data('batch-id'); // Get the batch ID from the row's data-batch-id attribute
-				var baseUrl = '/consumable/batch/'; // Adjust the base URL as needed
-				var detailUrl = baseUrl + batchId + '/'; // Construct the URL to the detailed view page
-			
-				// Redirect to the detailed view page
-				window.location.href = detailUrl;
+	$(document).on('click', '.clickable-row', function () {
+		// Access the batch ID using the correct data attribute
+		var batchId = $(this).data('batch-id'); // Get the batch ID from the row's data-batch-id attribute
+		var baseUrl = '/consumable/batch/'; // Adjust the base URL as needed
+		var detailUrl = baseUrl + batchId + '/'; // Construct the URL to the detailed view page
+
+		// Redirect to the detailed view page
+		window.location.href = detailUrl;
+	});
+
+	document.addEventListener('DOMContentLoaded', function () {
+		document.querySelectorAll('td[data-batch-id]').forEach(function (statusField) {
+			const status = statusField.textContent.trim().toLowerCase();
+			if (status === 'available') {
+				statusField.style.backgroundColor = 'green';
+				statusField.style.color = 'white';
+				statusField.textContent = 'Available';
+			} else if (status === 'exhausted') {
+				statusField.style.backgroundColor = 'red';
+				statusField.style.color = 'white';
+				statusField.textContent = 'Exhausted';
+			}
+		});
+	});
+
+	$('.view-user-btn').on('click', function () {
+		$('#saveUserChanges').show();
+		const baseUrl = '/consumable/consumable-batch-fetch/edit/';
+		const batchId = $(this).data('batch-id');
+		let encodedbatchId = encodeURIComponent(batchId); // Encode special characters
+		const consumablebatchUpdateUrl = `${baseUrl}${encodedbatchId}/`;
+		console.log('Consumable batch update URL:', consumablebatchUpdateUrl);
+
+		$.ajax({
+			type: 'GET',
+			url: consumablebatchUpdateUrl,
+			success: function (response) {
+				const consumbatchData = response.data;
+				console.log('Consumable batch data:', consumbatchData);
+
+				$('#batch-id').val(consumbatchData.batch_id);
+				$('#consumable').val(consumbatchData.consumable_name);
+				$('#procurement_date').val(consumbatchData.procurement_date);
+				$('#batch_size').val(consumbatchData.batch_size_value);
+				$('#packing_details').val(consumbatchData.packing_details);
+				// $('#created_on').val(consumbatchData.shelf_life_value);
+				// $('#created_by').val(consumbatchData.shelf_life_unit);
+				$('#edit-status').val(consumbatchData.status);
+
+
+				$('#consumablebatchpage').modal('show');
+			},
+			error: function (error) {
+				console.error('Failed to fetch consumable batch data:', error);
+			}
+		});
+
+
+
+		$(document).ready(function () {
+			$('#updateConsumableBatch').click(function (event) {
+				event.preventDefault();
+
+				// Collect data from the form
+				const updatedData = {
+					batchId: $('#batch-id').val(),
+					consumable_name: $('#consumable').val(),
+					procurement_date: $('#procurement_date').val(),
+					batch_size_value: parseFloat($('#batch_size').val()),
+					packing_details: $('#packing_details').val(),
+					status: $('#edit-status').val()
+				};
+				console.log('Updated Comsumable batch data:', updatedData);
+
+				// Send PUT request
+				$.ajax({
+					type: 'PUT',
+					url: '/consumable/consumable-batch-fetch/edit/' + encodedbatchId + '/',
+					data: JSON.stringify(updatedData),
+					contentType: 'application/json',
+					headers: {
+						'X-CSRFToken': '{{ csrf_token }}'
+					},
+					success: function (response) {
+						if (response.isSuccess) {
+							console.log('Update successful. Redirecting...');
+							location.reload(); // Reload the page to reflect changes
+						} else {
+							$('#error-message').text(response.message).show();
+						}
+					},
+					error: function (error) {
+						$('#error-message').text('An error occurred. Please try again.').show();
+					}
+				});
 			});
-			</script>
+		});
+	});
+
+	$(document).ready(function () {
+		$('.view-batch-btn').on('click', function () {
+		  const batchId = $(this).data('batch-id');
+		  
+			$.ajax({
+				type: 'POST',
+				url: `/consumable/view/consumable-batch/${batchId}/`,
+				headers: {
+				'X-CSRFToken': '{{ csrf_token }}'
+				},
+				success: function (response) {
+				if (response.success) {
+					const data = response.data;
+					$('#view_batch_id').val(data.batch_id);
+					$('#view_consumable').val(data.consumable_name);
+					$('#view_procurement_date').val(data.procurement_date);
+					$('#view_batch_size').val(data.batch_size_value);
+					$('#view_unit').val(data.unit_name); // Added unit here
+					$('#view_packing_details').val(data.packing_details);
+					$('#view_expiry_date').val(data.expiry_date);
+					$('#viewBatchModal').modal('show');
+				} else {
+					alert('Consumable Batch not found.');
+				}
+				},
+				error: function () {
+				alert('Failed to fetch Consumable batch details.');
+				}
+			});
+		});
+	});
+
+	$(document).on('click', '#delete-btn', function (e) {
+				e.preventDefault(); // Prevent default link behavior
 		
-        {% endblock %}
+				var conbatchId = $(this).data('id'); // Get Consumable ID from data attribute
+				if (!conbatchId) {
+					alert('conbatch Id not found.');
+					return;
+				}
+		
+				// Store the Consumable in the modal's confirm button for reference
+				$('#confirm-delete').data('id', conbatchId);
+		
+				// Show the confirmation modal
+				$('#confirmDeleteModal').modal('show');
+			});
+			// Handle the confirmation of deletion
+			$(document).on('click', '#confirm-delete', function () {
+				var conbatchId = $(this).data('id'); // Retrieve Consumable ID from the modal's confirm button
+				let encodedConbatchId = encodeURIComponent(conbatchId); // Encode special characters
+	
+				if (!conbatchId) {
+					alert('conbatch ID not found.');
+					return;
+				}
+		
+				// Construct the URL dynamically
+				const baseUrl = "/consumable/conbatch-list/delete/";
+				const deleteUrl = `${baseUrl}${encodedConbatchId}/`;
+		
+				// Perform the AJAX request for deletion
+				$.ajax({
+					url: deleteUrl,
+					type: 'POST',
+					//data: JSON.stringify({ 'rawbatch_Id': rawbatchId }),
+					contentType: 'application/json',
+					headers: {
+						'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token header
+					},
+					success: function (response) {
+						if (response.success) {
+							console.log('Delete successful, reloading page...');
+		
+							// Close the modal after success
+							$('#confirmDeleteModal').modal('hide');
+		
+							// Reload the page immediately after successful deletion
+							window.location.reload(true); // Force reload (bypass cache)
+						} else {
+							alert('Error: ' + response.message);
+							console.error('Delete failed: ' + response.message);
+						}
+					},
+					error: function (xhr, status, error) {
+						alert('An error occurred: ' + error);
+						console.error('AJAX error:', error);
+					}
+				});
+			});
+		
+			// Handle the cancel button to close the modal
+			$(document).on('click', '#cancel-delete, .close', function () {
+				$('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
+			});
+</script>
+{% endblock %}

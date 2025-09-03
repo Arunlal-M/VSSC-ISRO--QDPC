@@ -49,31 +49,139 @@
 							</div>
 						</div>
                         <div class="table-responsive">
-                            <table class="table datanew">
-                                <thead>
+                            <table class="table table-hover">
+                                <thead class="table-dark">
                                     <tr>
-                                        <strong>
-                                            <th>Process Name</th>
-
-                                        </strong>
+                                        <th>Process Name</th>
+                                        <th>Total Steps</th>
+                                        <th>Created Date</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for process in processes %}
-                                        <tr>
+                                        <tr class="process-row">
                                             <td>
-                                                <a href="{% url 'process_detail' process.process_title %}">
-                                                    {{ process.process_title }}
-                                                </a>
+                                                <div class="d-flex align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1">
+                                                            <a href="{% url 'process_detail' process.process_title %}" 
+                                                               class="text-decoration-none fw-bold">
+                                                                {{ process.process_title }}
+                                                            </a>
+                                                        </h6>
+                                                        <small class="text-muted">Click to view details</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary fs-6">
+                                                    {{ process.process.count }} steps
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">
+                                                    {% if process.id %}
+                                                        {{ process.id|date:"M d, Y" }}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'process_detail' process.process_title %}" 
+                                                       class="btn btn-sm btn-outline-primary" title="View Details">
+                                                        View
+                                                    </a>
+                                                    <a href="{% url 'process_create' %}" 
+                                                       class="btn btn-sm btn-outline-success" title="Add Steps">
+                                                        Add Steps
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">
+                                                <h5>No processes found</h5>
+                                                <p>Create your first process to get started.</p>
+                                                <a href="{% url 'process_create' %}" class="btn btn-primary">
+                                                    Create Process
+                                                </a>
+                                            </td>
+                                        </tr>
                                     {% endfor %}
                                 </tbody>
-                                
                             </table>
                         </div>
                     </div>
                 </div>
+
+<!-- Add enhanced styling for process list page -->
+<style>
+    .process-row:hover {
+        background-color: #f8f9fa !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    /* Removed process-icon styling */
+    
+    .table th {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        vertical-align: middle;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+    }
+    
+    .badge {
+        font-size: 0.8rem;
+        padding: 0.5em 0.8em;
+    }
+    
+    .btn-group .btn {
+        margin: 0 2px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    
+    .table-dark th {
+        background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+        border-color: #495057;
+    }
+    
+    .page-title h2 {
+        color: #2c3e50;
+        font-weight: 700;
+    }
+    
+    .page-title h6 {
+        color: #7f8c8d;
+        font-weight: 500;
+    }
+    
+    .btn-added {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-added:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+</style>
 
 {% endblock %}

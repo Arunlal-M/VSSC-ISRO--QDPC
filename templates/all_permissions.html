@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>All Custom Permissions</h2>
+{% for module, perms in modules.items %}
+  <h4>{{ module }}</h4>
+  <ul>
+    {% for p in perms %}
+      <li>{{ p.permission_type }} - {{ p.name }} ({{ p.codename }})</li>
+    {% endfor %}
+  </ul>
+  <hr>
+{% endfor %}
+{% endblock %}
+
+

@@ -1,132 +1,137 @@
 {% extends 'index.html' %}
+{% load json_filters %}
 {% block content %}
-{% load static %}
 <div class="page-wrapper">
-    <div class="content">
-        <div class="page-header">
-            <div class="page-title">
-                <h4>Group Permissions</h4>
-                <h6>Assign permissions to {{ group.name }}</h6>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Group Name</label>
-                            <input type="text" value="{{ group.name }}" readonly>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-3 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Permission</label>
-                        </div>
-                    </div>
-                    <div class="col-lg-8 col-sm-6 col-12">
-                        <div class="row">
-                            <div class="col-lg-5 col-sm-6 col-12">
-                                <div class="list-container form-group">
-                                    <h5>Available permissions</h5>
-                                    <select id="availablePermissions" multiple>
-                                        {% for permission in available_permissions %}
-                                        <option value="{{ permission.id }}">{{ permission.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12" style="margin-top: 2%;">
-                                <div class="list-container text-center my-3">
-                                    <button onclick="moveToRight()">→</button>
-                                    <button onclick="moveToLeft()">←</button>
-                                </div>
-                            </div>
-                            <div class="col-lg-5 col-sm-6 col-12">
-                                <div class="list-container form-group">
-                                    <h5>Chosen permissions</h5>
-                                    <select id="chosenPermissions" multiple>
-                                        {% for permission in chosen_permissions %}
-                                        <option value="{{ permission.id }}">{{ permission.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <button class="btn btn-primary me-2" id="save-permissions">Save</button>
-                        <a href="{% url 'group-permission-list' group.id %}" class="btn btn-primary">Save and add
-                            another</a>
-                        <a href="{% url 'group-permission-list' group.id %}" class="btn btn-primary me-2">Save and
-                            continue editing</a>
-                        <button class="btn btn-danger" id="delete-permissions">Delete</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title">
+        <h4>Manage Permissions</h4>
+        <h6>{{ group.name }}</h6>
+      </div>
     </div>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-12">
+              <h5>Django Permissions</h5>
+              <p class="text-muted">Select permissions for this group. Checkboxes indicate what this group can do.</p>
+            </div>
+            
+            <div class="col-12">
+              <input type="text" id="filter" class="form-control" placeholder="Filter permissions..." oninput="filterPermissions()">
+            </div>
+            
+            <div class="col-12">
+              <div class="permissions-container" style="max-height: 500px; overflow-y: auto;">
+                {% for key, type_data in permissions_by_type.items %}
+                <div class="permission-section mb-4" data-app-model="{{ key|lower }}">
+                  <h6 class="border-bottom pb-2">
+                    <strong>{{ type_data.app_label|title }} - {{ type_data.model|title }}</strong>
+                    <div class="float-end">
+                      <input type="checkbox" class="section-select-all" data-section="{{ key }}">
+                      <label class="form-check-label small ms-1">Select All</label>
+                    </div>
+                  </h6>
+                  
+                  <div class="row g-2">
+                    {% for perm in type_data.permissions %}
+                    <div class="col-md-4 col-lg-3">
+                      <label class="permission-item d-flex align-items-center p-2 border rounded">
+                        <input type="checkbox" name="permissions" value="{{ perm.id }}" 
+                               {% if perm.is_assigned %}checked{% endif %}
+                               class="form-check-input me-2 permission-checkbox" data-section="{{ key }}">
+                        <span class="small">{{ perm.name }}</span>
+                    </label>
+                    </div>
+                  {% endfor %}
+                  </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted">
+                  <p>No permissions found.</p>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            
+            <div class="col-12 text-end">
+              <button type="submit" class="btn btn-primary">Save Permissions</button>
+              <a href="{% url 'group-list' %}" class="btn btn-outline-secondary">Back to Groups</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $('#save-permissions').click(function () {
-            var chosen_permissions = [];
-            $('#chosenPermissions option').each(function () {
-                chosen_permissions.push($(this).val());
-            });
-            $.ajax({
-                type: 'POST',
-                url: '{% url "group-permission-list" group.id %}',
-                data: { permissions: chosen_permissions },
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                success: function (data) {
-                    alert('Permissions assigned successfully!');
-                },
-                error: function (xhr, status, error) {
-                    alert('Error assigning permissions');
-                }
-            });
-        });
+// Filter permissions functionality
+function filterPermissions() {
+  const filter = document.getElementById('filter').value.toLowerCase();
+  const sections = document.querySelectorAll('.permission-section');
+  
+  sections.forEach(section => {
+    const appModel = section.getAttribute('data-app-model');
+    if (appModel.includes(filter)) {
+      section.style.display = '';
+    } else {
+      section.style.display = 'none';
+    }
+  });
+}
 
-            $('#delete-permissions').click(function () {
-            if (confirm("Are you sure you want to delete this group?")) {
-                $.ajax({
-                    type: 'DELETE',
-                    url: '{% url "group-delete" group.id %}',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                    },
-                    success: function (data) {
-                        alert('Group deleted successfully!');
-                        window.location.href = '{% url "group-list" %}'; // Redirect to group list page
-                    },
-                    error: function (xhr, status, error) {
-                        alert('Error deleting group');
-                    }
-                });
-            }
-        });
-
-
+// Add select all functionality for each section
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle section select all checkboxes
+  document.querySelectorAll('.section-select-all').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const section = this.getAttribute('data-section');
+      const isChecked = this.checked;
+      
+      // Select/deselect all permissions in this section
+      document.querySelectorAll(`.permission-checkbox[data-section="${section}"]`).forEach(permCheckbox => {
+        permCheckbox.checked = isChecked;
+      });
     });
-
-    function moveToRight() {
-        $('#availablePermissions option:selected').each(function () {
-            $(this).remove().appendTo('#chosenPermissions');
-        });
-    }
-
-    function moveToLeft() {
-        $('#chosenPermissions option:selected').each(function () {
-            $(this).remove().appendTo('#availablePermissions');
-        });
-    }
+  });
+  
+  // Handle individual permission checkboxes to update section select all
+  document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const section = this.getAttribute('data-section');
+      const sectionCheckboxes = document.querySelectorAll(`.permission-checkbox[data-section="${section}"]`);
+      const sectionSelectAll = document.querySelector(`.section-select-all[data-section="${section}"]`);
+      
+      if (sectionSelectAll) {
+        const allChecked = Array.from(sectionCheckboxes).every(cb => cb.checked);
+        const someChecked = Array.from(sectionCheckboxes).some(cb => cb.checked);
+        
+        sectionSelectAll.checked = allChecked;
+        sectionSelectAll.indeterminate = someChecked && !allChecked;
+      }
+    });
+  });
+  
+  // Initialize section select all states
+  document.querySelectorAll('.section-select-all').forEach(checkbox => {
+    const section = checkbox.getAttribute('data-section');
+    const sectionCheckboxes = document.querySelectorAll(`.permission-checkbox[data-section="${section}"]`);
+    const allChecked = Array.from(sectionCheckboxes).every(cb => cb.checked);
+    const someChecked = Array.from(sectionCheckboxes).some(cb => cb.checked);
+    
+    checkbox.checked = allChecked;
+    checkbox.indeterminate = someChecked && !allChecked;
+  });
+});
 </script>
 {% endblock %}
+
+ 

@@ -105,30 +105,24 @@
 																		<td>{{ prod.specific_use}}</td>
 	
 																		<td>
-																			<div
-																				class="status-toggle d-flex justify-content-between align-items-center">
-																				<input type="checkbox"
-																					id="{{ prod.name }}"
-																					class="check status-checkbox"
-																					data-id="{{ prod.name }}" {% if
-																					prod.is_active %} checked {% endif
-																					%}>
-																				<label for="{{ prod.name }}"
-																					class="checktoggle">checkbox</label>
-																			</div>
+                                                                            <div class="status-toggle d-flex justify-content-between align-items-center">
+                                                                                <input type="checkbox"
+                                                                                    id="product-{{ prod.id }}"
+                                                                                    class="check status-checkbox"
+                                                                                    data-id="{{ prod.id }}" {% if prod.is_active %} checked {% endif %}>
+                                                                                <label for="product-{{ prod.id }}" class="checktoggle">checkbox</label>
+                                                                            </div>
 																		</td>
 																		<td>
-																			<a class="me-3" data-bs-toggle="modal"
-																				data-bs-target="#productpage">
-																				<img src="{% static 'assets/img/icons/eye.svg' %}"
-																					alt="img">
+																			<a class="me-3 view-product-btn" data-product-id="{{ prod.id }}" data-bs-toggle="modal" data-bs-target="#viewProductModal">
+																				<img src="{% static 'assets/img/icons/eye.svg' %}" alt="View">
 																			</a>
-																			<a class="me-3" href="editproduct.html">
+                                                                            <a class="me-3" href="{% url 'product-edit' prod.id %}">
 																				<img src="{% static 'assets/img/icons/edit.svg' %}"
 																					alt="img">
 																			</a>
-																			<a id="delete-btn"
-																				data-id="{{ prod.name }}">
+                                                                            <a class="delete-btn"
+                                                                                data-id="{{ prod.id }}">
 																				<img src="{% static 'assets/img/icons/delete.svg' %}"
 																					alt="img">
 																			</a>
@@ -174,17 +168,13 @@
 																		<td>{{ prod.prefix }}</td>
 																		<td>{{ prod.suffix }}</td> {% endcomment %}
 																		<td>
-																			<div
-																				class="status-toggle d-flex justify-content-between align-items-center">
-																				<input type="checkbox"
-																					id="{{ prod.name }}"
-																					class="check status-checkbox"
-																					data-id="{{ prod.name }}" {% if not
-																					prod.is_active %} unchecked {% endif
-																					%}>
-																				<label for="{{ prod.name }}"
-																					class="checktoggle">checkbox</label>
-																			</div>
+                                                                            <div class="status-toggle d-flex justify-content-between align-items-center">
+                                                                                <input type="checkbox"
+                                                                                    id="product-{{ prod.id }}"
+                                                                                    class="check status-checkbox"
+                                                                                    data-id="{{ prod.id }}" {% if not prod.is_active %} unchecked {% endif %}>
+                                                                                <label for="product-{{ prod.id }}" class="checktoggle">checkbox</label>
+                                                                            </div>
 																		</td>
 																		<td>
 																			<a class="me-3" data-bs-toggle="modal"
@@ -192,12 +182,12 @@
 																				<img src="{% static 'assets/img/icons/eye.svg' %}"
 																					alt="img">
 																			</a>
-																			<a class="me-3" href="editproduct.html">
+                                                                            <a class="me-3" href="{% url 'product-edit' prod.id %}">
 																				<img src="{% static 'assets/img/icons/edit.svg' %}"
 																					alt="img">
 																			</a>
-																			<a id="delete-btn"
-																				data-id="{{ prod.name }}">
+                                                                            <a class="delete-btn"
+                                                                                data-id="{{ prod.id }}">
 																				<img src="{% static 'assets/img/icons/delete.svg' %}"
 																					alt="img">
 																			</a>
@@ -227,135 +217,97 @@
 			</div>
 		</div>
 	</div>
-	<div class="modal fade" id="productpage" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-		<div class="modal-dialog">
+
+	<!-- VIEW PRODUCT MODAL -->
+		<div class="modal fade" id="viewProductModal" tabindex="-1" aria-labelledby="viewProductLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl">
 			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Product List</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
-				</div>
-				<!-- <div class="modal-body">
-                        <div class="container mt-5">
-                           
-                           
-                            <div class="mb-3">
-                                <label for="username" class="form-label">User Name</label>
-                                <div id="username" class="form-control">John Doe</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">Phone</label>
-                                <div id="phone" class="form-control">123-456-7890</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <div id="email" class="form-control">johndoe@example.com</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="role" class="form-label">Role</label>
-                                <div id="role" class="form-control">Admin</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="createdOn" class="form-label">Created On</label>
-                                <div id="createdOn" class="form-control">2024-08-08</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="status" class="form-label">Status</label>
-                                <div id="status" class="form-control">Active</div>
-                            </div>
-                            
-                        </div>
-						
+			<div class="modal-header">
+				<h5 class="modal-title" id="viewProductLabel">View Product Details</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+			</div>
+			<div class="modal-body">
+				<div class="container">
+				<div class="row">
+					<!-- Basic Fields -->
+					<div class="col-6 mb-2"><label>Name</label><input type="text" id="view_name" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Category</label><input type="text" id="view_category" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Owner</label><input type="text" id="view_owner" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Processing Agencies</label><input type="text" id="view_processing_agencies" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Drawing Applicable</label><input type="text" id="view_drawing_applicable" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>End Uses</label><input type="text" id="view_end_uses" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Specific Use</label><textarea id="view_specific_use" class="form-control" readonly></textarea></div>
+					<div class="col-6 mb-2"><label>Shelf Life Value</label><input type="text" id="view_shelf_life_value" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Shelf Life Unit</label><input type="text" id="view_shelf_life_unit" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Testing Agencies</label><input type="text" id="view_testing_agencies" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Components</label><input type="text" id="view_components" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Raw Materials</label><input type="text" id="view_rawmaterial" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Consumables</label><input type="text" id="view_consumable" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Equipment</label><input type="text" id="view_equipment" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Processes</label><input type="text" id="view_process" class="form-control" readonly></div>
 
-
-                    </div> -->
-				<div class="container mt-5">
-					<div class="row">
-						<div class="col-md-6">
-							<div class="mb-4">
-								<label for="username" class="form-label">Name</label>
-								<div id="username" name="username"></div>
-							</div>
-							<div class="mb-4">
-								<label for="category" class="form-label">Category</label>
-								<div id="category" name="category"></div>
-							</div>
-							<div class="mb-4">
-								<label for="owner" class="form-label">Owner</label>
-								<div id="owner" name="owner"></div>
-							</div>
-							<div class="mb-4">
-								<label for="processing_agencies" class="form-label">Processing Agencies</label>
-								<div id="processing_agencies" name="processing_agencies"></div>
-							</div>
-							{% comment %} <div class="mb-4">
-								<label for="email" class="form-label">Name of Processing Agency</label>
-								<div id="email" class="form-control">johndoe@example.com</div>
-							</div> {% endcomment %}
-							<div class="mb-4">
-								<label for="drawing_number" class="form-label">Drawing number</label>
-								<div id="drawing_number" name="drawing_number"></div>
-							</div>
-							<div class="mb-4">
-								<label for="drawing_status" class="form-label">Drawing status</label>
-								<div id="drawing_status" name="drawing_status"></div>
-							</div>
-							<div class="mb-4">
-								<label for="batch_size" class="form-label">Batch size</label>
-								<div id="batch_size" name="batch_size"></div>
-							</div>
-							<div class="mb-4">
-								<label for="email" class="form-label">Batch identification</label>
-								<div id="batch_identification" name="batch_identification"></div>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="mb-4">
-								<label for="role" class="form-label">End Uses</label>
-								<div id="enduses" name="enduses"></div>
-							</div>
-							<div class="mb-4">
-								<label for="createdOn" class="form-label">Use</label>
-								<div id="specificuse" name="specificuse"></div>
-							</div>
-							<div class="mb-4">
-								<label for="status" class="form-label">Shelf life value</label>
-								<div id="shelf_life_value" name="shelf_life_value"></div>
-							</div>
-							<div class="mb-4">
-								<label for="status" class="form-label">Shelf life unit</label>
-								<div id="shelf_life_unit" name="shelf_life_unit"></div>
-							</div>
-							<div class="mb-4">
-								<label for="email" class="form-label">Testing agencies</label>
-								<div id="testingagencies" name="testingagencies"></div>
-							</div>
-							<div class="mb-4">
-								<label for="email" class="form-label"> Components</label>
-								<div id="components" name="components"></div>
-							</div>
-							<div class="mb-4">
-								<label for="email" class="form-label">Method of identification</label>
-								<div id="method_of_identification" name="method_of_identification"></div>
-							</div>
-							<div class="mb-4">
-								<label for="email" class="form-label">Prefix </label>
-								<div id="prefix" name="prefix"></div>
-							</div>
-							<div class="mb-4">
-								<label for="email" class="form-label">Suffix </label>
-								<div id="suffix" class="suffix"></div>
-							</div>
-						</div>
+					<!-- Drawings Section -->
+					<div class="col-12 mt-4">
+					<h5>Drawings</h5>
+					<div id="view_drawings" class="border p-2 rounded bg-light"></div>
 					</div>
+
+					<!-- Documents Section -->
+					<div class="col-12 mt-4">
+					<h5>Product Documents</h5>
+					<div id="view_documents" class="border p-2 rounded bg-light"></div>
+					</div>
+
 				</div>
-				<!-- <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                    </div> -->
+				</div>
+			</div>
 			</div>
 		</div>
-	</div>
+		</div><div class="modal fade" id="viewProductModal" tabindex="-1" aria-labelledby="viewProductLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl">
+			<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="viewProductLabel">View Product Details</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+			</div>
+			<div class="modal-body">
+				<div class="container">
+				<div class="row">
+					<!-- Basic Fields -->
+					<div class="col-6 mb-2"><label>Name</label><input type="text" id="view_name" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Category</label><input type="text" id="view_category" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Owner</label><input type="text" id="view_owner" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Processing Agencies</label><input type="text" id="view_processing_agencies" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Drawing Applicable</label><input type="text" id="view_drawing_applicable" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>End Uses</label><input type="text" id="view_end_uses" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Specific Use</label><textarea id="view_specific_use" class="form-control" readonly></textarea></div>
+					<div class="col-6 mb-2"><label>Shelf Life Value</label><input type="text" id="view_shelf_life_value" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Shelf Life Unit</label><input type="text" id="view_shelf_life_unit" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Testing Agencies</label><input type="text" id="view_testing_agencies" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Components</label><input type="text" id="view_components" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Raw Materials</label><input type="text" id="view_rawmaterial" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Consumables</label><input type="text" id="view_consumable" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Equipment</label><input type="text" id="view_equipment" class="form-control" readonly></div>
+					<div class="col-6 mb-2"><label>Processes</label><input type="text" id="view_process" class="form-control" readonly></div>
 
+					<!-- Drawings Section -->
+					<div class="col-12 mt-4">
+					<h5>Drawings</h5>
+					<div id="view_drawings" class="border p-2 rounded bg-light"></div>
+					</div>
+
+					<!-- Documents Section -->
+					<div class="col-12 mt-4">
+					<h5>Product Documents</h5>
+					<div id="view_documents" class="border p-2 rounded bg-light"></div>
+					</div>
+
+				</div>
+				</div>
+			</div>
+			</div>
+		</div>
+		</div>
 	        <!-- DELTE CONFIRMATION MODAL -->
 			<div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
 				<div class="modal-dialog modal-dialog-centered" role="document">
@@ -382,7 +334,7 @@
 {% block scripts %}
 <script>
 
-$(document).on('click', '#delete-btn', function (e) {
+$(document).on('click', '.delete-btn', function (e) {
         e.preventDefault(); // Prevent default link behavior
 
         var productId = $(this).data('id'); // Get PRODUCT ID from data attribute
@@ -408,8 +360,7 @@ $(document).on('click', '#delete-btn', function (e) {
         }
 
         // Construct the URL dynamically
-        const baseUrl = "{% url 'product-view' %}";
-        const deleteUrl = `${baseUrl}${productId}/`;
+        const deleteUrl = `/product/list-view/${productId}/`;
 
         // Perform the AJAX request for deletion
         $.ajax({
@@ -448,12 +399,12 @@ $(document).on('click', '#delete-btn', function (e) {
 
 
 	$(document).on('click', '.status-checkbox', function () { 
-    var productId = String($(this).data('id')); // Get the product ID
+    var productId = String($(this).data('id'));
     var isActive = $(this).is(':checked'); // Get the checkbox state (true/false)
 
     if (productId) {
         const baseUrl = "/product/update-product-status/";
-        const updateUrl = `${baseUrl}${productId}/`; // URL for updating product status
+        const updateUrl = `${baseUrl}${productId}/`;
 
         $.ajax({
             url: updateUrl,
@@ -485,7 +436,7 @@ $(document).on('click', '#delete-btn', function (e) {
 		$('.status-checkbox').change(function () {
 			var productId = $(this).data('id');
 			var status = $(this).is(':checked');
-			const updateUrl = `/update-product-status/${productId}/`;  // Check URL structure
+            const updateUrl = `/product/update-product-status/${productId}/`;
 
 			if (!productId) {
 				alert('Product ID not found.');
@@ -513,7 +464,85 @@ $(document).on('click', '#delete-btn', function (e) {
 			});
 		});
 	});
+	$(document).ready(function () {
+	$('.view-product-btn').on('click', function () {
+		const productId = $(this).data('product-id');
 
+		$.ajax({
+		type: 'POST',
+		url: `/product/view-product/${productId}/`,
+		headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+		success: function (response) {
+			if (response.success) {
+			const data = response.data;
+
+			// Fill basic fields
+			$('#view_name').val(data.name);
+			$('#view_category').val(data.category.name);
+			$('#view_owner').val(data.product_owner.name);
+			$('#view_processing_agencies').val(data.processing_agencies?.name || '');
+			$('#view_drawing_applicable').val(data.drawing_applicable);
+			$('#view_end_uses').val(data.end_uses?.name || '');
+			$('#view_specific_use').val(data.specific_use);
+			$('#view_shelf_life_value').val(data.shelf_life_value);
+			$('#view_shelf_life_unit').val(data.shelf_life_unit);
+			$('#view_testing_agencies').val(data.testing_agencies?.name || '');
+
+			$('#view_components').val(data.components.map(c => c.name).join(', '));
+			$('#view_rawmaterial').val(data.rawmaterial.map(r => r.name).join(', '));
+			$('#view_consumable').val(data.consumable.map(c => c.name).join(', '));
+			$('#view_equipment').val(data.equipment.map(e => e.name).join(', '));
+			$('#view_process').val(data.process.map(p => p.name).join(', '));
+
+			// Fill drawings
+			const drawingsContainer = $('#view_drawings');
+			drawingsContainer.empty();
+			if (data.drawings && data.drawings.length > 0) {
+				data.drawings.forEach(d => {
+				drawingsContainer.append(`
+					<div class="mb-2">
+					<strong>Title:</strong> ${d.drawing_title}<br>
+					<strong>Number:</strong> ${d.drawing_number}<br>
+					<strong>Status:</strong> ${d.drawing_status}<br>
+					${d.drawing_document ? `<a href="${d.drawing_document}" target="_blank">Download</a>` : 'No file'}
+					</div><hr>
+				`);
+				});
+			} else {
+				drawingsContainer.html('<p>No drawings available.</p>');
+			}
+
+			// Fill product documents
+			const docsContainer = $('#view_documents');
+			docsContainer.empty();
+			if (data.documents && data.documents.length > 0) {
+				data.documents.forEach(doc => {
+				const fileLinks = doc.files.map(f => `<li><a href="${f.file_url}" target="_blank">${f.file_name}</a></li>`).join('');
+				docsContainer.append(`
+					<div class="mb-2">
+					<strong>Title:</strong> ${doc.title} (${doc.category})<br>
+					<strong>Issue No:</strong> ${doc.issue_no} | <strong>Revision No:</strong> ${doc.revision_no}<br>
+					<strong>Release Date:</strong> ${doc.release_date} | <strong>Approved By:</strong> ${doc.approved_by}<br>
+					<strong>Validity:</strong> ${doc.validity} years<br>
+					<strong>Files:</strong><ul>${fileLinks}</ul>
+					</div><hr>
+				`);
+				});
+			} else {
+				docsContainer.html('<p>No product documents available.</p>');
+			}
+
+			$('#viewProductModal').modal('show');
+			} else {
+			alert('Product not found.');
+			}
+		},
+		error: function () {
+			alert('Failed to fetch product details.');
+		}
+		});
+	});
+	});
 
 </script>
 {% endblock %}

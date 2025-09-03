@@ -1,0 +1,458 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load page_permission_tags %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Page Permission Management</h4>
+                <h6>VSSC Pages and User Role Permissions</h6>
+            </div>
+        </div>
+
+        <!-- User Info Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="card-title">Current User</h6>
+                        <p class="mb-1"><strong>Username:</strong> {{ user.username }}</p>
+                        <p class="mb-1"><strong>Email:</strong> {{ user.email }}</p>
+                        <p class="mb-0"><strong>Groups:</strong> 
+                            {% for group in user_groups %}
+                                <span class="badge bg-primary me-1">{{ group.name }}</span>
+                            {% empty %}
+                                <span class="badge bg-secondary">No Groups</span>
+                            {% endfor %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="card-title">Permission Summary</h6>
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="permission-stat">
+                                    <h3 class="text-success" id="accessible-count">0</h3>
+                                    <small>Accessible</small>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="permission-stat">
+                                    <h3 class="text-warning" id="restricted-count">0</h3>
+                                    <small>Restricted</small>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="permission-stat">
+                                    <h3 class="text-danger" id="no-access-count">0</h3>
+                                    <small>No Access</small>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="permission-stat">
+                                    <h3 class="text-info" id="total-count">0</h3>
+                                    <small>Total</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VSSC Role Information Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i data-feather="users" class="me-2"></i>
+                    VSSC Role Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">SDA Roles</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Division Head SDA:</strong> Pages 1,5,7,9,12,22 - Full access + approval</li>
+                            <li><strong>Section Head SDA:</strong> Pages 1,5,7,9,12,22 - Full access + approval</li>
+                            <li><strong>Engineer SDA:</strong> Pages 1,5,7,9,12,22 - View, Add, Edit</li>
+                            <li><strong>Technical/Scientific staff SDA:</strong> Pages 1,5,7,9,12,22 - View, Add, Edit</li>
+                            <li><strong>Operator/Technicians SDA:</strong> Pages 1,5,7,9,12,22 - View, Add, Edit</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">QA & QC Roles</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Division Head QA:</strong> Pages 1,12,23,24 - Full access + approval</li>
+                            <li><strong>Section Head QA:</strong> Pages 1,12,23,24 - Full access + approval</li>
+                            <li><strong>Division Head QC:</strong> Pages 1,12 - Full access + approval</li>
+                            <li><strong>Section Head QC:</strong> Pages 1,12 - Full access + approval</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6 class="text-warning">Testing Agency Roles</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Division Head Testing agency:</strong> Pages 1,5,7,9,12 - Full access + approval</li>
+                            <li><strong>Section Head Testing agency:</strong> Pages 1,5,7,9,12 - Full access + approval</li>
+                            <li><strong>Engineer Testing agency:</strong> Pages 1,5,7,9,12 - View, Add, Edit</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-info">Industry & GOCO Roles</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Industry Roles:</strong> Pages 1,5,7,9,12 - Various permission levels</li>
+                            <li><strong>GOCO Roles:</strong> Pages 1,5,7,9,12 - Various permission levels</li>
+                            <li><strong>System Administrators:</strong> All Pages - Full access</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Permissions -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h5 class="card-title">VSSC Page Structure & Permissions</h5>
+                        <p class="text-muted">Pages are organized by functional areas. Permission levels indicate what your role can do.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" id="page-filter" class="form-control" placeholder="Filter pages...">
+                            <button class="btn btn-outline-secondary" type="button" onclick="clearFilter()">
+                                <i data-feather="x"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permission Legend -->
+                <div class="permission-legend mb-4">
+                    <h6>Permission Levels:</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <span class="badge bg-success me-2">●</span>
+                            <small>Full Access (View, Add, Edit, Delete)</small>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="badge bg-warning me-2">●</span>
+                            <small>Edit Access (View, Add, Edit)</small>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="badge bg-info me-2">●</span>
+                            <small>Add Access (View, Add)</small>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="badge bg-secondary me-2">●</span>
+                            <small>View Only</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VSSC Pages by Section -->
+                {% for section_name, pages in pages_by_section.items %}
+                <div class="page-section mb-4" data-section="{{ section_name|lower }}">
+                    <div class="section-header d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                        <h6 class="section-title mb-0">
+                            <i data-feather="folder" class="me-2"></i>
+                            {{ section_name }}
+                        </h6>
+                        <div class="section-stats">
+                            <small class="text-muted">
+                                <span class="accessible-count">0</span> accessible / 
+                                <span class="total-count">{{ pages|length }}</span> total
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        {% for page in pages %}
+                        <div class="col-md-6 col-lg-4 page-item" data-page-name="{{ page.name|lower }}">
+                            <div class="page-card card h-100 {% if page.has_access %}border-success{% else %}border-secondary{% endif %}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="page-info">
+                                            <h6 class="card-title mb-1">
+                                                <span class="page-number">{{ page.id }}</span>. {{ page.name }}
+                                            </h6>
+                                            <small class="text-muted">{{ page.url }}</small>
+                                        </div>
+                                        <div class="permission-indicator">
+                                            {% if page.has_access %}
+                                                {% if page.permission_level == 'full_access' %}
+                                                    <span class="badge bg-success">Full</span>
+                                                {% elif page.permission_level == 'edit_access' %}
+                                                    <span class="badge bg-warning">Edit</span>
+                                                {% elif page.permission_level == 'add_access' %}
+                                                    <span class="badge bg-info">Add</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">View</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-danger">No Access</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="page-actions mt-3">
+                                        {% if page.has_access %}
+                                            <a href="{% url page.url %}" class="btn btn-sm btn-outline-primary me-1">
+                                                <i data-feather="external-link" class="me-1"></i>Access
+                                            </a>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="showPermissionDetails({{ page.id }}, '{{ page.name }}')">
+                                            <i data-feather="info" class="me-1"></i>Details
+                                        </button>
+                                    </div>
+
+                                    <!-- Permission Details (Hidden by default) -->
+                                    <div class="permission-details mt-3" id="permission-details-{{ page.id }}" style="display: none;">
+                                        <div class="border-top pt-3">
+                                            <h6 class="small text-muted mb-2">Permission Details:</h6>
+                                            <div class="row g-2">
+                                                <div class="col-6">
+                                                    <small class="d-block">
+                                                        <span class="badge {% if 'view' in page.permission_level %}bg-success{% else %}bg-secondary{% endif %} me-1">●</span>
+                                                        View
+                                                    </small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="d-block">
+                                                        <span class="badge {% if 'add' in page.permission_level %}bg-success{% else %}bg-secondary{% endif %} me-1">●</span>
+                                                        Add
+                                                    </small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="d-block">
+                                                        <span class="badge {% if 'edit' in page.permission_level %}bg-success{% else %}bg-secondary{% endif %} me-1">●</span>
+                                                        Edit
+                                                    </small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="d-block">
+                                                        <span class="badge {% if 'delete' in page.permission_level %}bg-success{% else %}bg-secondary{% endif %} me-1">●</span>
+                                                        Delete
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Permission Details Modal -->
+<div class="modal fade" id="permissionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Permission Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="permission-modal-content">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.page-card {
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.page-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.page-number {
+    background: #f8f9fa;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    color: #6c757d;
+}
+
+.permission-stat h3 {
+    margin-bottom: 0;
+    font-weight: bold;
+}
+
+.section-header {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.page-item {
+    transition: all 0.3s ease;
+}
+
+.page-item:hover {
+    transform: scale(1.02);
+}
+
+.permission-details {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 15px;
+}
+</style>
+
+<script>
+// Initialize page counts
+document.addEventListener('DOMContentLoaded', function() {
+    updatePageCounts();
+    initializeFilter();
+});
+
+// Update page counts
+function updatePageCounts() {
+    const accessible = document.querySelectorAll('.page-card.border-success').length;
+    const restricted = document.querySelectorAll('.page-card.border-warning').length;
+    const noAccess = document.querySelectorAll('.page-card.border-secondary').length;
+    const total = document.querySelectorAll('.page-item').length;
+
+    document.getElementById('accessible-count').textContent = accessible;
+    document.getElementById('restricted-count').textContent = restricted;
+    document.getElementById('no-access-count').textContent = noAccess;
+    document.getElementById('total-count').textContent = total;
+
+    // Update section counts
+    updateSectionCounts();
+}
+
+// Update section counts
+function updateSectionCounts() {
+    document.querySelectorAll('.page-section').forEach(section => {
+        const accessible = section.querySelectorAll('.page-card.border-success').length;
+        const total = section.querySelectorAll('.page-item').length;
+        
+        const accessibleSpan = section.querySelector('.accessible-count');
+        if (accessibleSpan) {
+            accessibleSpan.textContent = accessible;
+        }
+    });
+}
+
+// Initialize filter functionality
+function initializeFilter() {
+    const filterInput = document.getElementById('page-filter');
+    filterInput.addEventListener('input', function() {
+        const filterValue = this.value.toLowerCase();
+        filterPages(filterValue);
+    });
+}
+
+// Filter pages
+function filterPages(filterValue) {
+    const pageItems = document.querySelectorAll('.page-item');
+    const sections = document.querySelectorAll('.page-section');
+    
+    pageItems.forEach(item => {
+        const pageName = item.getAttribute('data-page-name');
+        if (pageName.includes(filterValue)) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    // Show/hide sections based on visible pages
+    sections.forEach(section => {
+        const visiblePages = section.querySelectorAll('.page-item[style=""]').length;
+        if (visiblePages === 0) {
+            section.style.display = 'none';
+        } else {
+            section.style.display = '';
+        }
+    });
+}
+
+// Clear filter
+function clearFilter() {
+    document.getElementById('page-filter').value = '';
+    filterPages('');
+}
+
+// Show permission details
+function showPermissionDetails(pageId, pageName) {
+    const modal = new bootstrap.Modal(document.getElementById('permissionModal'));
+    const modalContent = document.getElementById('permission-modal-content');
+    
+    // Get page data
+    const pageCard = document.querySelector(`[data-page-name="${pageName.toLowerCase()}"]`);
+    const permissionLevel = pageCard.querySelector('.permission-indicator .badge').textContent;
+    const hasAccess = pageCard.classList.contains('border-success');
+    
+    modalContent.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Page Information</h6>
+                <p><strong>Name:</strong> ${pageName}</p>
+                <p><strong>ID:</strong> ${pageId}</p>
+                <p><strong>Access Status:</strong> 
+                    <span class="badge ${hasAccess ? 'bg-success' : 'bg-danger'}">${hasAccess ? 'Accessible' : 'No Access'}</span>
+                </p>
+                <p><strong>Permission Level:</strong> 
+                    <span class="badge bg-info">${permissionLevel}</span>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6>Permission Breakdown</h6>
+                <div class="permission-breakdown">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>View Access:</span>
+                        <span class="badge ${hasAccess ? 'bg-success' : 'bg-secondary'}">${hasAccess ? 'Yes' : 'No'}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Add Access:</span>
+                        <span class="badge ${permissionLevel.includes('Add') || permissionLevel.includes('Edit') || permissionLevel.includes('Full') ? 'bg-success' : 'bg-secondary'}">${permissionLevel.includes('Add') || permissionLevel.includes('Edit') || permissionLevel.includes('Full') ? 'Yes' : 'No'}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Edit Access:</span>
+                        <span class="badge ${permissionLevel.includes('Edit') || permissionLevel.includes('Full') ? 'bg-success' : 'bg-secondary'}">${permissionLevel.includes('Edit') || permissionLevel.includes('Full') ? 'Yes' : 'No'}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Delete Access:</span>
+                        <span class="badge ${permissionLevel.includes('Full') ? 'bg-success' : 'bg-secondary'}">${permissionLevel.includes('Full') ? 'Yes' : 'No'}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+}
+
+// Toggle permission details
+function togglePermissionDetails(pageId) {
+    const detailsDiv = document.getElementById(`permission-details-${pageId}`);
+    if (detailsDiv.style.display === 'none') {
+        detailsDiv.style.display = 'block';
+    } else {
+        detailsDiv.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
