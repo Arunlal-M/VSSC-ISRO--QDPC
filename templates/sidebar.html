@@ -9,21 +9,18 @@
                         <li>
                             <a href="{% url 'user-dashboard' %}"><i data-feather="grid"></i><span>Dashboard</span></a>
                         </li>
-                        {% if request.user.role and request.user.role.name == "SDA" %}
 
                         <li>
                             <a href="{% url 'equipment-list' %}"><i data-feather="grid"></i><span>Equipments</span></a>
                         </li>
 
-                        <li> {% if request.user.role and request.user.role.name == "SDA" %}
+                        <li> 
 
-                            {% endif %}
 
 
                             
                             <a href="{% url 'user-list' %}"><i data-feather="grid"></i><span>Users</span></a>
                         </li>
-                        {% endif%}
                         <li>
                             <a href="{% url 'acceptance-list' %}"><i data-feather="grid"></i><span>Acceptance
                                     Test</span></a>
