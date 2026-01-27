@@ -10,7 +10,10 @@ from qdpc_core_models.models.user import User
 
 from qdpc_core_models.models.product import Product
 
-# class ProductBatchDetailedSerializer(serializers.ModelSerializer):
+"""
+The commented-out serializers below were retained during refactors; keeping only the active
+`ProductBatchDetailedSerializer` to reduce confusion. If needed, recover from git history.
+"""
 #     """Serializer for product batch information."""
     
 #     # Define fields for Many-to-Many relationships

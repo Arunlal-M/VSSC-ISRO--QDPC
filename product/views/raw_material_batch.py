@@ -78,7 +78,7 @@ class RawMatrialBatchEditView(BaseModelViewSet):
         except RawMaterialBatch.DoesNotExist:
             return Response({'isSuccess': False,'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        print("////////////////////////////////////Received data:", request.data)  # Debugging
+
         
         serializer = RawMaterialBatchSerializer(raw_material_batch, data=request.data, partial=True)
         if serializer.is_valid():
@@ -188,47 +188,144 @@ class RawMatrialBatchAddView(BaseModelViewSet):
     
 
     def post(self, request):
-        success = False
-        message = "Raw Material Batch Failed"
-        status_code = 400
-        data = request.data
-
-        raw_material_id = data.get("raw_material")
-        procurement_date = data.get("procurement_date")
-
-        if not raw_material_id:
-            return self.render_response({}, False, "Raw Material ID is missing.", 400)
-
-        raw_material = RawMaterial.objects.filter(id=raw_material_id).first()
-        if not raw_material:
-            return self.render_response({}, False, f"Raw Material with ID {raw_material_id} not found.", 400)
-
-        if not procurement_date:
-            return self.render_response({}, False, "Procurement date is required.", 400)
-
+        """Handle raw material batch creation with validation and notifications"""
         try:
-            procurement_date = datetime.strptime(procurement_date, "%Y-%m-%d").date()
-        except ValueError:
-            return self.render_response({}, False, "Invalid date format. Use YYYY-MM-DD.", 400)
-
-        expiry_date = None
-        if raw_material.shelf_life_value and raw_material.shelf_life_unit:
-            if raw_material.shelf_life_unit == "days":
-                expiry_date = procurement_date + timedelta(days=raw_material.shelf_life_value)
-            elif raw_material.shelf_life_unit == "months":
-                expiry_date = procurement_date + timedelta(days=raw_material.shelf_life_value * 30)
-            elif raw_material.shelf_life_unit == "years":
-                expiry_date = procurement_date + timedelta(days=raw_material.shelf_life_value * 365)
-
-        if expiry_date:
-            data["expiry_date"] = expiry_date.strftime("%Y-%m-%d")
-
+            data = request.data.copy()
+            
+            # Validate required fields
+            required_fields = ['raw_material', 'batch_id', 'procurement_date', 'batch_size_value', 'batch_size_unit', 'packing_details']
+            missing_fields = []
+            
+            for field in required_fields:
+                if not data.get(field):
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                return Response({
+                    'success': False,
+                    'message': f'Required fields missing: {", ".join(missing_fields)}'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if batch_id already exists
+            if RawMaterialBatch.objects.filter(batch_id=data.get('batch_id')).exists():
+                return Response({
+                    'success': False,
+                    'message': 'Batch ID already exists'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate raw material exists
+            raw_material = RawMaterial.objects.filter(id=data.get('raw_material')).first()
+            if not raw_material:
+                return Response({
+                    'success': False,
+                    'message': 'Raw Material not found'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate unit exists
+            unit = Unit.objects.filter(id=data.get('batch_size_unit')).first()
+            if not unit:
+                return Response({
+                    'success': False,
+                    'message': 'Unit not found'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate batch size value
+            try:
+                batch_size_value = float(data.get('batch_size_value'))
+                if batch_size_value <= 0:
+                    return Response({
+                        'success': False,
+                        'message': 'Batch size value must be greater than 0'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            except (ValueError, TypeError):
+                return Response({
+                    'success': False,
+                    'message': 'Batch size value must be a valid number'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate procurement date
+            try:
+                procurement_date = datetime.strptime(data.get('procurement_date'), '%Y-%m-%d').date()
+                if procurement_date > datetime.now().date():
+                    return Response({
+                        'success': False,
+                        'message': 'Procurement date cannot be in the future'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            except ValueError:
+                return Response({
+                    'success': False,
+                    'message': 'Invalid procurement date format'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Calculate expiry date based on raw material shelf life and procurement date
+            expiry_date = None
+            if raw_material.shelf_life_value and raw_material.shelf_life_unit:
+                expiry_date = self.calculate_expiry_date(procurement_date, raw_material.shelf_life_value, raw_material.shelf_life_unit)
+            
+            # Prepare batch data
+            batch_data = {
+                'raw_material': data.get('raw_material'),
+                'batch_id': data.get('batch_id'),
+                'procurement_date': procurement_date,  # Use the converted date object
+                'batch_size_value': batch_size_value,
+                'batch_size_unit': data.get('batch_size_unit'),
+                'packing_details': data.get('packing_details'),
+                'expiry_date': expiry_date,
+                'status': 'available',
+                'created_by': request.user.id  # Add the user who created the batch
+            }
+            
+            # Call service to create batch
+            success, status_code, response_data, message = RawmaterialService.add_rawmaterial_bach_add(data=batch_data)
+            
+            if success:
+                # Create notification for successful batch creation
+                try:
+                    created_batch = RawMaterialBatch.objects.get(batch_id=data.get('batch_id'))
+                    NotificationService.create_entity_notification(
+                        entity_type='raw_material_batch',
+                        entity_id=created_batch.id,
+                        entity_name=f"Batch {created_batch.batch_id} - {raw_material.name}",
+                        notification_type='create',
+                        created_by=request.user
+                    )
+                except Exception as notif_error:
+                    # Log notification error but don't fail the operation
+                    print(f"Notification creation failed: {notif_error}")
+                
+                return Response({
+                    'success': True,
+                    'message': f'Raw material batch "{data.get("batch_id")}" created successfully!',
+                    'data': response_data,
+                    'expiry_date': expiry_date
+                }, status=status.HTTP_201_CREATED)
+            else:
+                return Response({
+                    'success': False,
+                    'message': message or 'Failed to create raw material batch'
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': f'An error occurred: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def calculate_expiry_date(self, procurement_date, shelf_life_value, shelf_life_unit):
+        """Calculate expiry date based on procurement date and shelf life"""
         try:
-            success, status_code, data, message = RawmaterialService.add_rawmaterial_bach_add(data=data)
-        except Exception as ex:
-            return self.render_response({}, False, f"Unexpected error: {str(ex)}", 500)
-
-        return self.render_response(data, success, message, status_code)
+            if shelf_life_unit == 'days':
+                return procurement_date + timedelta(days=shelf_life_value)
+            elif shelf_life_unit == 'months':
+                # Approximate months as 30 days
+                return procurement_date + timedelta(days=shelf_life_value * 30)
+            elif shelf_life_unit == 'years':
+                # Approximate years as 365 days
+                return procurement_date + timedelta(days=shelf_life_value * 365)
+            else:
+                return None
+        except (TypeError, ValueError):
+            return None
 
 # class RawmatrialBatchAcceptenceTest(BaseModelViewSet):
 
@@ -269,7 +366,6 @@ class RawmatrialBatchAcceptenceTest(BaseModelViewSet):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request):
-        print(request.data, "Received request data")
 
         # Extract common fields from the main request
         raw_material_id = request.data.get('raw_material')
@@ -282,6 +378,7 @@ class RawmatrialBatchAcceptenceTest(BaseModelViewSet):
         data = []
         index = 0
         while f'acceptance_tests[{index}][id]' in request.data:
+            file_obj = request.FILES.get(f'acceptance_tests[{index}][file]')
             test_data = {
                 'batch_id': batch_id,
                 'raw_material': raw_material_id,
@@ -292,21 +389,21 @@ class RawmatrialBatchAcceptenceTest(BaseModelViewSet):
                 'grade': grade_id,
                 'min_value': request.data.get(f'acceptance_tests[{index}][min_value]'),  # Corrected bracket
                 'max_value': request.data.get(f'acceptance_tests[{index}][max_value]'),  # Corrected bracket
-                'file': request.FILES.get(f'acceptance_tests[{index}][file]'),  # Handle file directly
                 'status': request.data.get(f'acceptance_tests[{index}][status]'),
                 'remark': request.data.get(f'acceptance_tests[{index}][remark]'),
                 'created_by': request.data.get(f'acceptance_tests[{index}][created_by]','user')
             }
+            # Only add file field if it exists
+            if file_obj:
+                test_data['file'] = file_obj
             data.append(test_data)
             index += 1
 
-        print(data, "Processed test data")
         serializer = RawMaterialAcceptanceTestSerializer(data=data, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            print("Validation errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -327,11 +424,8 @@ class DeleteRawMatrialBatchView(BaseModelViewSet):
 
     def post(self, request, rawbatchId, format=None):
         try:
-            print(f"RawbatchId received in URL: {rawbatchId}")  # Debugging log
-
             decoded_rawbatchId = unquote(rawbatchId)  # Decode URL-encoded string
             rawmaterialbatch = RawMaterialBatch.objects.get(batch_id=decoded_rawbatchId)
-            print(f"Decoded rawbatchId: {decoded_rawbatchId}")  # Debugging log
 
             rawmaterialbatch.delete()
             return Response({

@@ -101,7 +101,7 @@
                         <div class="form-group">
                             <label>Equipment(s) Used</label>
                             <select id="equipment" name="step_${stepCounter}_equipment[]" class="form-control">
-                                <option>Choose equipment</option>
+                                <option value="">Choose equipment</option>
                                 {% for equi in equipment %}
                                 <option
                                     value="{{ equi.id }}" >
@@ -153,7 +153,7 @@
                         <div class="form-group">
                             <label>Component(s) Used</label>
                             <select id="component_batch" name="step_${stepCounter}_component_batch[]" class="form-control">
-                                <option>Choose Component</option>
+                                <option value="">Choose Component</option>
                                  {% for compb in component_batch %}
                                 <option 
                                     value="{{ compb.id }}" >

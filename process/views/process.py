@@ -29,9 +29,36 @@ class ProcessView(BaseModelViewSet):
     template_name = 'process_detail.html'
 
     def get(self, request, process_title):
-        process = ProcessStep.objects.filter(process=process_title)  # Using filter to allow multiple results
-        print(process)
-        return render(request, self.template_name, {'process': process,'process_title': process_title})
+        try:
+            # First find the Process object by process_title
+            process_obj = Process.objects.get(process_title=process_title)
+            # Then filter ProcessStep objects by the found Process object with prefetch_related for ManyToMany fields
+            process_steps = ProcessStep.objects.filter(process=process_obj).prefetch_related(
+                'raw_material_batch',
+                'consumable_batch', 
+                'component_batch',
+                'equipment',
+                'unit'
+            )
+            print(f"Found {process_steps.count()} process steps for process: {process_title}")
+            
+            # Debug: Print each step and its related data
+            for step in process_steps:
+                print(f"Step {step.step_id}:")
+                print(f"  Raw Materials: {list(step.raw_material_batch.all())}")
+                print(f"  Consumables: {list(step.consumable_batch.all())}")
+                print(f"  Components: {list(step.component_batch.all())}")
+                print(f"  Equipment: {list(step.equipment.all())}")
+            
+            return render(request, self.template_name, {'process': process_steps, 'process_title': process_title})
+        except Process.DoesNotExist:
+            # Handle case where process_title doesn't exist
+            print(f"Process with title '{process_title}' not found")
+            return render(request, self.template_name, {'process': [], 'process_title': process_title, 'error': 'Process not found'})
+        except Exception as e:
+            # Handle any other unexpected errors
+            print(f"Error in ProcessView.get(): {str(e)}")
+            return render(request, self.template_name, {'process': [], 'process_title': process_title, 'error': f'An error occurred: {str(e)}'})
 
 
 class ProcessCreateView(BaseModelViewSet):
@@ -60,7 +87,10 @@ class ProcessCreateView(BaseModelViewSet):
         })
 
     def post(self, request):
-        print(request.data)
+        print("POST data received:")
+        for key, value in request.POST.items():
+            print(f"  {key}: {value}")
+        
         process_title = request.POST.get('process_title')
         if not process_title:
             return render(request, self.template_name, {
@@ -79,6 +109,11 @@ class ProcessCreateView(BaseModelViewSet):
             step_description = request.POST.get(f'step_{step_counter}_description')
             if not step_description:
                 break
+                
+            print(f"\nProcessing step {step_counter}:")
+            print(f"  Description: {step_description}")
+            print(f"  Test Result: {request.POST.get(f'step_{step_counter}_test_result')}")
+            print(f"  Specification Result: {request.POST.get(f'step_{step_counter}_specification_result')}")
 
             step_date = request.POST.get(f'step_{step_counter}_date')
             rm_status = request.POST.get(f'step_{step_counter}_rm_status')
@@ -88,8 +123,8 @@ class ProcessCreateView(BaseModelViewSet):
             # step_specifications = request.POST.get(f'step_{step_counter}_specifications')
             # measured_value = request.POST.get(f'step_{step_counter}_measured_value')
             remarks = request.POST.get(f'step_{step_counter}_remarks')
-            test_result = request.POST.get(f'step_{step_counter}_test_result')
-            specification_result = request.POST.get(f'step_{step_counter}_specification_result')
+            test_result = request.POST.get(f'step_{step_counter}_test_result', '')[:50]  # Limit to 50 chars
+            specification_result = request.POST.get(f'step_{step_counter}_specification_result', '')[:50]  # Limit to 50 chars
             process_type = request.POST.get(f'step_{step_counter}_test_type')
 
             min_value = request.POST.get(f'step_{step_counter}_min_value')
@@ -105,22 +140,34 @@ class ProcessCreateView(BaseModelViewSet):
             component_ids = [id for id in request.POST.getlist(f'step_{step_counter}_component_batch[]') if id]
             units_ids = [id for id in request.POST.getlist(f'step_{step_counter}_unit[]') if id]
 
-            process_step = ProcessStep.objects.create(
-                process=process,
-                process_description=step_description,
-                process_date=step_date,
-                rm_status=rm_status,
-                equipment_status=equipment_status,
-                consumable_status=consumable_status,
-                component_status=component_status,
-                # process_step_spec=step_specifications,
-                # measured_value_observation=measured_value,
-                remarks=remarks,
-                min_value=min_value,
-                max_value=max_value,
-                test_result=test_result,
-                specification_result=specification_result,
-            )
+            try:
+                process_step = ProcessStep.objects.create(
+                    process=process,
+                    process_description=step_description,
+                    process_date=step_date,
+                    rm_status=rm_status,
+                    equipment_status=equipment_status,
+                    consumable_status=consumable_status,
+                    component_status=component_status,
+                    # process_step_spec=step_specifications,
+                    # measured_value_observation=measured_value,
+                    remarks=remarks,
+                    min_value=min_value,
+                    max_value=max_value,
+                    test_result=test_result,
+                    specification_result=specification_result,
+                    process_type=process_type,
+                )
+            except Exception as e:
+                print(f"Error creating process step: {e}")
+                return render(request, self.template_name, {
+                    'error': f'Failed to create process step: {str(e)}',
+                    'raw_material_batch': RawMaterialBatch.objects.all(),
+                    'equipment': Equipment.objects.all(),
+                    'consumable_batch': ConsumableBatch.objects.all(),
+                    'component_batch': ComponentBatch.objects.all(),
+                    'units': Unit.objects.all(),
+                })
 
             if process_step:
                 process_step.raw_material_batch.add(*RawMaterialBatch.objects.filter(id__in=raw_material_ids))
@@ -143,7 +190,9 @@ class EditProcessStepView(BaseModelViewSet):
     
     def get(self, request, process_title, stepId):
         try:
-            process = ProcessStep.objects.get(process__process_title=process_title,step_id=stepId)  # Using filter to allow multiple results
+            # First find the Process object by process_title, then get the ProcessStep
+            process_obj = Process.objects.get(process_title=process_title)
+            process = ProcessStep.objects.get(process=process_obj, step_id=stepId)
             print(process)
               
             # Get all raw materials, equipment, consumables, and components
@@ -192,9 +241,13 @@ class EditProcessStepView(BaseModelViewSet):
         
     def put(self, request, process_title, stepId):
             try:
-                processstep = ProcessStep.objects.get(process__process_title=process_title, step_id=stepId)
+                # First find the Process object by process_title, then get the ProcessStep
+                process_obj = Process.objects.get(process_title=process_title)
+                processstep = ProcessStep.objects.get(process=process_obj, step_id=stepId)
+            except Process.DoesNotExist:
+                return Response({'detail': 'Process not found'}, status=status.HTTP_404_NOT_FOUND)
             except ProcessStep.DoesNotExist:
-                return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'detail': 'Process step not found'}, status=status.HTTP_404_NOT_FOUND)
 
             serializer = ProcessStepSerializer(processstep, data=request.data, partial=True)
             if serializer.is_valid():
@@ -220,13 +273,20 @@ class DeleteProcessStepView(BaseModelViewSet):
 
     def post(self, request, stepId,process_title, format=None):
         try:
-           step= ProcessStep.objects.get(process__process_title=process_title, step_id=stepId)
+           # First find the Process object by process_title, then get the ProcessStep
+           process_obj = Process.objects.get(process_title=process_title)
+           step= ProcessStep.objects.get(process=process_obj, step_id=stepId)
            print(step)
            step.delete()
            return Response({
                 'success': True,
                 'message': constants.PROCESS_STEP_DELETE_SUCCESSFULLY
             }, status=status.HTTP_200_OK)
+        except Process.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Process not found'
+            }, status=status.HTTP_404_NOT_FOUND)
         except ProcessStep.DoesNotExist:
             return Response({
                 'success': False,
@@ -258,9 +318,12 @@ class ProcessStepViewSet(BaseModelViewSet):
         print("enterd Get")
         print(process_title)
         try:
-            process = ProcessStep.objects.filter(process=process_title)  # Using filter to allow multiple results
-            print(process)
-            serializer = ProcessStepSerializer(process,many=True)
+            # First find the Process object by process_title
+            process_obj = Process.objects.get(process_title=process_title)
+            # Then filter ProcessStep objects by the found Process object
+            process_steps = ProcessStep.objects.filter(process=process_obj)
+            print(process_steps)
+            serializer = ProcessStepSerializer(process_steps,many=True)
             # Get all raw materials, equipment, consumables, and components
             # all_raw_material_batch = RawMaterialBatch.objects.all()
             # all_equipment = Equipment.objects.all()

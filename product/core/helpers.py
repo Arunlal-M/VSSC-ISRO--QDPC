@@ -30,54 +30,59 @@ class RawMatrialManager:
         return success, status_code,data, message
     
     @classmethod
-    def raw_material_batch_add(cls,data,*args, **kwargs):
-        print(data,"what data i got")
-        serializer = RawMaterialBatchSerializer(data=data)
-        
-        if serializer.is_valid():
-            print("serilaizer is valid")
-            serializer.save()
-            data = serializer.data
-            success = True
-            message = constants.RETRIVED_USER_SUCCESS
-            status_code = status.HTTP_200_OK
-        else:
-            print("serilaizer nto valid")
-            print(serializer.errors)
+    def raw_material_batch_add(cls, data, *args, **kwargs):
+        try:
+            serializer = RawMaterialBatchSerializer(data=data)
+            
+            if serializer.is_valid():
+                batch = serializer.save()
+                data = serializer.data
+                success = True
+                message = "Raw material batch created successfully"
+                status_code = status.HTTP_201_CREATED
+            else:
+                success = False
+                status_code = status.HTTP_400_BAD_REQUEST
+                message = f"Validation failed: {serializer.errors}"
+                data = {}
+        except Exception as e:
             success = False
-            status_code = status.HTTP_400_BAD_REQUEST
-            message = constants.USER_FETCH_FAILED
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            message = f"Error creating batch: {str(e)}"
+            data = {}
       
-        return success,status_code,data, message
+        return success, status_code, data, message
     
 
 
     
     
     @classmethod
-    def raw_material_add(cls,data,*args, **kwargs):
-        print(data,"what data i got")
-        data['is_active'] = True
-        serializer = RawMaterialSerializer(data=data)
-      
-        if serializer.is_valid():
-            print("serilaizer is valid")
-            serializer.save()
-            data = serializer.data
-            success = True
-            message = constants.RETRIVED_USER_SUCCESS
-            status_code = status.HTTP_200_OK
-        else:
-            print("Enterd else")
-            print(serializer.errors)
-            data={}
-            success = False
-            status_code = status.HTTP_400_BAD_REQUEST
-            message = constants.USER_FETCH_FAILED
+    def raw_material_add(cls, data, *args, **kwargs):
+        try:
+            data['is_active'] = True
+            serializer = RawMaterialSerializer(data=data)
+            
+            if serializer.is_valid():
+                serializer.save()
+                data = serializer.data
+                success = True
+                message = constants.RETRIVED_USER_SUCCESS
+                status_code = status.HTTP_200_OK
+            else:
+                data = {}
+                success = False
+                status_code = status.HTTP_400_BAD_REQUEST
+                message = f"Validation failed: {serializer.errors}"
 
-        
-        print (success,status_code,data, message,"Final ouput i got")
-        return success,status_code,data, message
+            return success, status_code, data, message
+            
+        except Exception as e:
+            data = {}
+            success = False
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            message = f"Error creating raw material: {str(e)}"
+            return success, status_code, data, message
     
 
     @classmethod

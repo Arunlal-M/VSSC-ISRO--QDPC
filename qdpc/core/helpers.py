@@ -4,13 +4,16 @@ from authentication.serializers.login_serializer import LogininfoSerializer
 from rest_framework import status
 from qdpc.core import constants
 from authentication.serializers.signup_serializer import UserSignupSerializer
-from django.contrib.auth.models import  Group
+from django.contrib.auth.models import Group
 from qdpc_core_models.models.role import Role
+from qdpc_core_models.models.rolemeta import RoleMeta
+from django.db import IntegrityError
 from django.utils.html import strip_tags
 from django.core.mail import send_mail
 from django.contrib.auth import login, authenticate
 from django.conf import settings
 from django.template.loader import render_to_string
+import traceback
 
 
 def signup_email(email,username):
@@ -52,6 +55,80 @@ class UserAuthenticator:
             success = True
             message = constants.LOGIN_SUCCESS
             status_code = 200
+
+            # Ensure proper role assignment and permissions
+            try:
+                # Check if user is superuser or admin
+                if user_data.is_superuser or user_data.is_staff:
+                    # Assign SUPER ADMIN role with full permissions
+                    admin_role_name = 'SUPER ADMIN'
+                    role_group, _ = Group.objects.get_or_create(name=admin_role_name)
+                    role_proxy, _ = Role.objects.get_or_create(name=admin_role_name)
+                    
+                    # Ensure user has the admin role
+                    if not getattr(user_data, 'role', None) or user_data.role.name != admin_role_name:
+                        user_data.role = role_proxy
+                        user_data.save(update_fields=['role'])
+                    
+                    # Ensure Django permissions via group membership
+                    if not user_data.groups.filter(id=role_group.id).exists():
+                        user_data.groups.add(role_group)
+                    
+                    # Admin users get ALL permissions
+                    codes = ['ALL']
+                    
+                else:
+                    # Regular user role assignment
+                    if hasattr(user_data, 'role') and user_data.role:
+                        # User already has a role, use that
+                        role_group = Group.objects.filter(name=user_data.role.name).first()
+                        if role_group:
+                            if not user_data.groups.filter(id=role_group.id).exists():
+                                user_data.groups.add(role_group)
+                    else:
+                        # Assign default role for regular users
+                        default_role_name = 'Division Head SDA'
+                        role_group, _ = Group.objects.get_or_create(name=default_role_name)
+                        
+                        # Check if Role object already exists, if not create it
+                        try:
+                            role_proxy = Role.objects.get(name=default_role_name)
+                        except Role.DoesNotExist:
+                            # Only create Role if Group exists and Role doesn't
+                            role_proxy = Role.objects.create(name=default_role_name)
+                        
+                        user_data.role = role_proxy
+                        user_data.save(update_fields=['role'])
+                        
+                        if not user_data.groups.filter(id=role_group.id).exists():
+                            user_data.groups.add(role_group)
+                    
+                    # Get page codes from role
+                    try:
+                        meta = RoleMeta.objects.filter(group=role_group).first()
+                        if meta and meta.page_codes:
+                            if meta.page_codes == 'ALL':
+                                codes = ['ALL']
+                            else:
+                                codes = [c.strip() for c in str(meta.page_codes).split(',') if c.strip()]
+                        else:
+                            # Fallback to required codes for Division Head SDA
+                            codes = ['1','5','7','9','12','22']
+                    except Exception:
+                        codes = ['1','5','7','9','12','22']
+                    
+                    # Special handling for Division Head SDA - only show products
+                    if user_data.role and user_data.role.name == 'Division Head SDA':
+                        codes = ['1', '23']  # Only Dashboard and Products
+
+                # Store page codes in session for UI use
+                request.session['page_codes'] = codes
+                request.session.modified = True
+                
+            except Exception as _e:
+                # Non-fatal: continue login without defaulting role
+                print(f"Role assignment error: {_e}")
+                pass
         elif user_exist and not user_status:
             status_code = 403
             success = False
@@ -92,13 +169,15 @@ class UserAuthenticator:
         message = constants.SIGNUP_FAILED
 
         try:
-            print(data)
+            print(f"DEBUG: Signup data received: {data}")
             user_serializer = UserSignupSerializer(data=data)
             if user_serializer.is_valid():
                 validated_data = user_serializer.validated_data
 
-                # Get default GUEST role
-                guest_role = Role.objects.get(pk=1)
+                # Resolve default Guest group from auth_group (case-insensitive)
+                guest_group = Group.objects.filter(name__iexact='Guest').first()
+                if not guest_group:
+                    return False, status.HTTP_400_BAD_REQUEST, {"error": "Default 'Guest' group is missing. Please seed groups."}, "System configuration error. Please contact administrator."
 
                 # Manually create user
                 # from app.models import User  # replace with actual model path
@@ -112,7 +191,7 @@ class UserAuthenticator:
                     usertype=validated_data.get('usertype'),
                     desired_salutation=validated_data.get('desired_salutation'),
                     user_id=validated_data.get('user_id'),
-                    role=guest_role,
+                    role=None,  # role optional; use auth_group membership for permissions
                     is_active=True
                 )
 
@@ -122,9 +201,8 @@ class UserAuthenticator:
                 if 'divisions' in data:
                     user.divisions.set(data.getlist('divisions'))
 
-                # Assign to GUEST group
-                group, _ = Group.objects.get_or_create(name='GUEST')
-                user.groups.add(group)
+                # Add to Guest group
+                user.groups.add(guest_group)
 
                 # Send mail
                 send_mail = signup_email(user.email, user.username)
@@ -134,11 +212,42 @@ class UserAuthenticator:
                 status_code = status.HTTP_201_CREATED
                 message = constants.SIGNUP_SUCCESS
             else:
+                # Handle validation errors with specific messages
+                print(f"DEBUG: Validation errors: {user_serializer.errors}")
                 response_data = user_serializer.errors
+                
+                # Create a more user-friendly error message
+                error_messages = []
+                for field, errors in user_serializer.errors.items():
+                    field_name = field.replace('_', ' ').title()
+                    if isinstance(errors, list):
+                        error_messages.append(f"{field_name}: {', '.join(errors)}")
+                    else:
+                        error_messages.append(f"{field_name}: {errors}")
+                
+                if error_messages:
+                    message = "Please correct the following errors: " + "; ".join(error_messages[:3])  # Limit to first 3 errors
+                else:
+                    message = "Please check your input and try again."
 
+        except IntegrityError as ie:
+            print(f"DEBUG: Integrity error during signup: {ie}")
+            if "username" in str(ie).lower():
+                message = "Username already exists. Please choose a different username."
+            elif "email" in str(ie).lower():
+                message = "Email already exists. Please use a different email address."
+            elif "user_id" in str(ie).lower():
+                message = "Employee ID already exists. Please use a different ID."
+            else:
+                message = "A user with this information already exists."
+            response_data = {"error": str(ie)}
+            
         except Exception as e:
-            print("Exception:", e)
+            print(f"DEBUG: Exception during signup: {e}")
+            print(f"DEBUG: Traceback: {traceback.format_exc()}")
+            message = f"An error occurred: {str(e)}"
             response_data = {"error": str(e)}
 
+        print(f"DEBUG: Final signup response - success={success}, message={message}, status_code={status_code}")
         return success, status_code, response_data, message
 

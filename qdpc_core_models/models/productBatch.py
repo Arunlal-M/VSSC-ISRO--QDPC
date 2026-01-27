@@ -6,12 +6,52 @@ from qdpc_core_models.models.raw_material_acceptence_test import RawMaterialAcce
 
 
 class ProductBatchs(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending QA'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('active', 'Active'),
+    ]
+    
     batch_id = models.CharField(max_length=100, blank=True,null=True)
     unit = models.CharField(max_length=100, blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_batches_product')
     manufacturing_start = models.DateField()
     manufacturing_end = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    # QA Approval fields
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    qa_approval_date = models.DateTimeField(null=True, blank=True)
+    qa_approved_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_product_batches_s'
+    )
+    rejection_reason = models.TextField(null=True, blank=True)
+    approval_remarks = models.TextField(null=True, blank=True, help_text="Remarks/comments when approving the batch")
+    
+    # Hierarchical approval workflow fields
+    submitted_by_role = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Role of the user who submitted this batch for approval"
+    )
+    submitted_by_user = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='submitted_product_batches_s'
+    )
+    submitted_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.batch_id

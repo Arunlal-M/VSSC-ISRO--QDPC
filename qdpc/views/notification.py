@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from qdpc_core_models.models.notificaiton import Notification
+from qdpc_core_models.models.notification import Notification
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 

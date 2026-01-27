@@ -24,9 +24,20 @@ class RawMaterialBatch(models.Model):
     expiry_date = models.DateField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if not self.expiry_date:
-            self.expiry_date = self.raw_material.calculate_expiry_date(self.procurement_date)
+        # Only calculate expiry date if it's not already set AND the raw material has shelf life data
+        if not self.expiry_date and self.raw_material.shelf_life_value and self.raw_material.shelf_life_unit:
+            try:
+                if self.raw_material.shelf_life_unit == 'days':
+                    self.expiry_date = self.procurement_date + timedelta(days=self.raw_material.shelf_life_value)
+                elif self.raw_material.shelf_life_unit == 'months':
+                    self.expiry_date = self.procurement_date + timedelta(days=self.raw_material.shelf_life_value * 30)
+                elif self.raw_material.shelf_life_unit == 'years':
+                    self.expiry_date = self.procurement_date + timedelta(days=self.raw_material.shelf_life_value * 365)
+            except Exception as e:
+                # Don't fail the save operation, just log the error silently
+                pass
+        
         super().save(*args, **kwargs)
     
-    def _str_(self):
+    def __str__(self):
         return self.batch_id

@@ -1,0 +1,307 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load page_permission_tags %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Group Page Permissions</h4>
+                <h6>Manage page permissions for group: <strong>{{ group.name }}</strong></h6>
+            </div>
+            <div class="page-actions">
+                <a href="{% url 'manage-page-permissions' %}" class="btn btn-outline-secondary">
+                    <i data-feather="arrow-left" class="me-1"></i>Back to All Groups
+                </a>
+            </div>
+        </div>
+
+        <!-- Group Info Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="card-title">Group Information</h6>
+                        <p class="mb-1"><strong>Group Name:</strong> {{ group.name }}</p>
+                        <p class="mb-1"><strong>Group ID:</strong> {{ group.id }}</p>
+                        <p class="mb-0"><strong>Members:</strong> {{ group.user_set.count }} users</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="card-title">Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-sm" onclick="selectAllPermissions()">
+                                <i data-feather="check-square" class="me-1"></i>Select All Permissions
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="clearAllPermissions()">
+                                <i data-feather="square" class="me-1"></i>Clear All Permissions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permission Form -->
+        <form method="POST">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5 class="card-title">Page Permissions</h5>
+                            <p class="text-muted">Check the permissions you want to grant to this group for each page.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" id="page-filter" class="form-control" placeholder="Filter pages...">
+                                <button class="btn btn-outline-secondary" type="button" onclick="clearPageFilter()">
+                                    <i data-feather="x"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Permission Legend -->
+                    <div class="permission-legend mb-4">
+                        <h6>Permission Types:</h6>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <span class="badge bg-primary me-2">V</span>
+                                <small>View - Can see the page</small>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="badge bg-success me-2">A</span>
+                                <small>Add - Can create new items</small>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="badge bg-warning me-2">E</span>
+                                <small>Edit - Can modify existing items</small>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="badge bg-danger me-2">D</span>
+                                <small>Delete - Can remove items</small>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="badge bg-info me-2">P</span>
+                                <small>Approve - Can approve/reject items</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pages by Section -->
+                    {% for section_name, pages in pages_by_section.items %}
+                    <div class="page-section mb-4" data-section="{{ section_name|lower }}">
+                        <div class="section-header d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                            <h6 class="section-title mb-0">
+                                <i data-feather="folder" class="me-2"></i>
+                                {{ section_name }}
+                            </h6>
+                            <div class="section-actions">
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="selectAllForSection('{{ section_name|lower }}')">
+                                    <i data-feather="check-square" class="me-1"></i>Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                        onclick="clearAllForSection('{{ section_name|lower }}')">
+                                    <i data-feather="square" class="me-1"></i>Clear All
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            {% for page in pages %}
+                            <div class="col-md-6 col-lg-4 page-item" data-page-name="{{ page.name|lower }}">
+                                <div class="page-permission-card card h-100">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <span class="page-number">{{ page.page_id }}</span>
+                                            {{ page.name }}
+                                        </h6>
+                                        <small class="text-muted">{{ page.url }}</small>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="permission-checkboxes">
+                                            {% for perm_type, perm_label in permission_types %}
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       id="permission_{{ page.name }}_{{ perm_type }}"
+                                                       name="permission_{{ page.name }}_{{ perm_type }}"
+                                                       value="1"
+                                                       {% if group_permissions|get_item:page.name|get_item:perm_type %}checked{% endif %}>
+                                                <label class="form-check-label" for="permission_{{ page.name }}_{{ perm_type }}">
+                                                    <span class="badge 
+                                                        {% if perm_type == 'view' %}bg-primary
+                                                        {% elif perm_type == 'add' %}bg-success
+                                                        {% elif perm_type == 'edit' %}bg-warning
+                                                        {% elif perm_type == 'delete' %}bg-danger
+                                                        {% else %}bg-info{% endif %}">
+                                                        {{ perm_label|first|upper }}
+                                                    </span>
+                                                    {{ perm_label }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Form Actions -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="save" class="me-2"></i>Save Permissions
+                        </button>
+                        <a href="{% url 'manage-page-permissions' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                            <i data-feather="x" class="me-2"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.page-permission-card {
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.page-permission-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.page-number {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-right: 8px;
+}
+
+.section-header {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.section-actions .btn {
+    margin-left: 5px;
+}
+
+.permission-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-check {
+    margin-bottom: 8px;
+}
+
+.form-check-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.page-item {
+    transition: all 0.3s ease;
+}
+
+.page-item:hover {
+    transform: translateY(-2px);
+}
+</style>
+
+<script>
+// Initialize filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    initializePageFilter();
+});
+
+// Initialize page filter
+function initializePageFilter() {
+    const filterInput = document.getElementById('page-filter');
+    filterInput.addEventListener('input', function() {
+        const filterValue = this.value.toLowerCase();
+        filterPages(filterValue);
+    });
+}
+
+// Filter pages
+function filterPages(filterValue) {
+    const pageItems = document.querySelectorAll('.page-item');
+    const sections = document.querySelectorAll('.page-section');
+    
+    pageItems.forEach(item => {
+        const pageName = item.getAttribute('data-page-name');
+        if (pageName.includes(filterValue)) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    // Show/hide sections based on visible pages
+    sections.forEach(section => {
+        const visiblePages = section.querySelectorAll('.page-item[style=""]').length;
+        if (visiblePages === 0) {
+            section.style.display = 'none';
+        } else {
+            section.style.display = '';
+        }
+    });
+}
+
+// Clear page filter
+function clearPageFilter() {
+    document.getElementById('page-filter').value = '';
+    filterPages('');
+}
+
+// Select all permissions for a specific section
+function selectAllForSection(sectionName) {
+    const section = document.querySelector(`[data-section="${sectionName}"]`);
+    const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+
+// Clear all permissions for a specific section
+function clearAllForSection(sectionName) {
+    const section = document.querySelector(`[data-section="${sectionName}"]`);
+    const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+
+// Select all permissions for all pages
+function selectAllPermissions() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+
+// Clear all permissions for all pages
+function clearAllPermissions() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+</script>
+{% endblock %}

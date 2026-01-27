@@ -14,7 +14,7 @@ class ComponentManager:
         data = {}
         success = False
         status_code = status.HTTP_400_BAD_REQUEST
-        message = constants.USER_FETCH_FAILED
+        message = constants.COMPONENT_BATCH_FAILED
       
         try:
             component_batch = ComponentBatch.objects.get(pk=pk)
@@ -26,28 +26,29 @@ class ComponentManager:
         except ComponentBatch.DoesNotExist:
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            message = constants.USER_FETCH_FAILED
+            message = constants.COMPONENT_BATCH_FAILED
       
         return success, status_code,data, message
     
     @classmethod
     def component_batch_add(cls,data,*args, **kwargs):
-        print(data,"what data i got")
+        print("DEBUG - Data received in component_batch_add:", data)
         serializer = ComponentBatchSerializer(data=data)
         
         if serializer.is_valid():
-            print("serilaizer is valid")
+            print("DEBUG - Serializer is valid, saving...")
             serializer.save()
             data = serializer.data
             success = True
             message = constants.RETRIVED_USER_SUCCESS
             status_code = status.HTTP_200_OK
         else:
-            print("serilaizer nto valid")
-            print(serializer.errors)
+            print("DEBUG - Serializer validation failed:")
+            print("Validation errors:", serializer.errors)
+            print("Data that failed validation:", data)
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            message = constants.USER_FETCH_FAILED
+            message = constants.COMPONENT_BATCH_FAILED
       
         return success,status_code,data, message
     
@@ -74,7 +75,7 @@ class ComponentManager:
             data={}
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            message = constants.USER_FETCH_FAILED
+            message = constants.COMPONENT_BATCH_FAILED
 
         
         print (success,status_code,data, message,"Final ouput i got")

@@ -12,6 +12,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Max
 from urllib.parse import unquote
 from qdpc.notifications import create_notification
+from django.http import JsonResponse
+import json
+
 class AcceptanceTestAdd(BaseModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
 
@@ -23,31 +26,70 @@ class AcceptanceTestAdd(BaseModelViewSet):
         context = {
             'units':units
         }
-        return render(request, 'acceptance_test.html',context)
+        return render(request, 'acceptance_test_add.html',context)
     
     def post(self, request):
-        # Validate the incoming data using the serializer   
-        serializer = AcceptanceTestSerializer(data=request.data)
-
-        if serializer.is_valid():
-            acceptance_test = serializer.save()
-            success = True
-            message = 'Acceptance test added successfully!'
-            data = serializer.data
-            status_code = status.HTTP_201_CREATED
+        try:
+            # Get form data
+            name = request.POST.get('name')
+            test_type = request.POST.get('test_type')
+            min_value = request.POST.get('min_value')
+            max_value = request.POST.get('max_value')
+            unit_id = request.POST.get('unit')
+            reevaluation_frequency_value = request.POST.get('reevaluation_frequency_value')
+            reevaluation_frequency_unit = request.POST.get('reevaluation_frequency_unit')
+            test_result = request.POST.get('test_result')
+            specification_result = request.POST.get('specification_result')
+            
+            # Validate required fields
+            if not name or not test_type or not reevaluation_frequency_value or not reevaluation_frequency_unit:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Required fields are missing'
+                }, status=400)
+            
+            # Convert numeric values
+            try:
+                min_value = int(min_value) if min_value else None
+                max_value = int(max_value) if max_value else None
+                reevaluation_frequency_value = int(reevaluation_frequency_value)
+            except ValueError:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid numeric values'
+                }, status=400)
+            
+            # Create acceptance test
+            acceptance_test = AcceptanceTest.objects.create(
+                name=name,
+                test_type=test_type,
+                min_value=min_value,
+                max_value=max_value,
+                unit_id=unit_id if unit_id else None,
+                reevaluation_frequency_value=reevaluation_frequency_value,
+                reevaluation_frequency_unit=reevaluation_frequency_unit,
+                test_result=test_result,
+                specification_result=specification_result
+            )
+            
+            # Create notification
             notification_message = f"New acceptance test '{acceptance_test.name}' was added."
-            create_notification(notification_message)  # Create a notification
-        else:
-            success = False
-            message = 'Validation failed.'
-            data = serializer.errors  # 👈 Return validation errors
-            status_code = status.HTTP_400_BAD_REQUEST
-
-        return Response({
-            'success': success,
-            'message': message,
-            'data': data
-        }, status=status_code)
+            create_notification(notification_message)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Acceptance test created successfully!',
+                'data': {
+                    'id': acceptance_test.id,
+                    'name': acceptance_test.name
+                }
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error creating acceptance test: {str(e)}'
+            }, status=500)
 
 
 class AcceptanceTestList(BaseModelViewSet):

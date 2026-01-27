@@ -1,0 +1,392 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+			
+			<div class="page-wrapper">
+				<div class="content">
+					<div class="page-header">
+						<div class="page-title">
+							<h4>Acceptance Test List</h4>
+							<!-- <h6>Manage your products</h6> -->
+						</div>
+						<div class="page-btn">
+							<a href="{% url 'acceptance-add' %}" class="btn btn-added"><img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Acceptance Test</a>
+						</div>
+					</div>
+					
+
+					<!-- /product list -->
+					<div class="card">
+						<div class="card-body">
+							<div class="table-top">
+								<div class="search-set">
+									<div class="search-path">
+										<a class="btn btn-filter" id="filter_search">
+											<img src="{% static 'assets/img/icons/filter.svg' %}" alt="img">
+											<span><img src="{% static 'assets/img/icons/closes.svg' %}" alt="img"></span>
+										</a>
+									</div>
+									<div class="search-input">
+										<a class="btn btn-searchset"><img src="{% static 'assets/img/icons/search-white.svg' %}" alt="img"></a>
+									</div>
+								</div>
+								<div class="wordset">
+									<ul>
+										<li>
+											<a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img src="{% static 'assets/img/icons/pdf.svg' %}" alt="img"></a>
+										</li>
+										<li>
+											<a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img src="{% static 'assets/img/icons/excel.svg' %}" alt="img"></a>
+										</li>
+										<li>
+											<a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img src="{% static 'assets/img/icons/printer.svg' %}" alt="img"></a>
+										</li>
+									</ul>
+								</div>
+							</div>
+							<!-- /Filter -->
+							<div class="card mb-0" id="filter_inputs">
+								<div class="card-body pb-0">
+									<div class="row">
+										<div class="col-lg-12 col-sm-12">
+											<div class="row">
+												<div class="col-lg col-sm-6 col-12">
+													<div class="form-group">
+														<select class="select">
+															<option>Choose Product</option>
+															<option>Macbook pro</option>
+															<option>Orange</option>
+														</select>
+													</div>
+												</div>
+												<div class="col-lg col-sm-6 col-12">
+													<div class="form-group">
+														<select class="select">
+															<option>Choose Category</option>
+															<option>Computers</option>
+															<option>Fruits</option>
+														</select>
+													</div>
+												</div>
+												<div class="col-lg col-sm-6 col-12">
+													<div class="form-group">
+														<select class="select">
+															<option>Choose Sub Category</option>
+															<option>Computer</option>
+														</select>
+													</div>
+												</div>
+												<div class="col-lg col-sm-6 col-12">
+													<div class="form-group">
+														<select class="select">
+															<option>Brand</option>
+															<option>N/D</option>
+														</select>
+													</div>
+												</div>
+												<div class="col-lg col-sm-6 col-12 ">
+													<div class="form-group">
+														<select class="select">
+															<option>Price</option>
+															<option>150.00</option>
+														</select>
+													</div>
+												</div>
+												<div class="col-lg-1 col-sm-6 col-12">
+													<div class="form-group">
+														<a class="btn btn-filters ms-auto"><img src="{% static 'assets/img/icons/search-whites.svg' %}" alt="img"></a>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- /Filter -->
+							<div class="table-responsive">
+						
+
+
+
+
+
+
+
+	<table class="table  datanew">
+		<thead>
+			<tr>
+				<th>Acceptance Test Name</th>
+				<th>Specification</th>
+				<th>Reevaluation Frequency </th>
+				{% comment %} <th>Sampling Plan</th> {% endcomment %}
+				<!-- <th>Specification</th>
+				<th>unit</th>
+			
+				<th>Sampling Plan</th>
+				<th>Reevaluation Frequency </th>
+				 -->
+				<th>Action</th>	
+			</tr>
+		</thead>
+		<tbody>
+			
+			{% for test in acceptance_tests %}
+			<tr>
+				<td>{{ test.name }}</td>
+				<td>
+					{% if test.min_value and test.max_value and test.unit_name %}
+						{{ test.min_value }} - {{ test.max_value }} {{ test.unit_name }}
+					{% elif test.color %}
+					{{ test.color }}
+					{% else %}
+						N/D
+					{% endif %}
+				</td>
+				<td>
+					{% if test.reevaluation_frequency_value %}
+						{{ test.reevaluation_frequency_value }} {{ test.reevaluation_frequency_unit }}
+					{% else %}
+						N/D
+					{% endif %}
+				</td>
+				{% comment %} <td>
+					{% if test.sampling_plan_url %}
+						<a href="{{ test.sampling_plan_url }}" target="_blank">View Sampling Plan</a>
+						<!-- Optionally embed the PDF directly -->
+						<!-- <iframe src="{{ test.sampling_plan_url }}" width="600" height="400" style="border: none;"></iframe> -->
+					{% else %}
+						No file available
+					{% endif %}
+				</td> {% endcomment %}
+		
+				<td>
+					<a class="me-3 view-btn" data-id="{{ test.id }}">
+					<img src="{% static 'assets/img/icons/eye.svg' %}" alt="View">
+				</a>
+					<a id="delete-btn" data-id="{{ test.name }}">
+						<img src="{% static 'assets/img/icons/delete.svg' %}"
+							alt="img">
+					</a>                     
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+							</div>
+						</div>
+					</div>
+					<!-- /product list -->
+				</div>
+			</div>
+        </div>
+		<!-- /Main Wrapper -->
+
+       <!-- VIEW ACCEPTANCE TEST MODAL -->
+<div class="modal fade" id="viewAcceptanceTestModal" tabindex="-1" aria-labelledby="viewAcceptanceTestLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewAcceptanceTestLabel">View Acceptance Test Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <!-- Column 1 -->
+                        <div class="col-6 mb-2">
+                            <label>Test Name</label>
+                            <input type="text" id="view_name" class="form-control" readonly>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label>Test Type</label>
+                            <input type="text" id="view_test_type" class="form-control" readonly>
+                        </div>
+                        
+                        <!-- Quantitative Fields (conditionally shown) -->
+                        <div class="col-6 mb-2" id="view_min_value_container">
+                            <label>Min Value</label>
+                            <input type="text" id="view_min_value" class="form-control" readonly>
+                        </div>
+                        <div class="col-6 mb-2" id="view_max_value_container">
+                            <label>Max Value</label>
+                            <input type="text" id="view_max_value" class="form-control" readonly>
+                        </div>
+                        
+                        <!-- Qualitative Fields (conditionally shown) -->
+                        <div class="col-6 mb-2" id="view_test_result_container">
+                            <label>Test Result</label>
+                            <input type="text" id="view_test_result" class="form-control" readonly>
+                        </div>
+                        <div class="col-6 mb-2" id="view_spec_result_container">
+                            <label>Specification Result</label>
+                            <input type="text" id="view_spec_result" class="form-control" readonly>
+                        </div>
+                        
+                        <!-- Common Fields -->
+                        <div class="col-6 mb-2">
+                            <label>Unit</label>
+                            <input type="text" id="view_unit" class="form-control" readonly>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label>Reevaluation Frequency</label>
+                            <input type="text" id="view_reevaluation" class="form-control" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+		<!-- DELTE CONFIRMATION MODAL -->
+		<div id="confirmDeleteModal" class="modal fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Confirm Deletion</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body text-center ">
+						<p>Are you sure you want to delete this AcceptanceTest?</p>
+					</div>
+					<div class="modal-footer d-flex justify-content-center">
+						<button type="button" class="btn btn-danger text-right" id="confirm-delete">Delete</button>
+						<button type="button" class="btn btn-secondary text-right" id="cancel-delete"
+							data-dismiss="modal">Cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		{% endblock %}
+
+		{% block scripts %}
+<script>
+
+	$(document).on('click', '#delete-btn', function (e) {
+        e.preventDefault(); // Prevent default link behavior
+
+        var acceptancetestId = $(this).data('id'); // Get Consumable ID from data attribute
+        if (!acceptancetestId) {
+            alert('acceptancetest Id not found.');
+            return;
+        }
+
+        // Store the Consumable in the modal's confirm button for reference
+        $('#confirm-delete').data('id', acceptancetestId);
+
+        // Show the confirmation modal
+        $('#confirmDeleteModal').modal('show');
+    });
+
+    // Handle the confirmation of deletion
+    $(document).on('click', '#confirm-delete', function () {
+        var acceptancetestId = $(this).data('id'); // Retrieve Consumable ID from the modal's confirm button
+		let encodedacceptancetestId = encodeURIComponent(acceptancetestId); // Encode special characters
+
+
+        if (!acceptancetestId) {
+            alert('Acceptancetest ID not found.');
+            return;
+        }
+
+        // Construct the URL dynamically
+        const baseUrl = "/product/acceptancetest-list/delete/";
+        const deleteUrl = `${baseUrl}${encodedacceptancetestId}/`;
+
+        // Perform the AJAX request for deletion
+        $.ajax({
+            url: deleteUrl,
+            type: 'POST',
+          //  data: JSON.stringify({ 'acceptancetest_Id': acceptancetestId }),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token header
+            },
+            success: function (response) {
+                if (response.success) {
+                    console.log('Delete successful, reloading page...');
+
+                    // Close the modal after success
+                    $('#confirmDeleteModal').modal('hide');
+
+                    // Reload the page immediately after successful deletion
+                    window.location.reload(true); // Force reload (bypass cache)
+                } else {
+                    alert('Error: ' + response.message);
+                    console.error('Delete failed: ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert('An error occurred: ' + error);
+                console.error('AJAX error:', error);
+            }
+        });
+    });
+	 // Handle the cancel button to close the modal
+	 $(document).on('click', '#cancel-delete, .close', function () {
+        $('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
+    });
+	$(document).ready(function() {
+    // View button click handler
+    $('.view-btn').on('click', function() {
+        const testId = $(this).data('id');
+        $.ajax({
+            type: 'POST',
+            url: `/product/view/acceptancetest/${testId}/`,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({}),
+            success: function(response) {
+                if (response.success) {
+                    const data = response.data;
+                    
+                    // Basic fields
+                    $('#view_name').val(data.name);
+                    $('#view_test_type').val(data.test_type);
+                    $('#view_reevaluation').val(
+                        `${data.reevaluation_frequency_value} ${data.reevaluation_frequency_unit}`
+                    );
+                    
+                    // Handle quantitative fields
+                    if (data.test_type === 'quantitative') {
+                        $('#view_min_value_container').show();
+                        $('#view_max_value_container').show();
+                        $('#view_unit_container').show();
+                        $('#view_test_result_container').hide();
+                        $('#view_spec_result_container').hide();
+                        
+                        $('#view_min_value').val(data.min_value || 'N/A');
+                        $('#view_max_value').val(data.max_value || 'N/A');
+                        $('#view_unit').val(data.unit_name || 'N/A');
+                    } 
+                    // Handle qualitative fields
+                    else {
+                        $('#view_min_value_container').hide();
+                        $('#view_max_value_container').hide();
+                        $('#view_unit_container').hide();
+                        $('#view_test_result_container').show();
+                        $('#view_spec_result_container').show();
+                        
+                        $('#view_test_result').val(data.test_result || 'N/A');
+                        $('#view_spec_result').val(data.specification_result || 'N/A');
+                    }
+                    
+                    $('#viewAcceptanceTestModal').modal('show');
+                } else {
+                    alert(response.message || 'Failed to fetch acceptance test details.');
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error: ' + (xhr.responseJSON?.message || 'Failed to fetch acceptance test details.'));
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

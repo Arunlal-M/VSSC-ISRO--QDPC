@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=D:\1 globify project\Backups\globify-productmanagement\env
+set VIRTUAL_ENV=D:\1 globify project\SB\VSSC-ISRO--QDPC\env
 
 if not defined PROMPT set PROMPT=$P$G
 

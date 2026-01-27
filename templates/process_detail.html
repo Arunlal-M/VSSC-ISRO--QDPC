@@ -3,62 +3,213 @@
 {% load static %}
 <div class="page-wrapper">
     <div class="content">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'process_list' %}" class="text-decoration-none">
+                        <i class="fas fa-list me-1"></i>Process List
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="fas fa-cogs me-1"></i>{{ process_title }}
+                </li>
+            </ol>
+        </nav>
+
         <div class="page-header">
             <div class="page-title">
-                <h4>Process Detail - {{ process_title }}</h4>
+                <h4><i class="fas fa-cogs me-2"></i>Process Detail - {{ process_title }}</h4>
+                <h6>View and manage process steps</h6>
+            </div>
+            <div class="page-btn">
+                <a href="{% url 'process_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Process List
+                </a>
+                <a href="{% url 'process_create' %}" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Add New Process
+                </a>
             </div>
         </div>
         <div class="card">
             <div class="card-body">
-                <h5>Process Steps</h5>
-                <table class="table datanew">
-                    <thead>
-                        <tr>
-                            <th>Step ID</th>
-                            <th>Description</th>
-                            <th>Raw Materials</th>
-                            <th>R M Status</th>
-                            <th>Equipment</th>
-                            <th>Equipment Status</th>
-                            <th>Consumable</th>
-                            <th>Component</th>
-                            <th>Specification</th>
-                            <th>Test Value</th>
-                            <th>Remarks</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for step in process %}
-                        <tr>
-                            <td>{{ step.step_id }}</td>
-                            <td>{{ step.process_description }}</td>
-                            <td>{% for material in step.raw_material.all %} {{ material.name }} {% endfor %}</td>
-                            <td>{{ step.rm_status }}</td>
-                            <td>{% for equip in step.equipment.all %} {{ equip.name }} {% endfor %}</td>
-                            <td>{{ step.equipment_status }}</td>
-                            <td>{% for consum in step.consumable.all %} {{ consum.name }} {% endfor %}</td>
-                            <td>{% for comp in step.component.all %} {{ comp.name }} {% endfor %}</td>
-                            <td>{{ step.process_step_spec }}</td>
-                            <td>{{ step.measured_value_observation }}</td>
-                            <td>{{ step.remarks }}</td>
-                            <td>
-                                <a class="me-3 view-user-btn" data-bs-toggle="modal"
-                                    data-bs-target="#updateProcessStepModal" data-step-id="{{ step.step_id }}">
-                                    <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
-                                </a>
-                                <a class="me-3" id="delete-btn" data-bs-toggle="modal"
-                                    data-bs-target="#confirmDeleteModal" data-step-id="{{ step.step_id }}">
-                                    <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
-                                </a>
-                                <a  data-id="{{ step.step_id }}" href="javascript:void(0);">
-                                   
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <!-- Process Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h4>{{ process|length }}</h4>
+                                <p class="mb-0">Total Steps</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h4>{{ process_title }}</h4>
+                                <p class="mb-0">Process Name</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h4>{% for step in process %}{% if step.process_type == 'quantitative' %}{{ forloop.counter }}{% endif %}{% endfor %}</h4>
+                                <p class="mb-0">Quantitative Steps</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h4>{% for step in process %}{% if step.test_result == 'PASS' %}{{ forloop.counter }}{% endif %}{% endfor %}</h4>
+                                <p class="mb-0">Passed Tests</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5><i class="fas fa-cogs me-2"></i>Process Steps</h5>
+                
+                <div class="table-responsive">
+                                            <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Step ID</th>
+                                    <th>Description</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Raw Materials</th>
+                                    <th>RM Status</th>
+                                    <th>Equipment</th>
+                                    <th>Equipment Status</th>
+                                    <th>Consumables</th>
+                                    <th>Components</th>
+                                    <th>Min Value</th>
+                                    <th>Max Value</th>
+                                    <th>Test Result</th>
+                                    <th>Spec Result</th>
+                                    <th>Remarks</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                            {% for step in process %}
+                            <tr class="step-row">
+                                <td><span class="badge bg-primary">{{ step.step_id }}</span></td>
+                                <td>{{ step.process_description }}</td>
+                                <td>{{ step.process_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="badge {% if step.process_type == 'quantitative' %}bg-success{% else %}bg-info{% endif %}">
+                                        {{ step.process_type|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% for material in step.raw_material_batch.all %}
+                                        <span class="badge bg-secondary me-1">{{ material.name }}</span>
+                                    {% empty %}
+                                        <span class="text-muted">None</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if step.rm_status == 'Material Valid' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ step.rm_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% for equip in step.equipment.all %}
+                                        <span class="badge bg-info me-1">{{ equip.name }}</span>
+                                    {% empty %}
+                                        <span class="text-muted">None</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if step.equipment_status == 'Calibration Valid' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ step.equipment_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <!-- Debug: {{ step.consumable_batch.all|length }} consumables -->
+                                    {% for consum in step.consumable_batch.all %}
+                                        <span class="badge bg-warning me-1">{{ consum.name }}</span>
+                                    {% empty %}
+                                        <span class="text-muted">None</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <!-- Debug: {{ step.component_batch.all|length }} components -->
+                                    {% for comp in step.component_batch.all %}
+                                        <span class="badge bg-dark me-1">{{ comp.name }}</span>
+                                    {% empty %}
+                                        <span class="text-muted">None</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% if step.min_value %}
+                                        <span class="badge bg-light text-dark">{{ step.min_value }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if step.max_value %}
+                                        <span class="badge bg-light text-dark">{{ step.max_value }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if step.test_result %}
+                                        <span class="badge {% if step.test_result == 'PASS' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ step.test_result }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if step.specification_result %}
+                                        <span class="badge {% if step.specification_result == 'PASS' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ step.specification_result }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if step.remarks %}
+                                        <span class="text-truncate d-inline-block" style="max-width: 150px;" title="{{ step.remarks }}">
+                                            {{ step.remarks }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                                                                 <a class="btn btn-sm btn-outline-primary view-user-btn" data-bs-toggle="modal"
+                                             data-bs-target="#updateProcessStepModal" data-step-id="{{ step.step_id }}"
+                                             title="Edit Step">
+                                             Edit
+                                         </a>
+                                         <a class="btn btn-sm btn-outline-danger" id="delete-btn" data-bs-toggle="modal"
+                                             data-bs-target="#confirmDeleteModal" data-step-id="{{ step.step_id }}"
+                                             title="Delete Step">
+                                             Delete
+                                         </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="16" class="text-center text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>No process steps found for this process.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -168,9 +319,113 @@
 
 {% endblock %}
 
+<!-- Add enhanced styling for process detail page -->
+<style>
+    .step-row:hover {
+        background-color: #f8f9fa !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+    
+    .table th {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        vertical-align: middle;
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+    
+    .card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .btn-group .btn {
+        margin: 0 2px;
+    }
+    
+    .text-truncate {
+        max-width: 150px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    .table-responsive {
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    
+    /* Removed dark table header styling */
+    
+    .step-row:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    .breadcrumb {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .breadcrumb-item a {
+        color: #495057;
+        transition: color 0.3s ease;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: #007bff;
+    }
+    
+    .breadcrumb-item.active {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* Removed search-filter-section styling */
+</style>
+
 {% block scripts %}
 <script>
     $(document).ready(function () {
+        // Helper function to populate select fields
+        function populateSelect(selector, allOptions, selectedOptions) {
+            const select = $(selector);
+            select.empty();
+            allOptions.forEach(option => {
+                const isSelected = selectedOptions.some(sel => sel.id === option.id) ? 'selected' : '';
+                select.append(`<option value="${option.id}" ${isSelected}>${option.name}</option>`);
+            });
+        }
+
         // Function to populate modal fields
         $('.view-user-btn').on('click', function () {
             const stepId = $(this).data('step-id');
@@ -201,130 +456,107 @@
                 error: function (xhr) {
                     alert('Failed to load data. Please try again.');
                 }
-            
             });
+        });
+
+        // Handle save button click
+        $('#updateProcessStep').on('click', function () {
+            const stepId = $('#step_id').val();
+            const processTitle = "{{ process_title }}";
+            const updateUrl = `/process/edit/${processTitle}/${stepId}/`;
+
+            const updatedData = {
+                description: $('#process_description').val(),
+                rm_status: $('#rm_status').val(),
+                equipment_status: $('#equipment_status').val(),
+                remarks: $('#remarks').val(),
+                raw_materials: $('#raw_materials').val(),
+                equipment: $('#equipment').val(),
+                consumables: $('#consumables').val(),
+                components: $('#components').val(),
+                process_step_spec: $('#process_step_spec').val(),
+                measured_value_observation: $('#measured_value_observation').val(),
+            };
             
-
-
-            // Helper function to populate select fields
-            function populateSelect(selector, allOptions, selectedOptions) {
-                const select = $(selector);
-                select.empty();
-                allOptions.forEach(option => {
-                    const isSelected = selectedOptions.some(sel => sel.id === option.id) ? 'selected' : '';
-                    select.append(`<option value="${option.id}" ${isSelected}>${option.name}</option>`);
-                });
+            $.ajax({
+                type: 'PUT',
+                url: updateUrl,
+                data: JSON.stringify(updatedData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Update failed: ' + response.message);
+                    }
+                },
+                error: function () {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+        
+        // Handle delete button click
+        $(document).on('click', '#delete-btn', function (e) {
+            e.preventDefault();
+            const stepId = $(this).data('step-id');
+            const processTitle = "{{ process_title }}";
+            
+            if (!stepId) {
+                alert('Step ID not found.');
+                return;
             }
-        
-            
 
-            // Handle save button click
-            $('#updateProcessStep').on('click', function () {
-                // const stepId = $('#step_id').val();
-                const updateUrl = `/process/edit/${processTitle}/${stepId}/`;
-
-                const updatedData = {
-                    description: $('#process_description').val(),
-                    rm_status: $('#rm_status').val(),
-                    equipment_status: $('#equipment_status').val(),
-                    remarks: $('#remarks').val(),
-                    raw_materials: $('#raw_materials').val(),
-                    equipment: $('#equipment').val(),
-                    consumables: $('#consumables').val(),
-                    components: $('#components').val(),
-                    process_step_spec: $('#process_step_spec').val(),
-                    measured_value_observation: $('#measured_value_observation').val(),
-                };
-                $.ajax({
-                    type: 'PUT',
-                    url: updateUrl,
-                    data: JSON.stringify(updatedData),
-                    contentType: 'application/json',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            location.reload(); // Reload the page on success
-                        } else {
-                            alert('Update failed: ' + response.message);
-                        }
-                    },
-                    error: function () {
-                        alert('An error occurred. Please try again.');
-                    }
-                });
-            });
+            $('#confirm-delete').data('step-id', stepId);
+            $('#confirmDeleteModal').modal('show');
         });
-        
-            $(document).on('click', '#delete-btn', function (e) {
-                e.preventDefault(); // Prevent default link behavior
-                const stepId = $(this).data('step-id');
-                const processTitle = "{{ process_title }}";
-                // var stepId = $(this).data('id'); // Get Step ID from data attribute
-                if (!stepId) {
-                    alert('Step ID not found.');
-                    return;
-                }
 
-                // Store the Step ID in the modal's confirm button for reference
-                $('#confirm-delete').data('id', stepId);
+        // Handle the confirmation of deletion
+        $(document).on('click', '#confirm-delete', function () {
+            const stepId = $(this).data('step-id');
+            const processTitle = "{{ process_title }}";
 
-                // Show the confirmation modal
-                $('#confirmDeleteModal').modal('show');
-            });
-            
+            if (!stepId) {
+                alert('Step ID not found.');
+                return;
+            }
 
-            // Handle the confirmation of deletion
-            $(document).on('click', '#confirm-delete', function () {
-                // var stepId = $(this).data('id'); // Retrieve Step ID from the modal's confirm button
-                const stepId = $(this).data('step-id');
-                const processTitle = "{{ process_title }}";
+            const deleteUrl = `/process/delete-step/${processTitle}/${stepId}/`;
 
-                if (!stepId) {
-                    alert('Step ID not found.');
-                    return;
-                }
-
-                // Construct the URL dynamically
-                const deleteUrl = `/process/delete-step/${processTitle}/${stepId}/`;
-
-                // Perform the AJAX request for deletion
-                $.ajax({
-                    url: deleteUrl,
-                    type: 'POST',
-                    data: JSON.stringify({ 'stepId': stepId }),
-                    contentType: 'application/json',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token header
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            console.log('Delete successful, reloading page...');
-
-                            // Close the modal after success
-                            $('#confirmDeleteModal').modal('hide');
-
-                            // Reload the page immediately after successful deletion
-                            window.location.reload(true); // Force reload (bypass cache)
-                        } else {
-                            alert('Error: ' + response.message);
-                            console.error('Delete failed: ' + response.message);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        alert('An error occurred: ' + error);
-                        console.error('AJAX error:', error);
+            $.ajax({
+                url: deleteUrl,
+                type: 'POST',
+                data: JSON.stringify({ 'stepId': stepId }),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                success: function (response) {
+                    if (response.success) {
+                        console.log('Delete successful, reloading page...');
+                        $('#confirmDeleteModal').modal('hide');
+                        window.location.reload(true);
+                    } else {
+                        alert('Error: ' + response.message);
+                        console.error('Delete failed: ' + response.message);
                     }
-                    
-                });
-            });
-
-            // Handle the cancel button to close the modal
-            $(document).on('click', '#cancel-delete, .btn-close', function () {
-                $('#confirmDeleteModal').modal('hide'); // Explicitly hide the modal on cancel
+                },
+                error: function (xhr, status, error) {
+                    alert('An error occurred: ' + error);
+                    console.error('AJAX error:', error);
+                }
             });
         });
 
+        // Handle the cancel button to close the modal
+        $(document).on('click', '#cancel-delete, .btn-close', function () {
+            $('#confirmDeleteModal').modal('hide');
+        });
+
+        /* Removed search and filter functionality */
+    });
 </script>
 {% endblock %}

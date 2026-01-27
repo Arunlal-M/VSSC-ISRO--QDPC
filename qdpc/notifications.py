@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from qdpc_core_models.models.notificaiton import Notification
+from qdpc_core_models.models.notification import Notification
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 

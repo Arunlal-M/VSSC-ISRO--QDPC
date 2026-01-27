@@ -1,131 +1,167 @@
+{% load static %}
 <div class="sidebar" id="sidebar">
     <div class="sidebar-inner slimscroll">
+        <!-- User Info Section -->
+        
         <div id="sidebar-menu" class="sidebar-menu">
             <ul>
-                {% if not 'QA' in request.user.groups.all|join:", " %}
+                {% if can_access_dashboard %}
                 <li class="submenu-open">
-                    <h6 class="submenu-hdr">User Management</h6>
+                    <h6 class="submenu-hdr">Pages</h6>
                     <ul>
                         <li>
                             <a href="{% url 'user-dashboard' %}"><i data-feather="grid"></i><span>Dashboard</span></a>
                         </li>
+                    </ul>
+                </li>
+                {% endif %}
 
+                {% if can_access_equipment or can_access_raw_material or can_access_raw_material_batch or can_access_consumable or can_access_consumable_batch or can_access_component or can_access_component_batch or can_access_product or can_access_product_batch or can_access_process %}
+                <li class="submenu-open">
+                    <h6 class="submenu-hdr">Product Data Management</h6>
+                    <ul>
+                        {% if can_access_equipment %}
                         <li>
                             <a href="{% url 'equipment-list' %}"><i data-feather="grid"></i><span>Equipments</span></a>
                         </li>
-
-                        <li> 
-
-
-
-                            
-                            <a href="{% url 'user-list' %}"><i data-feather="grid"></i><span>Users</span></a>
-                        </li>
+                        {% endif %}
+                        {% if can_access_acceptance_test %}
                         <li>
-                            <a href="{% url 'acceptance-list' %}"><i data-feather="grid"></i><span>Acceptance
-                                    Test</span></a>
+                            <a href="{% url 'acceptance-test-list' %}"><i data-feather="grid"></i><span>Acceptance Test</span></a>
                         </li>
-
-
+                        {% endif %}
+                        {% if can_access_raw_material %}
                         <li>
                             <a href="{% url 'raw-material' %}"><i data-feather="grid"></i><span>Rawmaterial</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_raw_material_batch %}
                         <li>
-                            <a href="{% url 'raw-material-batch-fetch' %}"><i data-feather="grid"></i><span>Rawmaterial
-                                    Batch</span></a>
+                            <a href="{% url 'raw-material-batch-fetch' %}"><i data-feather="grid"></i><span>Rawmaterial Batch</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_consumable %}
                         <li>
                             <a href="{% url 'consumable-list' %}"><i data-feather="grid"></i><span>Consumable</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_consumable_batch %}
                         <li>
-                            <a href="{% url 'consumable-batch-fetch' %}"><i data-feather="grid"></i><span>Consumable
-                                    Batch</span></a>
+                            <a href="{% url 'consumable-batch-fetch' %}"><i data-feather="grid"></i><span>Consumable Batch</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_component %}
                         <li>
                             <a href="{% url 'component-list' %}"><i data-feather="grid"></i><span>Component</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_component_batch %}
                         <li>
-                            <a href="{% url 'component-batch-fetch' %}"><i data-feather="grid"></i><span>Component
-                                    Batch</span></a>
+                            <a href="{% url 'component-batch-fetch' %}"><i data-feather="grid"></i><span>Component Batch</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_process %}
                         <li>
                             <a href="{% url 'process_list' %}"><i data-feather="grid"></i><span>Process</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_product %}
                         <li>
                             <a href="{% url 'product-home' %}"><i data-feather="grid"></i><span>Product</span></a>
                         </li>
-                        <!-- <li>
-                            <a href="{% url 'product-batch-list' %}"><i data-feather="grid"></i><span>Product
-                                    Batch</span></a>
-                        </li> -->
-
-
-
-
+                        {% endif %}
+                        {% if can_access_product_batch %}
+                        <li>
+                            <a href="{% url 'product-batch-list' %}"><i data-feather="grid"></i><span>Product Batch</span></a>
+                        </li>
+                        {% endif %}
                     </ul>
                 </li>
-  {% endif %}
+                {% endif %}
 
+                {% if can_access_units or can_access_grade or can_access_enduse or can_access_document_type or can_access_center or can_access_division or can_access_source or can_access_supplier %}
                 <li class="submenu-open">
                     <h6 class="submenu-hdr">Miscellaneous Data Management</h6>
                     <ul>
+                        {% if can_access_units %}
                         <li>
                             <a href="{% url 'unit-list' %}"><i data-feather="grid"></i><span>Units</span></a>
                         </li>
-
+                        {% endif %}
+                        {% if can_access_grade %}
                         <li>
                             <a href="{% url 'grade-list' %}"><i data-feather="grid"></i><span>Grade</span></a>
                         </li>
-
+                        {% endif %}
+                        {% if can_access_enduse %}
                         <li>
                             <a href="{% url 'enduse-list' %}"><i data-feather="grid"></i><span>Enduse</span></a>
                         </li>
-
-                        <!-- <li>
-                            <a href="{% url 'productcategory-list' %}"><i data-feather="grid"></i><span>Product Category</span></a>
-                        </li> -->
-                        
+                        {% endif %}
+                        {% if can_access_document_type %}
                         <li>
-                            <a href="{% url 'documenttype-list' %}"><i data-feather="grid"></i><span>Document
-                                    Type</span></a>
+                            <a href="{% url 'documenttype-list' %}"><i data-feather="grid"></i><span>Document Type</span></a>
                         </li>
-
+                        {% endif %}
+                        {% if can_access_center %}
                         <li>
                             <a href="{% url 'center-list' %}"><i data-feather="grid"></i><span>Center</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_division %}
                         <li>
                             <a href="{% url 'division-list' %}"><i data-feather="grid"></i><span>Division</span></a>
                         </li>
-
+                        {% endif %}
+                        {% if can_access_source %}
                         <li>
                             <a href="{% url 'source-list' %}"><i data-feather="grid"></i><span>Source</span></a>
                         </li>
-
+                        {% endif %}
+                        {% if can_access_supplier %}
                         <li>
                             <a href="{% url 'supplier-list' %}"><i data-feather="grid"></i><span>Supplier</span></a>
                         </li>
+                        {% endif %}
                     </ul>
                 </li>
+                {% endif %}
 
+                {% if can_access_user_management %}
+                <li class="submenu-open">
+                    <h6 class="submenu-hdr">User Management</h6>
+                    <ul>
+                        <li>
+                            <a href="{% url 'user-list' %}"><i data-feather="grid"></i><span>Users</span></a>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                {% if can_access_reports or can_access_stage_clearance or can_access_qar_report %}
                 <li class="submenu-open">
                     <h6 class="submenu-hdr">Report Generation</h6>
                     <ul>
+                        {% if can_access_reports %}
                         <li>
-                            <a href="#"><i data-feather="grid"></i><span>Process Log-Sheet</span></a>
+                            <a href="{% url 'process-log-sheet-list' %}"><i data-feather="grid"></i><span>Process Log-Sheet</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_stage_clearance %}
                         <li>
                             <a href="{% url 'clearance' %}"><i data-feather="grid"></i><span>Stage Clearance</span></a>
                         </li>
+                        {% endif %}
+                        {% if can_access_qar_report %}
                         <li>
-                            <a href="#"><i data-feather="grid"></i><span>Q.A.R-Report</span></a>
-                            {% comment %} {% url 'generate_qar' %} {% endcomment %}
+                            <a href="{% url 'qar-report-list' %}"><i data-feather="grid"></i><span>Q.A.R-Report</span></a>
                         </li>
+                        {% endif %}
                     </ul>
                 </li>
-                {% if not request.user.groups.filter.name == 'QA' %}
-                <!-- Only show Roles Management if user is NOT in QA group -->
+                {% endif %}
 
-
+                {% if can_access_role_management %}
                 <li class="submenu-open">
                     <h6 class="submenu-hdr">Roles Management</h6>
                     <ul>
@@ -134,7 +170,7 @@
                         </li>
                     </ul>
                 </li>
-{% endif %}
+                {% endif %}
 
             </ul>
         </div>

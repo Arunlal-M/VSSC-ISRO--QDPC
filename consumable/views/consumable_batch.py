@@ -14,6 +14,7 @@ from consumable.services.consumable_service import ConsumableService
 from datetime import datetime, timedelta
 from urllib.parse import unquote
 from qdpc_core_models.models.consumableGradeAcceptance import ConsumableGradeAcceptanceTest
+from qdpc.services.notification_service import NotificationService
 
 
 
@@ -24,7 +25,7 @@ class ConsumableBatchFetchView(BaseModelViewSet):
         if pk:
             data={}
             success = False
-            message = constants.USER_FETCH_FAILED
+            message = constants.CONSUMABLE_BATCH_FAILD
             status_code = status.HTTP_403_FORBIDDEN
             try:
                 success, status_code, data, message = ConsumableService.get_consumable_batch_list(pk=None)
@@ -33,7 +34,7 @@ class ConsumableBatchFetchView(BaseModelViewSet):
 
             except Exception as ex:
                 success = False
-                message = constants.USER_FETCH_FAILED
+                message = constants.CONSUMABLE_BATCH_FAILD
                 status_code = status.HTTP_400_BAD_REQUEST
                 
                 return self.render_response(data,success, message, status_code)
@@ -70,6 +71,21 @@ class ConsumableBatchEditView(BaseModelViewSet):
         serializer = ConsumableBatchSerializer(consumable_batch, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            
+            # Create notification for successful batch update
+            try:
+                NotificationService.create_entity_notification(
+                    entity_type='consumable_batch',
+                    entity_id=consumable_batch.id,
+                    entity_name=f"Batch {consumable_batch.batch_id} for {consumable_batch.consumable.name}",
+                    notification_type='update',
+                    created_by=request.user
+                )
+                print("Batch update notification created successfully")
+            except Exception as notif_error:
+                print(f"Batch update notification failed: {notif_error}")
+                # Don't fail the operation for notification issues
+            
             return Response({'isSuccess': True, 'data': serializer.data}, status=status.HTTP_200_OK)
         return Response({'isSuccess': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -149,33 +165,45 @@ class ConsumableBatchAddView(BaseModelViewSet):
         status_code=status.HTTP_403_FORBIDDEN
         data=request.data
         
-        consumable_id = data.get("consumable")
-        procurement_date = data.get("procurement_date")
-
-        print("DEBUG - Received Data:", data)  #  Debugging the incoming request
-      
         try:
-            #  Ensure raw_material_id exists in request
-            if not consumable_id:
-                raise ValueError("consumable ID is missing.")
+            # Validate required fields
+            consumable_id = data.get("consumable")
+            batch_id = data.get("batch_id")
+            procurement_date = data.get("procurement_date")
+            batch_size_value = data.get("batch_size_value")
+            batch_size_unit = data.get("batch_size_unit")
+            packing_details = data.get("packing_details")
 
-            #  Safely fetch raw_material from DB
+            if not all([consumable_id, batch_id, procurement_date, batch_size_value, batch_size_unit, packing_details]):
+                raise ValueError("All required fields must be provided.")
+
+            # Validate consumable exists
             consumable = Consumable.objects.filter(id=consumable_id).first()
-            # print('consumable',consumable.values())
             if not consumable:
-                raise ValueError(f"consumable with ID {consumable_id} not found.")
+                raise ValueError(f"Consumable with ID {consumable_id} not found.")
 
-            #  Validate procurement date
-            if not procurement_date:
-                raise ValueError("Procurement date is required to calculate expiry date.")
+            # Validate unit exists
+            unit = Unit.objects.filter(id=batch_size_unit).first()
+            if not unit:
+                raise ValueError(f"Unit with ID {batch_size_unit} not found.")
 
-            procurement_date = datetime.strptime(procurement_date, "%Y-%m-%d").date()
-            print('procurement_date',procurement_date)
-            #  Calculate expiry date
-            expiry_date = None
-            print('consumable.shelf_life_value',consumable.shelf_life_value)
-            print('consumable.shelf_life_unit',consumable.shelf_life_unit)
-            if consumable.shelf_life_value and consumable.shelf_life_unit:
+            # Validate procurement date
+            try:
+                procurement_date = datetime.strptime(procurement_date, "%Y-%m-%d").date()
+            except ValueError:
+                raise ValueError("Invalid procurement date format. Use YYYY-MM-DD.")
+
+            # Validate batch size value
+            try:
+                batch_size_value = float(batch_size_value)
+                if batch_size_value <= 0:
+                    raise ValueError("Batch size value must be greater than zero.")
+            except (ValueError, TypeError):
+                raise ValueError("Batch size value must be a valid number.")
+
+            # Calculate expiry date if not provided
+            expiry_date = data.get("expiry_date")
+            if not expiry_date and consumable.shelf_life_value and consumable.shelf_life_unit:
                 if consumable.shelf_life_unit == "days":
                     expiry_date = procurement_date + timedelta(days=consumable.shelf_life_value)
                 elif consumable.shelf_life_unit == "months":
@@ -183,24 +211,50 @@ class ConsumableBatchAddView(BaseModelViewSet):
                 elif consumable.shelf_life_unit == "years":
                     expiry_date = procurement_date + timedelta(days=consumable.shelf_life_value * 365)
 
-            #  Ensure expiry date is stored in request data
-            if(expiry_date):
-               data["expiry_date"] = expiry_date 
-            else:
-               data["expiry_date"] = procurement_date
-               
+            # Prepare data for service
+            batch_data = {
+                'consumable': consumable_id,
+                'batch_id': batch_id,
+                'procurement_date': procurement_date,
+                'batch_size_value': batch_size_value,
+                'batch_size_unit': batch_size_unit,
+                'packing_details': packing_details,
+                'expiry_date': expiry_date or procurement_date,
+                'status': 'available'
+            }
 
-            print("DEBUG - Data Before Service Call:", data)  #  Debugging
+            print("DEBUG - Data Before Service Call:", batch_data)
 
-            #  Call the service to add the batch
-            success, status_code, data, message = ConsumableService.add_consumable_bach_add(data=data)
-        except Exception as ex:
-            print("DEBUG - Data Before Service Call:", ex)  #  Debugging
-            success = False
-            message = constants.CONSUMABLE_BATCH_FAILD
-            status_code = status.HTTP_400_BAD_REQUEST
+            # Call the service to add the batch
+            success, status_code, response_data, message = ConsumableService.add_consumable_bach_add(data=batch_data)
             
-        return self.render_response(data, success, message, status_code)
+            # Create notification for successful batch creation
+            if success:
+                try:
+                    NotificationService.create_entity_notification(
+                        entity_type='consumable_batch',
+                        entity_id=response_data.get('id') if response_data else None,
+                        entity_name=f"Batch {batch_id} for {consumable.name}",
+                        notification_type='create',
+                        created_by=request.user
+                    )
+                    print("Batch creation notification created successfully")
+                except Exception as notif_error:
+                    print(f"Batch creation notification failed: {notif_error}")
+                    # Don't fail the operation for notification issues
+            
+        except ValueError as ve:
+            print(f"Validation error: {ve}")
+            success = False
+            message = str(ve)
+            status_code = status.HTTP_400_BAD_REQUEST
+        except Exception as ex:
+            print(f"Unexpected error: {ex}")
+            success = False
+            message = f"Unexpected error: {str(ex)}"
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            
+        return self.render_response(response_data if success else {}, success, message, status_code)
 
 
 
@@ -242,6 +296,21 @@ class ConsumableBatchAcceptenceTest(BaseModelViewSet):
         serializer = ConsumableAcceptanceTestSerializer(data=data, many=True)
         if serializer.is_valid():
             serializer.save()
+            
+            # Create notification for successful acceptance test creation
+            try:
+                NotificationService.create_entity_notification(
+                    entity_type='consumable_acceptance_test',
+                    entity_id=batch_id,
+                    entity_name=f"Acceptance tests for batch {batch_id}",
+                    notification_type='create',
+                    created_by=request.user
+                )
+                print("Acceptance test notification created successfully")
+            except Exception as notif_error:
+                print(f"Acceptance test notification failed: {notif_error}")
+                # Don't fail the operation for notification issues
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             print("Validation errors:", serializer.errors)
@@ -268,8 +337,24 @@ class DeleteConsumableBatchView(BaseModelViewSet):
 
             decoded_conbatchId = unquote(conbatchId)  # Decode URL-encoded string
             consumablebatch = ConsumableBatch.objects.get(batch_id=decoded_conbatchId)
+            batch_info = f"Batch {consumablebatch.batch_id} for {consumablebatch.consumable.name}"  # Store info before deletion
 
             consumablebatch.delete()
+            
+            # Create notification for successful batch deletion
+            try:
+                NotificationService.create_entity_notification(
+                    entity_type='consumable_batch',
+                    entity_id=None,  # Already deleted
+                    entity_name=batch_info,
+                    notification_type='delete',
+                    created_by=request.user
+                )
+                print("Batch deletion notification created successfully")
+            except Exception as notif_error:
+                print(f"Batch deletion notification failed: {notif_error}")
+                # Don't fail the operation for notification issues
+            
             return Response({
                 'success': True,
                 'message': constants.CONSUMABLE_BATCH_DELETE_SUCCESSFULLY

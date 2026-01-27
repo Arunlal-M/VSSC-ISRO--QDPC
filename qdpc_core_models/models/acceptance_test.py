@@ -28,8 +28,8 @@ class AcceptanceTest(models.Model):
     
     # New fields
     test_type = models.CharField(max_length=15, choices=TEST_TYPE_CHOICES, default='quantitative')
-    test_result = models.CharField(max_length=10, blank=True, null=True)
-    specification_result = models.CharField(max_length=10, blank=True, null=True)
+    test_result = models.CharField(max_length=100, blank=True, null=True)
+    specification_result = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.name

@@ -2,6 +2,9 @@
 {% block content %}
 {% load static %}
 
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -12,46 +15,57 @@
         </div>
         <div class="card">
             <div class="card-body">
+                <!-- Validation Summary -->
+                <div id="validation-summary" class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Form Status</h6>
+                    <div id="validation-details">Loading validation status...</div>
+                </div>
+                
                 <div class="row">
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Batch ID</label>
+                            <label>Batch ID <span class="text-danger">*</span></label>
                             <input type="text" id="batch-id" name="batch-id" class="form-control" required>
+                            <div class="invalid-feedback">Batch ID is required.</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label for="procurement_date">Procurement Date</label>
+                            <label for="procurement_date">Procurement Date <span class="text-danger">*</span></label>
                             <input type="date" id="procurement_date" name="procurement_date" class="form-control" required>
+                            <div class="invalid-feedback">Procurement date is required.</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Component</label>
+                            <label>Component <span class="text-danger">*</span></label>
                             <select id="component" name="component" class="form-control" required>
                                 <option value="">Select a Component</option>
                                 {% for com in components %}
                                 <option value="{{ com.id }}">{{ com.name }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Component selection is required.</div>
                         </div>
                     </div>
 
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Batch Size</label>
-                            <input type="number" name="batch_size_value" id="batch_size_value" class="form-control" required>
+                            <label>Batch Size <span class="text-danger">*</span></label>
+                            <input type="number" name="batch_size_value" id="batch_size_value" class="form-control" min="0" step="0.01" required>
+                            <div class="invalid-feedback">Batch size must be a positive number.</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Unit</label>
+                            <label>Unit <span class="text-danger">*</span></label>
                             <select class="select" id="batch_size_unit" name="batch_size_unit" required>
                                 <option value="">Select a Unit</option>
                                 {% for unit in units %}
                                 <option value="{{ unit.id }}">{{ unit.name }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Unit selection is required.</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
@@ -62,12 +76,21 @@
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Expiry Date</label>
+                            <label>Expiry Date <span class="text-danger">*</span></label>
                             <input type="date" id="expiry_date" name="expiry_date" class="form-control" readonly>
+                            <div class="invalid-feedback">Expiry date will be calculated automatically.</div>
+                            <small class="form-text text-muted">Auto-calculated based on component shelf life</small>
                         </div>
                     </div>
                     <div class="col-lg-12">
-                        <button id="submitButton" class="btn btn-submit me-2">Submit</button>
+                        <button id="submitButton" class="btn btn-submit me-2">
+                            <span class="btn-text">Submit</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...
+                            </span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                        <button type="button" class="btn btn-info" onclick="updateValidationSummary()">Check Validation</button>
                         <div id="error-message" class="text-danger mt-2" style="display: none;"></div>
                     </div>
                 </div>
@@ -99,30 +122,75 @@
 $(document).ready(function () {
     let unitCounter = 1;
 
-    // Calculate expiry date when procurement date or component changes
+    // Enhanced expiry date calculation with better error handling
     function updateExpiryDate() {
         var componentId = $('#component').val();
         var procurementDate = $('#procurement_date').val();
         
-        if (componentId && procurementDate) {
-            $.ajax({
-                url: `/component/component-list/${componentId}/`,
-                type: 'GET',
-                success: function(response) {
+        if (!componentId || !procurementDate) {
+            return;
+        }
+        
+        // Show loading state for expiry date calculation
+        $('#expiry_date').val('Calculating...').prop('readonly', true);
+        
+        $.ajax({
+            url: `/component/component-list/${componentId}/`,
+            type: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.data) {
                     var componentData = response.data;
                     var shelfLifeValue = componentData.shelf_life_value;
                     var shelfLifeUnit = componentData.shelf_life_unit;
+                    var componentName = componentData.name;
                     
-                    if (shelfLifeValue && shelfLifeUnit) {
-                        var expiryDate = calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit);
-                        $('#expiry_date').val(expiryDate);
+                    if (shelfLifeValue && shelfLifeUnit && shelfLifeValue > 0) {
+                        try {
+                            var expiryDate = calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit);
+                            $('#expiry_date').val(expiryDate).removeClass('is-invalid').addClass('is-valid');
+                            
+                            // Show success message
+                            showSwalAlert(`✅ Expiry date calculated successfully for ${componentName}!`, 'success');
+                            updateValidationSummary();
+                            
+                        } catch (error) {
+                            $('#expiry_date').val('').removeClass('is-valid').addClass('is-invalid');
+                            showSwalAlert(`❌ Error calculating expiry date: ${error.message}`, 'error');
+                            updateValidationSummary();
+                        }
+                    } else {
+                        $('#expiry_date').val('').removeClass('is-valid is-invalid');
+                        showSwalAlert(`⚠️ Component "${componentName}" has no shelf life configured. Please set shelf life in component settings.`, 'warning');
+                        updateValidationSummary();
                     }
+                } else {
+                    $('#expiry_date').val('').removeClass('is-valid is-invalid');
+                    showSwalAlert('❌ Failed to fetch component data for expiry calculation.', 'error');
+                    updateValidationSummary();
                 }
-            });
-        }
+            },
+            error: function(xhr, status, error) {
+                $('#expiry_date').val('').removeClass('is-valid is-invalid');
+                var errorMessage = 'Failed to fetch component data for expiry calculation.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                showSwalAlert(`❌ ${errorMessage}`, 'error');
+                updateValidationSummary();
+            },
+            complete: function() {
+                $('#expiry_date').prop('readonly', false);
+            }
+        });
     }
 
-    $('#procurement_date, #component').change(updateExpiryDate);
+    // Trigger expiry date calculation on procurement date or component changes
+    $('#procurement_date, #component').on('change', function() {
+        updateExpiryDate();
+    });
 
     $('#component').on('change', function () {
         var selectedValue = $(this).val();
@@ -144,9 +212,9 @@ $(document).ready(function () {
                         return;
                     }
 
-                    var source = componentData.sources || [];
-                    var suppliers = componentData.suppliers || [];
-                    var grade = componentData.grade || [];
+                    var source = (componentData.sources && Array.isArray(componentData.sources)) ? componentData.sources : [];
+                    var suppliers = (componentData.suppliers && Array.isArray(componentData.suppliers)) ? componentData.suppliers : [];
+                    var grade = (componentData.grade && Array.isArray(componentData.grade)) ? componentData.grade : [];
 
                     // Add Batch ID and basic info at the top of the modal
                     tabContent.append(`
@@ -160,7 +228,7 @@ $(document).ready(function () {
                                     <label>Source</label>
                                     <select class="form-control" id="source-dropdown" required>
                                         <option value="">Select a Source</option>
-                                        ${source.map(src => `<option value="${src.id}">${src.name}</option>`).join('')}
+                                        ${source.length > 0 ? source.map(src => `<option value="${src.id}">${src.name}</option>`).join('') : '<option value="">No sources available</option>'}
                                     </select>
                                 </div>
                             </div>
@@ -169,7 +237,7 @@ $(document).ready(function () {
                                     <label>Supplier</label>
                                     <select class="form-control" id="supplier-dropdown" required>
                                         <option value="">Select a Supplier</option>
-                                        ${suppliers.map(supplier => `<option value="${supplier.id}">${supplier.name}</option>`).join('')}
+                                        ${suppliers.length > 0 ? suppliers.map(supplier => `<option value="${supplier.id}">${supplier.name}</option>`).join('') : '<option value="">No suppliers available</option>'}
                                     </select>
                                 </div>
                             </div>
@@ -197,7 +265,7 @@ $(document).ready(function () {
                                             <label>Grade</label>
                                             <select class="form-control grade-dropdown" id="grade-dropdown-${unitCounter}" data-unit-id="${unitCounter}" required>
                                                 <option value="">Select a Grade</option>
-                                                ${grade.map(grd => `<option value="${grd.id}">${grd.name}</option>`).join('')}
+                                                ${grade.length > 0 ? grade.map(grd => `<option value="${grd.id}">${grd.name}</option>`).join('') : '<option value="">No grades available</option>'}
                                             </select>
                                         </div>
                                     </div>
@@ -240,10 +308,12 @@ $(document).ready(function () {
 
                     // Show modal after content is loaded
                     $('#recents').modal('show');
+                    updateValidationSummary();
                 },
                 error: function (error) {
                     console.error('Error fetching component data:', error);
                     $('#error-message').text('Failed to load component details').show();
+                    updateValidationSummary();
                 }
             });
         }
@@ -358,20 +428,24 @@ $(document).ready(function () {
         var unitId = idParts[3];
         
         var enteredValue = parseFloat($(this).val());
-        var specVal = $(`#specification-value-${testId}-${unitId}`).val();
-        var min = parseFloat(specVal.split('-')[0]);
-        var max = parseFloat(specVal.split('-')[1]);
+        var specVal = $(`#specification-value-${testId}-${unitId}`).val() || '';
         var statusDropdown = $(`#status-${testId}-${unitId}`);
         
-        if (!isNaN(enteredValue)) {
-            if (enteredValue >= min && enteredValue <= max) {
-                statusDropdown.val("Valid")
-                    .css("background-color", "green")
-                    .css("color", "white");
-            } else {
-                statusDropdown.val("Invalid")
-                    .css("background-color", "red")
-                    .css("color", "white");
+        if (!isNaN(enteredValue) && specVal && specVal.includes('-')) {
+            var specParts = specVal.split('-');
+            var min = parseFloat(specParts[0]);
+            var max = parseFloat(specParts[1]);
+            
+            if (!isNaN(min) && !isNaN(max)) {
+                if (enteredValue >= min && enteredValue <= max) {
+                    statusDropdown.val("Valid")
+                        .css("background-color", "green")
+                        .css("color", "white");
+                } else {
+                    statusDropdown.val("Invalid")
+                        .css("background-color", "red")
+                        .css("color", "white");
+                }
             }
         }
     });
@@ -390,8 +464,15 @@ $(document).ready(function () {
         var source = $('#source-dropdown').val();
         var supplier = $('#supplier-dropdown').val();
 
-        if (!componentId || !batchId || !source || !supplier) {
-            alert('Please fill all required fields');
+        var missingTestFields = [];
+        if (!componentId) missingTestFields.push('Component');
+        if (!batchId) missingTestFields.push('Batch ID');
+        if (!source) missingTestFields.push('Source');
+        if (!supplier) missingTestFields.push('Supplier');
+        
+        if (missingTestFields.length > 0) {
+            var missingFieldsText = missingTestFields.join('\n• ');
+            showSwalAlert(`⚠️ Please fill in the following required fields:\n\n• ${missingFieldsText}`, 'warning');
             return;
         }
 
@@ -406,8 +487,13 @@ $(document).ready(function () {
             var componentUnit = $(`#component-unit-${unitId}`).val();
             var grade = $(`#grade-dropdown-${unitId}`).val();
 
-            if (!componentUnit || !grade) {
-                alert(`Please fill all fields for Unit ${unitIdx + 1}`);
+            var missingUnitFields = [];
+            if (!componentUnit) missingUnitFields.push('Unit Identification No');
+            if (!grade) missingUnitFields.push('Grade');
+            
+            if (missingUnitFields.length > 0) {
+                var missingFieldsText = missingUnitFields.join('\n• ');
+                showSwalAlert(`⚠️ Unit ${unitIdx + 1} is missing:\n\n• ${missingFieldsText}`, 'warning');
                 return false;
             }
 
@@ -426,11 +512,21 @@ $(document).ready(function () {
                 formData.append(`acceptance_tests[${unitIdx}_${testId}][id]`, testId);
                 formData.append(`acceptance_tests[${unitIdx}_${testId}][test_value]`, $(this).val());
                 
-                var specVal = $(`#specification-value-${testId}-${unitId}`).val();
-                formData.append(`acceptance_tests[${unitIdx}_${testId}][min_value]`, specVal.split('-')[0]);
-                formData.append(`acceptance_tests[${unitIdx}_${testId}][max_value]`, specVal.split('-')[1]);
-                formData.append(`acceptance_tests[${unitIdx}_${testId}][status]`, $(`#status-${testId}-${unitId}`).val());
-                formData.append(`acceptance_tests[${unitIdx}_${testId}][remark]`, $(`#remark-${testId}-${unitId}`).val());
+                var specVal = $(`#specification-value-${testId}-${unitId}`).val() || '';
+                var statusVal = $(`#status-${testId}-${unitId}`).val() || 'Valid';
+                var remarkVal = $(`#remark-${testId}-${unitId}`).val() || '';
+                
+                if (specVal && specVal.includes('-')) {
+                    var specParts = specVal.split('-');
+                    formData.append(`acceptance_tests[${unitIdx}_${testId}][min_value]`, specParts[0] || '');
+                    formData.append(`acceptance_tests[${unitIdx}_${testId}][max_value]`, specParts[1] || '');
+                } else {
+                    formData.append(`acceptance_tests[${unitIdx}_${testId}][min_value]`, '');
+                    formData.append(`acceptance_tests[${unitIdx}_${testId}][max_value]`, '');
+                }
+                
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][status]`, statusVal);
+                formData.append(`acceptance_tests[${unitIdx}_${testId}][remark]`, remarkVal);
                 formData.append(`acceptance_tests[${unitIdx}_${testId}][created_by]`, 'user');
                 
                 var file = $(`#file-${testId}-${unitId}`)[0].files[0];
@@ -455,20 +551,31 @@ $(document).ready(function () {
             processData: false,
             contentType: false,
             success: function(response) {
-                alert('Data submitted successfully');
+                showSwalAlert('🎉 Test data submitted successfully!', 'success');
                 $('#recents').modal('hide');
-               // window.location.href = "{% url 'component-batch-fetch' %}";
+                // window.location.href = "{% url 'component-batch-fetch' %}";
             },
             error: function(error) {
                 console.error('Submission error:', error);
-                alert('Error submitting data: ' + error.responseText);
+                var errorMessage = '❌ Error submitting test data. Please try again.';
+                if (error.responseText) {
+                    errorMessage = '❌ ' + error.responseText;
+                }
+                showSwalAlert(errorMessage, 'error');
             }
         });
     });
 
-    // Main form submission
+    // Enhanced main form submission with validation and SweetAlert2
     $('#submitButton').click(function(e) {
         e.preventDefault();
+        
+        // Clear previous validation states
+        $('.form-control').removeClass('is-invalid');
+        $('.invalid-feedback').hide();
+        $('#error-message').hide();
+        
+        // Collect form data
         var formData = {
             component: $('#component').val(),
             batch_id: $('#batch-id').val(),
@@ -479,12 +586,103 @@ $(document).ready(function () {
             expiry_date: $('#expiry_date').val()
         };
 
-        // Basic validation
-        if (!formData.component || !formData.batch_id || !formData.procurement_date || 
-            !formData.batch_size_value || !formData.batch_size_unit) {
-            $('#error-message').text('Please fill all required fields').show();
+        // Enhanced validation with specific field identification
+        var isValid = true;
+        var missingFields = [];
+        var requiredFields = [
+            {id: 'component', label: 'Component'},
+            {id: 'batch_id', label: 'Batch ID'},
+            {id: 'procurement_date', label: 'Procurement Date'},
+            {id: 'batch_size_value', label: 'Batch Size'},
+            {id: 'batch_size_unit', label: 'Unit'}
+        ];
+        
+        requiredFields.forEach(function(fieldInfo) {
+            var field = $('#' + fieldInfo.id);
+            var fieldValue = field.val();
+            if (!fieldValue || !fieldValue.toString().trim()) {
+                field.addClass('is-invalid');
+                field.siblings('.invalid-feedback').show();
+                missingFields.push(fieldInfo.label);
+                isValid = false;
+            } else {
+                field.removeClass('is-invalid').addClass('is-valid');
+                field.siblings('.invalid-feedback').hide();
+            }
+        });
+        
+        // Validate batch size value
+        var batchSizeValue = parseFloat($('#batch_size_value').val());
+        if (batchSizeValue <= 0) {
+            $('#batch_size_value').addClass('is-invalid');
+            $('#batch_size_value').siblings('.invalid-feedback').show();
+            if (!missingFields.includes('Batch Size')) {
+                missingFields.push('Batch Size (must be positive)');
+            }
+            isValid = false;
+        }
+        
+        // Validate expiry date
+        if (!formData.expiry_date || formData.expiry_date === 'Calculating...') {
+            $('#expiry_date').addClass('is-invalid');
+            $('#expiry_date').siblings('.invalid-feedback').show();
+            missingFields.push('Expiry Date (not calculated)');
+            isValid = false;
+        }
+        
+        // Validate procurement date is not in the future
+        var today = new Date();
+        var procurementDate = new Date(formData.procurement_date);
+        if (procurementDate > today) {
+            $('#procurement_date').addClass('is-invalid');
+            $('#procurement_date').after('<div class="invalid-feedback">Procurement date cannot be in the future.</div>');
+            if (!missingFields.includes('Procurement Date')) {
+                missingFields.push('Procurement Date (cannot be in future)');
+            }
+            isValid = false;
+        }
+
+        if (!isValid) {
+            var missingFieldsText = missingFields.join('\n• ');
+            showSwalAlert(`⚠️ Please fill in the following required fields:\n\n• ${missingFieldsText}`, 'warning');
+            
+            // Scroll to the first missing field
+            var firstMissingField = missingFields[0];
+            var fieldId = '';
+            switch(firstMissingField) {
+                case 'Component':
+                    fieldId = 'component';
+                    break;
+                case 'Batch ID':
+                    fieldId = 'batch-id';
+                    break;
+                case 'Procurement Date':
+                    fieldId = 'procurement_date';
+                    break;
+                case 'Batch Size':
+                    fieldId = 'batch_size_value';
+                    break;
+                case 'Unit':
+                    fieldId = 'batch_size_unit';
+                    break;
+                case 'Expiry Date (not calculated)':
+                    fieldId = 'expiry_date';
+                    break;
+            }
+            
+            if (fieldId) {
+                $('#' + fieldId).focus();
+                $('html, body').animate({
+                    scrollTop: $('#' + fieldId).offset().top - 100
+                }, 500);
+            }
             return;
         }
+
+        // Show loading state
+        $('#submitButton').prop('disabled', true);
+        $('.btn-text').hide();
+        $('.btn-loading').show();
 
         console.log('Submitting batch data:', formData);
 
@@ -498,14 +696,27 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
-                    window.location.href = "{% url 'component-batch-fetch' %}";
+                    var batchId = formData.batch_id;
+                    showSwalAlert(`🎉 Component batch "${batchId}" created successfully! Redirecting to batch list...`, 'success');
+                    setTimeout(function() {
+                        window.location.href = "{% url 'component-batch-fetch' %}";
+                    }, 2000);
                 } else {
-                    $('#error-message').text(response.message).show();
+                    showSwalAlert(response.message || '❌ Failed to create component batch. Please check your input and try again.', 'error');
                 }
             },
-            error: function(error) {
-                console.error('Batch submission error:', error);
-                $('#error-message').text(error.responseJSON?.message || 'Server error').show();
+            error: function(xhr, status, error) {
+                var errorMessage = '❌ An error occurred while creating the component batch. Please try again.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = '❌ ' + xhr.responseJSON.message;
+                }
+                showSwalAlert(errorMessage, 'error');
+            },
+            complete: function() {
+                // Reset button state
+                $('#submitButton').prop('disabled', false);
+                $('.btn-text').show();
+                $('.btn-loading').hide();
             }
         });
     });
@@ -521,6 +732,212 @@ $(document).ready(function () {
         }
         return date.toISOString().split('T')[0];
     }
+    
+    // Enhanced showSwalAlert function with SweetAlert2
+    function showSwalAlert(message, type) {
+        if (typeof Swal !== 'undefined') {
+            var title, confirmButtonColor;
+            
+            switch(type) {
+                case 'success':
+                    title = 'Success!';
+                    confirmButtonColor = '#28a745';
+                    break;
+                case 'error':
+                    title = 'Error!';
+                    confirmButtonColor = '#dc3545';
+                    break;
+                case 'warning':
+                    title = 'Warning!';
+                    confirmButtonColor = '#ffc107';
+                    break;
+                default:
+                    title = 'Info!';
+                    confirmButtonColor = '#17a2b8';
+            }
+            
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: type,
+                confirmButtonText: 'OK',
+                confirmButtonColor: confirmButtonColor,
+                timer: type === 'success' ? 3000 : undefined,
+                timerProgressBar: type === 'success' ? true : false
+            });
+        } else {
+            // Fallback to regular alert if SweetAlert is not loaded
+            var alertClass;
+            switch(type) {
+                case 'success':
+                    alertClass = 'alert-success';
+                    break;
+                case 'error':
+                    alertClass = 'alert-danger';
+                    break;
+                case 'warning':
+                    alertClass = 'alert-warning';
+                    break;
+                default:
+                    alertClass = 'alert-info';
+            }
+            
+            var alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('.page-header').after(alertHtml);
+        }
+    }
+    
+    // Form clearing function
+    function clearForm() {
+        // Clear all form fields
+        $('#batch-id').val('').removeClass('is-invalid is-valid');
+        $('#procurement_date').val('').removeClass('is-invalid is-valid');
+        $('#component').val('').removeClass('is-invalid is-valid');
+        $('#batch_size_value').val('').removeClass('is-invalid is-valid');
+        $('#batch_size_unit').val('').removeClass('is-invalid is-valid');
+        $('#packing_details').val('').removeClass('is-invalid is-valid');
+        $('#expiry_date').val('').removeClass('is-invalid is-valid');
+        
+        // Hide all validation messages
+        $('.invalid-feedback').hide();
+        $('.error-message').hide();
+        
+        // Reset button state
+        $('#submitButton').prop('disabled', false);
+        $('.btn-text').show();
+        $('.btn-loading').hide();
+        
+        // Clear acceptance test table
+        $('#tab-content').empty();
+        
+        // Show success message
+        showSwalAlert('✅ Form cleared successfully!', 'success');
+        updateValidationSummary();
+    }
+    
+    // Real-time validation for batch size value
+    $('#batch_size_value').on('input', function() {
+        var value = parseFloat($(this).val());
+        if (value <= 0) {
+            $(this).addClass('is-invalid').removeClass('is-valid');
+            $(this).siblings('.invalid-feedback').show();
+        } else {
+            $(this).removeClass('is-invalid').addClass('is-valid');
+            $(this).siblings('.invalid-feedback').hide();
+        }
+        updateValidationSummary();
+    });
+    
+    // Real-time validation for batch ID
+    $('#batch-id').on('input', function() {
+        var value = $(this).val();
+        if (!value || !value.toString().trim()) {
+            $(this).addClass('is-invalid').removeClass('is-valid');
+            $(this).siblings('.invalid-feedback').show();
+        } else {
+            $(this).removeClass('is-invalid').addClass('is-valid');
+            $(this).siblings('.invalid-feedback').hide();
+        }
+        updateValidationSummary();
+    });
+    
+    // Real-time validation for procurement date
+    $('#procurement_date').on('change', function() {
+        var selectedDate = new Date($(this).val());
+        var today = new Date();
+        
+        if (selectedDate > today) {
+            $(this).addClass('is-invalid').removeClass('is-valid');
+            $(this).siblings('.invalid-feedback').show();
+        } else {
+            $(this).removeClass('is-invalid').addClass('is-valid');
+            $(this).siblings('.invalid-feedback').hide();
+        }
+        updateValidationSummary();
+    });
+    
+    // Function to update validation summary
+    function updateValidationSummary() {
+        console.log('updateValidationSummary called');
+        
+        var requiredFields = [
+            {id: 'component', label: 'Component'},
+            {id: 'batch-id', label: 'Batch ID'},
+            {id: 'procurement_date', label: 'Procurement Date'},
+            {id: 'batch_size_value', label: 'Batch Size'},
+            {id: 'batch_size_unit', label: 'Unit'},
+            {id: 'expiry_date', label: 'Expiry Date'}
+        ];
+        
+        var completedFields = [];
+        var missingFields = [];
+        
+        requiredFields.forEach(function(fieldInfo) {
+            var field = $('#' + fieldInfo.id);
+            var fieldValue = field.val();
+            
+            console.log('Checking field:', fieldInfo.id, 'Value:', fieldValue);
+            
+            if (fieldInfo.id === 'expiry_date') {
+                if (fieldValue && fieldValue !== 'Calculating...') {
+                    completedFields.push(fieldInfo.label);
+                } else {
+                    missingFields.push(fieldInfo.label);
+                }
+            } else if (fieldInfo.id === 'batch_size_value') {
+                var value = parseFloat(fieldValue);
+                if (value && value > 0) {
+                    completedFields.push(fieldInfo.label);
+                } else {
+                    missingFields.push(fieldInfo.label);
+                }
+            } else if (fieldValue && fieldValue.toString().trim()) {
+                completedFields.push(fieldInfo.label);
+            } else {
+                missingFields.push(fieldInfo.label);
+            }
+        });
+        
+        var summary = $('#validation-summary');
+        var details = $('#validation-details');
+        
+        console.log('Summary element:', summary.length, 'Details element:', details.length);
+        
+        if (missingFields.length === 0) {
+            summary.removeClass('alert-info alert-warning').addClass('alert-success');
+            details.html('<i class="fas fa-check-circle"></i> All required fields are completed! ✅');
+            summary.show();
+        } else {
+            summary.removeClass('alert-info alert-success').addClass('alert-warning');
+            details.html(`
+                <i class="fas fa-exclamation-triangle"></i> <strong>Missing Fields:</strong><br>
+                • ${missingFields.join('<br>• ')}
+            `);
+            summary.show();
+        }
+        
+        console.log('Validation Summary Updated:', {completed: completedFields, missing: missingFields});
+    }
+    
+    // Update validation summary on any field change
+    $('#component, #batch-id, #procurement_date, #batch_size_value, #batch_size_unit').on('input change', function() {
+        updateValidationSummary();
+    });
+    
+    // Initial validation summary
+    console.log('Document ready, calling updateValidationSummary');
+    updateValidationSummary();
+    
+    // Test jQuery functionality
+    console.log('jQuery version:', $.fn.jquery);
+    console.log('Validation summary element exists:', $('#validation-summary').length);
+
+
 });
 </script>
 
@@ -536,6 +953,51 @@ $(document).ready(function () {
         background-color: #f8f9fa;
         margin-bottom: 20px;
     }
+    
+    /* Loading state styles */
+    .btn-loading {
+        display: none;
+    }
+    
+    .btn:disabled .btn-text {
+        display: none;
+    }
+    
+    .btn:disabled .btn-loading {
+        display: inline-block;
+    }
+    
+    /* Validation styles */
+    .form-control.is-valid {
+        border-color: #28a745;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4M7.2 4.6l-1.4 1.4'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+    
+    .form-control.is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+    
     @media (max-width: 768px) {
         .modal-dialog {
             max-width: 90%;

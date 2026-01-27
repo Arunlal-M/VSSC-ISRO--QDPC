@@ -32,6 +32,22 @@
     #error-message {
       color: red;
       display: none;
+      background-color: #ffe6e6;
+      border: 1px solid #ff9999;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+      text-align: center;
+    }
+    .success-message {
+      color: green;
+      background-color: #e6ffe6;
+      border: 1px solid #99ff99;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+      text-align: center;
+      display: none;
     }
   </style>
 </head>
@@ -175,6 +191,7 @@
               </div>
 
               <div id="error-message"></div>
+              <div id="success-message" class="success-message"></div>
               <br>
 
               <div class="text-center">
@@ -345,15 +362,143 @@
           'password': password,
           'csrfmiddlewaretoken': '{{ csrf_token }}'
         },
+        beforeSend: function() {
+          console.log('DEBUG: Sending signup data:', {
+            'desired_salutation': desired_salutation,
+            'user_id': user_id,
+            'username': username,
+            'first_name': first_name,
+            'last_name': last_name,
+            'usertype': usertype,
+            'centre': centre,
+            'divisions': divisions,
+            'email': email,
+            'phone_number': phone_number,
+            'password': password ? '[HIDDEN]' : 'MISSING'
+          });
+        },
         success: function (response) {
+          console.log('DEBUG: Server response:', response);
+          
           if (response.success) {
-            window.location.href = "{% url 'login_view' %}";
+            // Show success message before redirecting
+            $('#error-message').hide();
+            $('#success-message').html('Registration successful! Redirecting to login...').show();
+            setTimeout(function() {
+              window.location.href = "{% url 'login_view' %}";
+            }, 2000);
           } else {
-            $('#error-message').text(response.message).show();
+            // Handle server-side validation errors
+            var errorMessage = response.message || 'Registration failed. Please check your information.';
+            
+            // Check if there are field-specific errors
+            if (response.result && response.result.length > 0) {
+              var firstError = response.result[0];
+              if (firstError.errors) {
+                // Display field-specific errors
+                var fieldErrors = [];
+                for (var field in firstError.errors) {
+                  if (firstError.errors.hasOwnProperty(field)) {
+                    var fieldName = field.replace('_', ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                    if (Array.isArray(firstError.errors[field])) {
+                      fieldErrors.push(fieldName + ': ' + firstError.errors[field].join(', '));
+                    } else {
+                      fieldErrors.push(fieldName + ': ' + firstError.errors[field]);
+                    }
+                  }
+                }
+                if (fieldErrors.length > 0) {
+                  errorMessage = fieldErrors.join('<br>');
+                }
+              }
+              
+              // Also check for direct error field
+              if (firstError.error) {
+                errorMessage = firstError.error;
+              }
+            }
+            
+            // Also check for direct error field
+            if (response.result && response.result.error) {
+              errorMessage = response.result.error;
+            }
+            
+            console.log('DEBUG: Displaying error message:', errorMessage);
+            $('#success-message').hide();
+            $('#error-message').html(errorMessage).show();
           }
         },
-        error: function () {
-          $('#error-message').text('An error occurred. Please try again.').show();
+        error: function (xhr, status, error) {
+          console.log('DEBUG: AJAX Error - Status:', xhr.status, 'Response:', xhr.responseText);
+          
+          var errorMessage = 'An error occurred during registration. Please try again.';
+          
+          // Handle different types of AJAX errors
+          if (xhr.status === 400) {
+            // Bad Request - validation errors
+            try {
+              var response = JSON.parse(xhr.responseText);
+              console.log('DEBUG: Parsed error response:', response);
+              
+              if (response.message) {
+                errorMessage = response.message;
+              }
+              
+              // Check for field-specific errors in result
+              if (response.result && response.result.length > 0) {
+                var firstError = response.result[0];
+                if (firstError.errors) {
+                  var fieldErrors = [];
+                  for (var field in firstError.errors) {
+                    if (firstError.errors.hasOwnProperty(field)) {
+                      var fieldName = field.replace('_', ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                      if (Array.isArray(firstError.errors[field])) {
+                        fieldErrors.push(fieldName + ': ' + firstError.errors[field].join(', '));
+                      } else {
+                        fieldErrors.push(fieldName + ': ' + firstError.errors[field]);
+                      }
+                    }
+                  }
+                  if (fieldErrors.length > 0) {
+                    errorMessage = fieldErrors.join('<br>');
+                  }
+                }
+                
+                // Check for direct error field
+                if (firstError.error) {
+                  errorMessage = firstError.error;
+                }
+              }
+              
+              // Check for direct error in result
+              if (response.result && response.result.error) {
+                errorMessage = response.result.error;
+              }
+              
+            } catch (e) {
+              console.log('DEBUG: Failed to parse error response:', e);
+              errorMessage = 'Invalid data submitted. Please check your information.';
+            }
+          } else if (xhr.status === 403) {
+            errorMessage = 'Access denied. Please check your permissions.';
+          } else if (xhr.status === 500) {
+            errorMessage = 'Server error. Please try again later.';
+          } else if (xhr.status === 0) {
+            errorMessage = 'Network error. Please check your connection.';
+          } else if (xhr.statusText === 'timeout') {
+            errorMessage = 'Request timed out. Please try again.';
+          }
+          
+          $('#success-message').hide();
+          $('#error-message').html(errorMessage).show();
+          
+          // Log detailed error information for debugging
+          console.error('AJAX Error Details:', {
+            status: xhr.status,
+            statusText: xhr.statusText,
+            responseText: xhr.responseText,
+            error: error
+          });
         }
       });
     });

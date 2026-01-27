@@ -1,6 +1,9 @@
 {% extends 'index.html' %}
 {% block content %}
 {% load static %}
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -556,31 +559,79 @@ function clearMultiselectDropdown(dropdown) {
 $('#submitButton').click(function (event) {
     event.preventDefault();
 
+    // Clear previous error messages
+    $('.error-message').remove();
+    $('.form-control').removeClass('is-invalid');
+
+    // Validate required fields
+    var isValid = true;
+    var requiredFields = ['consumable', 'shelf_life_type'];
+    
+    requiredFields.forEach(function(fieldId) {
+        var field = $('#' + fieldId);
+        if (!field.val().trim()) {
+            field.addClass('is-invalid');
+            var fieldName = fieldId === 'consumable' ? 'Consumable name' : 'Shelf life type';
+            field.after('<div class="error-message text-danger">⚠️ ' + fieldName + ' is required.</div>');
+            isValid = false;
+        }
+    });
+
+    // Validate shelf life fields if type is 'add_duration'
+    if ($('#shelf_life_type').val() === 'add_duration') {
+        if (!$('#shelf_life_value').val()) {
+            $('#shelf_life_value').addClass('is-invalid');
+            $('#shelf_life_value').after('<div class="error-message text-danger">⚠️ Shelf life duration value is required when "Add Duration" is selected.</div>');
+            isValid = false;
+        }
+        if (!$('#unit').val()) {
+            $('#unit').addClass('is-invalid');
+            $('#unit').after('<div class="error-message text-danger">⚠️ Shelf life period unit is required when "Add Duration" is selected.</div>');
+            isValid = false;
+        }
+    }
+
+    if (!isValid) {
+        showAlert('⚠️ Please fill in all required fields correctly before submitting.', 'error');
+        return;
+    }
+
+    // Show loading state directly without confirmation
+    $('#submitButton').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...');
+
     const formData = new FormData();
 
     // Add basic fields
     formData.append('name', $('#consumable').val());
     formData.append('shelf_life_type', $('#shelf_life_type').val());
-    formData.append('shelf_life_value', $('#shelf_life_value').val());
-    formData.append('shelf_life_unit', $('#unit').val());
+    
+    // Only add shelf life values if type is 'add_duration'
+    if ($('#shelf_life_type').val() === 'add_duration') {
+        formData.append('shelf_life_value', $('#shelf_life_value').val());
+        formData.append('shelf_life_unit', $('#unit').val());
+    }
+    
     formData.append('precertified', $('#precertified').is(':checked'));
     formData.append('document_upload', $('#document_upload').is(':checked'));
 
-    formData.append('certified_by', $('#certified_by').val());
-    formData.append('certificate_ref', $('#certificate_ref').val());
-    formData.append('certificate_disposition', $('input[name="disposition"]:checked').val());
-    formData.append('issue_date', $('#certificate_issue_date').val());
-    formData.append('valid_till', $('#certificate_valid_till').val());
+    // Add pre-certification data if applicable
+    if ($('#precertified').is(':checked')) {
+        formData.append('certified_by', $('#certified_by').val());
+        formData.append('certificate_ref', $('#certificate_ref').val());
+        formData.append('certificate_disposition', $('input[name="disposition"]:checked').val());
+        formData.append('issue_date', $('#certificate_issue_date').val());
+        formData.append('valid_till', $('#certificate_valid_till').val());
 
-    const certificateFile = $('#certificate_file')[0].files[0];
-    if (certificateFile) {
-        formData.append('certificate_file', certificateFile);
+        const certificateFile = $('#certificate_file')[0].files[0];
+        if (certificateFile) {
+            formData.append('certificate_file', certificateFile);
+        }
     }
 
     // Append multi-value fields
     const grade = $('#grade').val();
     if (grade) {
-        grade.forEach((val, idx) => formData.append('grade', val));
+        grade.forEach((val) => formData.append('grade', val));
     }
 
     const sources = $('#sources').val();
@@ -593,60 +644,105 @@ $('#submitButton').click(function (event) {
         suppliers.forEach((val) => formData.append('suppliers', val));
     }
 
-    // Collect test data
+    // Collect acceptance test data
     const test_data = [];
     $('[id^="grade_"][id$="_acceptanceTestTableBody"], #mainAcceptanceTestTableBody').find('tr').each(function () {
         const rowId = $(this).attr('id');
         if (!rowId || !rowId.startsWith('grade_')) return;
 
-        const parts = rowId.split('_');
-        const test_id = parts.length > 0 ? parts[parts.length - 1] : null;
-        const grade_id = parts.length >= 3 ? parts[1] : null;
+        const gradeId = rowId.replace('_acceptanceTestTableBody', '');
+        const acceptanceTestId = $(this).find('input[name="acceptance_test_id"]').val();
+        const minValue = $(this).find('input[name="min_value"]').val();
+        const maxValue = $(this).find('input[name="max_value"]').val();
+        const unit = $(this).find('input[name="unit"]').val();
 
-        const min_value = $(this).find('.min-value').val();
-        const max_value = $(this).find('.max-value').val();
-        const unit_name = $(this).find('.unit-name').val();
-        const reevaluation_frequency = $(this).find('.reevaluation-frequency').val();
-
-        test_data.push({
-            name: $('#consumable').val(),
-            acceptance_test_id: test_id,
-            grade_id: grade_id,
-            min_value: min_value || null,
-            max_value: max_value || null,
-            unit_name: unit_name || null,
-            reevaluation_frequency: reevaluation_frequency || null
-        });
+        if (acceptanceTestId && minValue && maxValue && unit) {
+            test_data.push({
+                grade_id: gradeId,
+                acceptance_test_id: acceptanceTestId,
+                min_value: minValue,
+                max_value: maxValue,
+                unit: unit
+            });
+        }
     });
 
-    formData.append('test_data', JSON.stringify(test_data));
+    // Add test data to form
+    if (test_data.length > 0) {
+        formData.append('test_data', JSON.stringify(test_data));
+    }
+
+    // Add acceptance tests
+    const acceptanceTests = $('#acceptance_test').val();
+    if (acceptanceTests) {
+        acceptanceTests.forEach((val) => formData.append('acceptance_test', val));
+    }
+
+    console.log('Submitting consumable data:', {
+        name: $('#consumable').val(),
+        shelf_life_type: $('#shelf_life_type').val(),
+        test_data: test_data
+    });
 
     $.ajax({
         type: 'POST',
         url: '{% url "consumable-add" %}',
         data: formData,
-        processData: false,  // Prevent jQuery from processing data
-        contentType: false,  // Let browser set content type (multipart/form-data)
+        processData: false,
+        contentType: false,
         headers: {
             'X-CSRFToken': '{{ csrf_token }}'
         },
         success: function (response) {
             if (response.success) {
-                showAlert('Data Submitted Successfully!', 'success');
-                setTimeout(function () {
+                var consumableName = $('#consumable').val();
+                showAlert(`🎉 Consumable "${consumableName}" created successfully! The consumable has been added to your inventory and will redirect you to the list page.`, 'success');
+                setTimeout(function() {
                     window.location.href = "{% url 'consumable-list' %}";
                 }, 3000);
             } else {
-                showAlert('Data Submission Unsuccessful! Please try again.', 'error');
+                showAlert(response.message || '❌ Failed to create consumable. Please check your input and try again.', 'error');
             }
         },
-        error: function (error) {
-            showAlert('An error occurred: ' + error.responseText, 'error');
+        error: function (xhr, status, error) {
+            var errorMessage = '❌ An error occurred while creating the consumable. Please try again.';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = '❌ ' + xhr.responseJSON.message;
+            }
+            showAlert(errorMessage, 'error');
+        },
+        complete: function() {
+            // Reset button state
+            $('#submitButton').prop('disabled', false).html('Submit');
         }
     });
 });
 
-        // Populate Category Dropdown Dynamically (Optional if already done in the template)
+function showAlert(message, type) {
+     if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: type === 'success' ? 'Success!' : 'Error!',
+            text: message,
+            icon: type,
+            confirmButtonText: 'OK',
+            confirmButtonColor: type === 'success' ? '#28a745' : '#dc3545',
+            timer: type === 'success' ? 3000 : undefined,
+            timerProgressBar: type === 'success' ? true : false
+        });
+    } else {
+        // Fallback to regular alert if SweetAlert is not loaded
+        var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        var alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        $('.page-header').after(alertHtml);
+    }
+}
+
+    // Populate Category Dropdown Dynamically (Optional if already done in the template)
         //const categoryChoices = [
         //{ value: "", label: "Select a Value" },
         //{ value: "DOC/DOCX", label: ".doc/.docx" },
@@ -692,52 +788,25 @@ $('#submitButton').click(function (event) {
                 },
                 success: function (response) {
                     if (response.success) {
-                        // alert(response.message);
+                        showAlert('📄 Document added successfully!', 'success');
                         $('#addConsumableDocumentModal').modal('hide');
                     } else {
-                        // alert(response.message);
+                        showAlert(response.message || '❌ Failed to add document. Please try again.', 'error');
                     }
                 },
                 error: function () {
-                    // alert('Error adding document. Please try again.');
+                    showAlert('❌ Error adding document. Please try again.', 'error');
                 }
             });
         });
-        {% comment %} // Submit pre-certification Form
-        $('#preCertForm').submit(function (e) {
-            e.preventDefault();
-            var formData = new FormData(this);
-            var consumable = $('#consumable').val();
-
-            formData.append('consumable', consumable);
-
-            for (var pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-
-            }
-
-            $.ajax({
-                url: '{% url "add-consumable-pre-certification" %}',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                success: function (response) {
-                    if (response.success) {
-                        // alert(response.message);
-                        $('#preCertificationModal').modal('hide');
-                    } else {
-                        // alert(response.message);
-                    }
-                },
-                error: function () {
-                    // alert('Error adding document. Please try again.');
-                }
-            });
-        }); {% endcomment %}
+        // Pre-certification Form submission code commented out for now
+        // $('#preCertForm').submit(function (e) {
+        //     e.preventDefault();
+        //     var formData = new FormData(this);
+        //     var consumable = $('#consumable').val();
+        //     formData.append('consumable', consumable);
+        //     // ... rest of the code
+        // });
 
 
     });

@@ -1,6 +1,10 @@
 {% extends 'index.html' %}
 {% block content %}
 {% load static %}
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -15,8 +19,9 @@
                 <div class="row">
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
-                            <label>Component</label>
-                            <input type="text" name="component" id="component">
+                            <label>Component <span class="text-danger">*</span></label>
+                            <input type="text" name="component" id="component" class="form-control" required>
+                            <div class="invalid-feedback">Component name is required.</div>
                         </div>
                     </div>
 
@@ -71,32 +76,36 @@
 
                     <div class="col-md-6 col-lg-4">
                         <div class="form-group">
-                            <label for="shelf_life_type">Shelf Life</label>
-                            <select id="shelf_life_type" name="shelf_life_type" class="form-control">
+                            <label for="shelf_life_type">Shelf Life <span class="text-danger">*</span></label>
+                            <select id="shelf_life_type" name="shelf_life_type" class="form-control" required>
                                 <option value="">Choose Type</option>
                                 <option value="tbd">TBD (To Be Decided)</option>
                                 <option value="not_applicable">Not Applicable</option>
                                 <option value="add_duration">Add Duration</option>
                             </select>
+                            <div class="invalid-feedback">Shelf life type is required.</div>
                         </div>
                     </div>
 
                     <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
                         <div class="form-group">
-                            <label for="shelf_life_value">Shelf Life Duration</label>
+                            <label for="shelf_life_value">Shelf Life Duration <span class="text-danger">*</span></label>
                             <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control"
-                                placeholder="Enter duration">
+                                placeholder="Enter duration" min="0" step="0.01">
+                            <div class="invalid-feedback">Shelf life duration is required when duration is selected.</div>
                         </div>
                     </div>
 
                     <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
                         <div class="form-group">
-                            <label for="unit">Shelf Life Period</label>
+                            <label for="unit">Shelf Life Period <span class="text-danger">*</span></label>
                             <select id="unit" name="unit" class="form-control">
+                                <option value="">Select Period</option>
                                 <option value="days">Days</option>
                                 <option value="months">Months</option>
                                 <option value="years">Years</option>
                             </select>
+                            <div class="invalid-feedback">Shelf life period is required when duration is selected.</div>
                         </div>
                     </div>
 
@@ -111,8 +120,13 @@
                     </div>
 
                     <div class="col-lg-12">
-                        <button type="button" id="submitButton" class="btn btn-submit me-2">Submit</button>
-                        <a href="{% url 'component-add' %}" class="btn btn-cancel">Clear</a>
+                        <button type="button" id="submitButton" class="btn btn-submit me-2">
+                            <span class="btn-text">Submit</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...
+                            </span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear</button>
                     </div>
                 </div>
             </div>
@@ -555,6 +569,48 @@ function clearMultiselectDropdown(dropdown) {
         $('#submitButton').click(function (event) {
             event.preventDefault();
 
+            // Clear previous error messages and validation states
+            $('.error-message').remove();
+            $('.form-control').removeClass('is-invalid');
+            $('.invalid-feedback').hide();
+
+            // Validate required fields
+            var isValid = true;
+            var requiredFields = ['component', 'shelf_life_type'];
+            
+            requiredFields.forEach(function(fieldId) {
+                var field = $('#' + fieldId);
+                if (!field.val().trim()) {
+                    field.addClass('is-invalid');
+                    field.siblings('.invalid-feedback').show();
+                    isValid = false;
+                }
+            });
+
+            // Validate shelf life fields if type is 'add_duration'
+            if ($('#shelf_life_type').val() === 'add_duration') {
+                if (!$('#shelf_life_value').val()) {
+                    $('#shelf_life_value').addClass('is-invalid');
+                    $('#shelf_life_value').siblings('.invalid-feedback').show();
+                    isValid = false;
+                }
+                if (!$('#unit').val()) {
+                    $('#unit').addClass('is-invalid');
+                    $('#unit').siblings('.invalid-feedback').show();
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                showSwalAlert('⚠️ Please fill in all required fields correctly before submitting.', 'warning');
+                return;
+            }
+
+            // Show loading state
+            $('#submitButton').prop('disabled', true);
+            $('.btn-text').hide();
+            $('.btn-loading').show();
+
              const formData = new FormData();
 
            // Add basic fields
@@ -631,16 +687,27 @@ function clearMultiselectDropdown(dropdown) {
                 },
                 success: function (response) {
                     if (response.success) {
-                        showAlert('Data Submitted Successfully !', 'success');
+                        var componentName = $('#component').val();
+                        showSwalAlert(`🎉 Component "${componentName}" created successfully! The component has been added to your inventory and will redirect you to the list page.`, 'success');
                         setTimeout(function () {
                             window.location.href = "{% url 'component-list' %}";
                         }, 3000);
                     } else {
-                        showAlert('Data Submission Unsuccessful! Please try again.', 'error');
+                        showSwalAlert(response.message || '❌ Failed to create component. Please check your input and try again.', 'error');
                     }
                 },
-                error: function () {
-                    showAlert('An error occurred: ' + error, 'error'); // Show error message in case of failure
+                error: function (xhr, status, error) {
+                    var errorMessage = '❌ An error occurred while creating the component. Please try again.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = '❌ ' + xhr.responseJSON.message;
+                    }
+                    showSwalAlert(errorMessage, 'error');
+                },
+                complete: function() {
+                    // Reset button state
+                    $('#submitButton').prop('disabled', false);
+                    $('.btn-text').show();
+                    $('.btn-loading').hide();
                 }
             });
         });
@@ -701,6 +768,140 @@ function clearMultiselectDropdown(dropdown) {
                     // alert('Error adding document. Please try again.');
                 }
             });
+        });
+        
+        // Enhanced showSwalAlert function with SweetAlert2
+        function showSwalAlert(message, type) {
+            if (typeof Swal !== 'undefined') {
+                var title, confirmButtonColor;
+                
+                switch(type) {
+                    case 'success':
+                        title = 'Success!';
+                        confirmButtonColor = '#28a745';
+                        break;
+                    case 'error':
+                        title = 'Error!';
+                        confirmButtonColor = '#dc3545';
+                        break;
+                    case 'warning':
+                        title = 'Warning!';
+                        confirmButtonColor = '#ffc107';
+                        break;
+                    default:
+                        title = 'Info!';
+                        confirmButtonColor = '#17a2b8';
+                }
+                
+                Swal.fire({
+                    title: title,
+                    text: message,
+                    icon: type,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: confirmButtonColor,
+                    timer: type === 'success' ? 3000 : undefined,
+                    timerProgressBar: type === 'success' ? true : false
+                });
+            } else {
+                // Fallback to regular alert if SweetAlert is not loaded
+                var alertClass;
+                switch(type) {
+                    case 'success':
+                        alertClass = 'alert-success';
+                        break;
+                    case 'error':
+                        alertClass = 'alert-danger';
+                        break;
+                    case 'warning':
+                        alertClass = 'alert-warning';
+                        break;
+                    default:
+                        alertClass = 'alert-info';
+                }
+                
+                var alertHtml = `
+                    <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                $('.page-header').after(alertHtml);
+            }
+        }
+        
+        // Form clearing function
+        function clearForm() {
+            // Clear all form fields
+            $('#component').val('').removeClass('is-invalid');
+            $('#shelf_life_type').val('').removeClass('is-invalid');
+            $('#shelf_life_value').val('').removeClass('is-invalid');
+            $('#unit').val('').removeClass('is-invalid');
+            $('#precertified').prop('checked', false);
+            $('#document_upload').prop('checked', false);
+            
+            // Clear multi-select fields
+            $('#grade').val(null).trigger('change');
+            $('#sources').val(null).trigger('change');
+            $('#supplier').val(null).trigger('change');
+            $('#acceptance_test').val(null).trigger('change');
+            
+            // Hide shelf life fields
+            $('#shelf_life_duration_group').hide();
+            $('#shelf_life_period_group').hide();
+            
+            // Hide all validation messages
+            $('.invalid-feedback').hide();
+            $('.error-message').remove();
+            
+            // Reset button state
+            $('#submitButton').prop('disabled', false);
+            $('.btn-text').show();
+            $('.btn-loading').hide();
+            
+            // Clear acceptance test table
+            $('#acceptance_test_table').empty();
+            
+            // Show success message
+            showSwalAlert('✅ Form cleared successfully!', 'success');
+        }
+        
+        // Real-time validation for shelf life fields
+        $('#shelf_life_type').on('change', function() {
+            const selectedOption = $(this).val();
+            
+            if (selectedOption === 'add_duration') {
+                $('#shelf_life_duration_group').show();
+                $('#shelf_life_period_group').show();
+            } else {
+                $('#shelf_life_duration_group').hide();
+                $('#shelf_life_period_group').hide();
+                // Clear values when hiding
+                $('#shelf_life_value').val('').removeClass('is-invalid');
+                $('#unit').val('').removeClass('is-invalid');
+            }
+        });
+        
+        // Real-time validation for shelf life value
+        $('#shelf_life_value').on('input', function() {
+            var value = parseFloat($(this).val());
+            if (value <= 0) {
+                $(this).addClass('is-invalid');
+                $(this).siblings('.invalid-feedback').show();
+            } else {
+                $(this).removeClass('is-invalid');
+                $(this).siblings('.invalid-feedback').hide();
+            }
+        });
+        
+        // Real-time validation for component name
+        $('#component').on('input', function() {
+            if (!$(this).val().trim()) {
+                $(this).addClass('is-invalid');
+                $(this).siblings('.invalid-feedback').show();
+            } else {
+                $(this).removeClass('is-invalid');
+                $(this).siblings('.invalid-feedback').hide();
+            }
         });
     });
  

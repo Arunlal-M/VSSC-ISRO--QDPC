@@ -50,7 +50,7 @@
         color: white;
     }
 
-    .icon-primary {
+    /* .icon-primary {
         background-color: #4e73df;
     }
 
@@ -68,7 +68,7 @@
 
     .icon-danger {
         background-color: #e74a3b;
-    }
+    } */
 
     .card-title {
         font-size: 0.9rem;
@@ -184,6 +184,15 @@
             <div class="page-title">
                 <h4>Dashboard Overview</h4>
                 <p class="text-muted">Welcome back! Here's what's happening with your inventory today.</p>
+            </div>
+            <div id="dashboard-status" class="mt-2">
+                <div id="loading-status" class="d-none">
+                    <span class="loading-spinner"></span> Loading dashboard data...
+                </div>
+                <div id="error-status" class="d-none text-danger">
+                    <i class="bi bi-exclamation-triangle"></i> <span id="error-message"></span>
+                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="fetchDashboardData()">Retry</button>
+                </div>
             </div>
         </div>
 
@@ -372,19 +381,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch all dashboard data
     async function fetchDashboardData() {
         try {
+            console.log('Starting to fetch dashboard data...');
             showLoadingState(true);
             
             // Fetch all data in parallel
-            // const [summaryData, trendsData, distributionData, activityData, statusData] = await Promise.all([
-
-            const [summaryData ,trendsData,distributionData,activityData,statusData] = await Promise.all([
+            const [summaryData, trendsData, distributionData, activityData, statusData] = await Promise.all([
                 fetchData('/api/dashboard/summary/'),
-                
                 fetchData(`/api/dashboard/trends/?range=${currentTimeRange}`),
                 fetchData('/api/dashboard/distribution/'),
                 fetchData('/api/dashboard/activity/'),
                 fetchData('/api/dashboard/status/')
             ]);
+            
+            console.log('All data fetched successfully:', {
+                summary: summaryData,
+                trends: trendsData,
+                distribution: distributionData,
+                activity: activityData,
+                status: statusData
+            });
             
             // Update UI
             updateSummaryCards(summaryData);
@@ -396,18 +411,65 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
             showError('Failed to load dashboard data. Please try again.');
+            // Show fallback data or empty states
+            showFallbackData();
         } finally {
             showLoadingState(false);
         }
     }
 
-    // Generic fetch function
+    // Generic fetch function with better error handling and timeout
     async function fetchData(url) {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        try {
+            console.log(`Fetching data from: ${url}`);
+            
+            // Create a timeout promise
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Request timeout')), 10000); // 10 second timeout
+            });
+            
+            // Create the fetch promise
+            const fetchPromise = fetch(url);
+            
+            // Race between fetch and timeout
+            const response = await Promise.race([fetchPromise, timeoutPromise]);
+            
+            console.log(`Response from ${url}:`, response.status, response.statusText);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            console.log(`Data from ${url}:`, data);
+            
+            // Check if the response contains an error
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            return data;
+        } catch (error) {
+            console.error(`Error fetching ${url}:`, error);
+            throw error;
         }
-        return await response.json();
+    }
+
+    // Show fallback data when APIs fail
+    function showFallbackData() {
+        // Show default values for summary cards
+        updateCard('component', { count: 0, change_percentage: 0 });
+        updateCard('raw_materials', { count: 0, change_percentage: 0 });
+        updateCard('consumables', { count: 0, change_percentage: 0 });
+        updateCard('products', { count: 0, change_percentage: 0 });
+        
+        // Show empty charts
+        renderTrendsChart({ labels: [], datasets: [] });
+        renderDistributionChart({ labels: [], datasets: [] });
+        
+        // Show empty activity and status
+        renderActivityLogs([]);
+        renderResourceStatus([]);
     }
 
     // Update summary cards with API data
@@ -648,6 +710,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show/hide loading state
     function showLoadingState(show) {
+        const loadingStatus = document.getElementById('loading-status');
+        const errorStatus = document.getElementById('error-status');
+        
+        if (show) {
+            loadingStatus.classList.remove('d-none');
+            errorStatus.classList.add('d-none');
+        } else {
+            loadingStatus.classList.add('d-none');
+        }
+        
+        // Also show/hide individual loading spinners
         document.querySelectorAll('.loading-spinner').forEach(el => {
             el.style.display = show ? 'inline-block' : 'none';
         });
@@ -655,9 +728,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show error message
     function showError(message) {
-        // You can implement a toast notification here
+        const errorStatus = document.getElementById('error-status');
+        const errorMessage = document.getElementById('error-message');
+        const loadingStatus = document.getElementById('loading-status');
+        
+        errorMessage.textContent = message;
+        errorStatus.classList.remove('d-none');
+        loadingStatus.classList.add('d-none');
+        
         console.error(message);
-        alert(message); // Simple fallback
     }
 });
 </script>

@@ -1,0 +1,764 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load json_filters %}
+{% block content %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <!-- Page Header -->
+        <div class="page-header d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="page-title">Product Batch Details</h4>
+                <p class="text-muted mb-0">
+                    {% if batch.batch_id %}
+                        Batch ID: <strong>{{ batch.batch_id }}</strong>
+                    {% else %}
+                        Unit ID: <strong>{{ batch.unit }}</strong>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <!-- Show Edit button only if user has edit permission -->
+                {% if perms.qdpc_core_models.change_productbatch or perms.product.change_productbatch or user.is_superuser %}
+                    <a href="{% url 'product-batch-edit' batch.id %}" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Edit
+                    </a>
+                {% endif %}
+                
+                <!-- Show Approve button only if user has approve permission and batch is pending -->
+                {% if batch.status == 'pending' and perms.qdpc_core_models.approve_productbatch or user.is_superuser %}
+                    <button class="btn btn-success approve-batch-btn" data-batch-id="{{ batch.id }}">
+                        <i class="fas fa-check me-2"></i>Approve
+                    </button>
+                {% endif %}
+                
+                <!-- Show Reject button only if user has reject permission and batch is pending -->
+                {% if batch.status == 'pending' and perms.qdpc_core_models.reject_productbatch or user.is_superuser %}
+                    <button class="btn btn-danger reject-batch-btn" data-batch-id="{{ batch.id }}">
+                        <i class="fas fa-times me-2"></i>Reject
+                    </button>
+                {% endif %}
+                
+                <a href="{% url 'product-batch-list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Left Column - Basic Information -->
+            <div class="col-lg-4">
+                <!-- Product Information Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-box me-2"></i>Product Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item mb-3">
+                            <label class="form-label text-muted small">Product Name</label>
+                            <p class="mb-0 fw-bold">{{ batch.product.name }}</p>
+                        </div>
+
+                        <div class="info-item mb-3">
+                            <label class="form-label text-muted small">Category</label>
+                            <p class="mb-0">{{ batch.product.category.name|default:"N/A" }}</p>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="form-label text-muted small">Status</label>
+                            <span class="badge {% if batch.status == 'approved' %}bg-success{% elif batch.status == 'pending' %}bg-warning{% elif batch.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ batch.status|title }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Details Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Batch Details</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if batch.batch_id %}
+                        <div class="info-item mb-3">
+                            <label class="form-label text-muted small">Batch ID</label>
+                            <p class="mb-0 fw-bold">{{ batch.batch_id }}</p>
+                        </div>
+                        {% endif %}
+                        {% if batch.unit %}
+                        <div class="info-item mb-3">
+                            <label class="form-label text-muted small">Unit ID</label>
+                            <p class="mb-0 fw-bold">{{ batch.unit }}</p>
+                        </div>
+                        {% endif %}
+                        <div class="info-item mb-3">
+                            <label class="form-label text-muted small">Manufacturing Start</label>
+                            <p class="mb-0">{{ batch.manufacturing_start|date:"d M Y"|default:"N/A" }}</p>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="form-label text-muted small">Manufacturing End</label>
+                            <p class="mb-0">{{ batch.manufacturing_end|date:"d M Y"|default:"N/A" }}</p>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="form-label text-muted small">Created Date</label>
+                            <p class="mb-0">{{ batch.created_at|date:"d M Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Detailed Information -->
+            <div class="col-lg-8">
+                <!-- Applicable Drawings -->
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-drafting-compass me-2"></i>Applicable Drawings</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if drawings %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Drawing Title</th>
+                                            <th>Drawing Number</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for drawing_item in drawings %}
+                                        <tr>
+                                            <td>{{ drawing_item.drawing.drawing_title|default:"N/A" }}</td>
+                                            <td>{{ drawing_item.drawing.drawing_number|default:"N/A" }}</td>
+                                            <td>{{ drawing_item.drawing.drawing_status|default:"N/A" }}</td>
+                                            <td>
+                                                {% if drawing_item.drawing.drawing_document %}
+                                                    <a href="{{ drawing_item.drawing.drawing_document.url }}" target="_blank" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-eye me-1"></i>View
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted">No file</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>No drawings available for this product batch.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Raw Materials -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-cubes me-2"></i>Raw Materials</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if raw_materials %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Material Name</th>
+                                            <th>Batch ID</th>
+                                            <th>Expiry Date</th>
+                                            <th>Source</th>
+                                            <th>Supplier</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for rm in raw_materials %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ rm.raw_material.name }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ rm.batch.batch_id|default:"N/A" }}</span>
+                                            </td>
+                                            <td>
+                                                {% if rm.batch.expiry_date %}
+                                                    <span class="{% if rm.batch.expiry_date < today %}text-danger{% endif %}">
+                                                        {{ rm.batch.expiry_date|date:"d M Y" }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% for source in rm.batch.sources.all %}
+                                                    <span class="badge bg-secondary">{{ source.name }}</span>
+                                                {% empty %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for supplier in rm.batch.suppliers.all %}
+                                                    <span class="badge bg-info">{{ supplier.name }}</span>
+                                                {% empty %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if rm.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                    {{ rm.status|title }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>No raw materials added to this batch.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Components -->
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Components</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if components %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Component Name</th>
+                                            <th>Batch ID</th>
+                                            <th>Expiry Date</th>
+                                            <th>Source</th>
+                                            <th>Supplier</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for comp in components %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ comp.component.name }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ comp.batch.batch_id|default:"N/A" }}</span>
+                                            </td>
+                                            <td>
+                                                {% if comp.batch.expiry_date %}
+                                                    <span class="{% if comp.batch.expiry_date < today %}text-danger{% endif %}">
+                                                        {{ comp.batch.expiry_date|date:"d M Y" }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% for source in comp.batch.sources.all %}
+                                                    <span class="badge bg-secondary">{{ source.name }}</span>
+                                                {% empty %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for supplier in comp.batch.suppliers.all %}
+                                                    <span class="badge bg-info">{{ supplier.name }}</span>
+                                                {% empty %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if comp.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                    {{ comp.status|title }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>No components added to this batch.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Consumables -->
+                <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-tint me-2"></i>Consumables</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if consumables %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Consumable Name</th>
+                                            <th>Batch ID</th>
+                                            <th>Expiry Date</th>
+                                            <th>Source</th>
+                                            <th>Supplier</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cons in consumables %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ cons.consumable.name }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ cons.batch.batch_id|default:"N/A" }}</span>
+                                            </td>
+                                            <td>
+                                                {% if cons.batch.expiry_date %}
+                                                    <span class="{% if cons.batch.expiry_date < today %}text-danger{% endif %}">
+                                                        {{ cons.batch.expiry_date|date:"d M Y" }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% for source in cons.batch.sources.all %}
+                                                    <span class="badge bg-secondary">{{ source.name }}</span>
+                                                {% empty %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for supplier in cons.batch.suppliers.all %}
+                                                    <span class="badge bg-info">{{ supplier.name }}</span>
+                                                {% empty %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if cons.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                    {{ cons.status|title }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>No consumables added to this batch.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Process Details -->
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Process Details</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if process_steps_data %}
+                            {% for process_data in process_steps_data %}
+                            <div class="process-section mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0 text-primary">{{ process_data.process.process_title }}</h6>
+                                </div>
+                                
+                                {% if process_data.steps %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th width="10%">Step ID</th>
+                                                    <th width="30%">Description</th>
+                                                    <th width="15%">Date</th>
+                                                    <th width="15%">Type</th>
+                                                    <th width="30%">Materials Used</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for step in process_data.steps %}
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <span class="badge bg-secondary">{{ step.step_id }}</span>
+                                                    </td>
+                                                    <td>{{ step.process_description|default:"N/A" }}</td>
+                                                    <td>{{ step.process_date|date:"d M Y"|default:"N/A" }}</td>
+                                                    <td>
+                                                        <span class="badge {% if step.process_type == 'quantitative' %}bg-success{% else %}bg-warning{% endif %}">
+                                                            {{ step.process_type|title }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex flex-wrap gap-1">
+                                                            {% for rm in step.raw_material_batch.all %}
+                                                                <span class="badge bg-info" title="Raw Material">{{ rm.batch_id }}</span>
+                                                            {% endfor %}
+                                                            {% for comp in step.component_batch.all %}
+                                                                <span class="badge bg-secondary" title="Component">{{ comp.batch_id }}</span>
+                                                            {% endfor %}
+                                                            {% for cons in step.consumable_batch.all %}
+                                                                <span class="badge bg-warning" title="Consumable">{{ cons.batch_id }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning mb-0">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>No process steps defined for this process.
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>No processes added to this batch.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Equipment -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Equipment Used</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if equipment %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Equipment Name</th>
+                                            <th>Serial Number</th>
+                                            <th>Calibration Due Date</th>
+                                            <th>Certificate Reference</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for eq in equipment %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ eq.equipment.name }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-dark">{{ eq.equipment.serial_no|default:"N/A" }}</span>
+                                            </td>
+                                            <td>
+                                                {% if eq.calibration_due_date %}
+                                                    <span class="{% if eq.calibration_due_date < today %}text-danger{% endif %}">
+                                                        {{ eq.calibration_due_date|date:"d M Y" }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if eq.equipment.calibration_certificate %}
+                                                    <span class="text-muted">{{ eq.equipment.calibration_certificate }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">No certificate</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>No equipment used in this batch.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                                 <!-- Acceptance Tests -->
+                 <div class="card mb-4">
+                     <div class="card-header bg-success text-white">
+                         <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Acceptance Tests</h5>
+                     </div>
+                     <div class="card-body">
+                         {% if acceptance_tests %}
+                             <div class="table-responsive">
+                                 <table class="table table-hover">
+                                     <thead class="table-light">
+                                         <tr>
+                                             <th>Test Name</th>
+                                             <th>Specification</th>
+                                             <th>Result</th>
+                                             <th>Test Date</th>
+                                             <th>Remarks</th>
+                                             <th>Report</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody>
+                                         {% for test in acceptance_tests %}
+                                         <tr>
+                                             <td>
+                                                 <strong>{{ test.acceptance_test.name }}</strong>
+                                             </td>
+                                             <td>{{ test.specification|default:"N/A" }}</td>
+                                             <td>
+                                                 <span class="badge {% if test.result == 'pass' %}bg-success{% elif test.result == 'fail' %}bg-danger{% else %}bg-warning{% endif %}">
+                                                     {{ test.result|title|default:"Pending" }}
+                                                 </span>
+                                             </td>
+                                             <td>{{ test.date_of_test|date:"d M Y"|default:"N/A" }}</td>
+                                             <td>{{ test.remarks|default:"N/A" }}</td>
+                                             <td>
+                                                 {% if test.report %}
+                                                     <a href="{{ test.report.url }}" target="_blank" class="btn btn-sm btn-primary">
+                                                         <i class="fas fa-file-alt me-1"></i>View
+                                                     </a>
+                                                 {% else %}
+                                                     <span class="text-muted">No report</span>
+                                                 {% endif %}
+                                             </td>
+                                         </tr>
+                                         {% endfor %}
+                                     </tbody>
+                                 </table>
+                             </div>
+                         {% else %}
+                             <div class="alert alert-info mb-0">
+                                 <i class="fas fa-info-circle me-2"></i>No acceptance tests performed on this batch.
+                             </div>
+                         {% endif %}
+                     </div>
+                 </div>
+
+                                   <!-- Dynamic Tables -->
+                  <div class="card mb-4">
+                      <div class="card-header bg-purple text-white">
+                          <h5 class="mb-0"><i class="fas fa-table me-2"></i>Dynamic Tables</h5>
+                      </div>
+                      <div class="card-body">
+                          {% if dynamic_tables %}
+                              {% for table in dynamic_tables %}
+                              <div class="dynamic-table mb-4">
+                                  <h6 class="text-primary mb-3">{{ table.title }}</h6>
+                                  <div class="table-responsive">
+                                      <table class="table table-bordered table-hover">
+                                          <thead class="table-light">
+                                              <tr>
+                                                  {% for column in table.columns %}
+                                                  <th>{{ column }}</th>
+                                                  {% endfor %}
+                                              </tr>
+                                          </thead>
+                                          <tbody>
+                                              {% for row in table.rows %}
+                                              <tr>
+                                                  {% for column_index in table.columns %}
+                                                  <td>{{ row|get_item:forloop.counter0|default:"" }}</td>
+                                                  {% endfor %}
+                                              </tr>
+                                              {% endfor %}
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                              {% endfor %}
+                          {% else %}
+                              <div class="alert alert-info mb-0">
+                                  <i class="fas fa-info-circle me-2"></i>No dynamic tables available for this batch.
+                              </div>
+                          {% endif %}
+                      </div>
+                  </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-item label {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.info-item p {
+    font-size: 1rem;
+}
+
+.process-section {
+    border-left: 4px solid #007bff;
+    padding-left: 1rem;
+}
+
+.process-section:not(:last-child) {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 1.5rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.alert {
+    border-radius: 0.5rem;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+.btn {
+    border-radius: 0.375rem;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.page-header h4 {
+    margin-bottom: 0.5rem;
+}
+
+ .page-header p {
+     margin-bottom: 0;
+     opacity: 0.9;
+ }
+ 
+ .bg-purple {
+     background-color: #6f42c1 !important;
+ }
+ 
+ .text-purple {
+     color: #6f42c1 !important;
+ }
+ 
+ .dynamic-table-section {
+     border-left: 4px solid #6f42c1;
+     padding-left: 1rem;
+ }
+ 
+ .dynamic-table-section:not(:last-child) {
+     border-bottom: 1px solid #dee2e6;
+     padding-bottom: 1.5rem;
+ }
+</style>
+
+<script>
+// Approve Batch Button Handler
+$('.approve-batch-btn').click(function () {
+    const batchId = $(this).data('batch-id');
+
+    Swal.fire({
+        title: 'Approve Batch?',
+        text: "This will approve the product batch and change its status to approved.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, approve it!',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with approval
+            approveBatch(batchId);
+        }
+    });
+});
+
+// Reject Batch Button Handler
+$('.reject-batch-btn').click(function () {
+    const batchId = $(this).data('batch-id');
+
+    Swal.fire({
+        title: 'Reject Batch?',
+        text: "This will reject the product batch and change its status to rejected.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, reject it!',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with rejection
+            rejectBatch(batchId);
+        }
+    });
+});
+
+function approveBatch(batchId) {
+    $.ajax({
+        url: `/product/product-batch/${batchId}/approve/`, 
+        type: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function (response) {
+            if (response.success) {
+                Swal.fire('Approved!', 'Batch was approved successfully.', 'success');
+                // Reload the page to show updated status
+                location.reload();
+            } else {
+                Swal.fire('Error', response.message || 'Failed to approve batch.', 'error');
+            }
+        },
+        error: function (xhr) {
+            Swal.fire('Server Error', xhr.responseJSON?.detail || 'An error occurred.', 'error');
+        }
+    });
+}
+
+function rejectBatch(batchId) {
+    $.ajax({
+        url: `/product/product-batch/${batchId}/reject/`, 
+        type: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function (response) {
+            if (response.success) {
+                Swal.fire('Rejected!', 'Batch was rejected successfully.', 'success');
+                // Reload the page to show updated status
+                location.reload();
+            } else {
+                Swal.fire('Error', response.message || 'Failed to reject batch.', 'error');
+        }
+        },
+        error: function (xhr) {
+            Swal.fire('Server Error', xhr.responseJSON?.detail || 'An error occurred.', 'error');
+        }
+    });
+}
+</script>
+
+{% endblock %}

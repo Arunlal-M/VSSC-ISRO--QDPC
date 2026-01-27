@@ -30,9 +30,9 @@ class ProcessStep(models.Model):
     min_value = models.IntegerField(blank=True, null=True)  # Optional field
     max_value = models.IntegerField(blank=True, null=True) 
     unit = models.ManyToManyField(Unit, related_name='process_steps')
-    test_result = models.CharField(max_length=10, blank=True, null=True)
-    specification_result = models.CharField(max_length=10, blank=True, null=True)
-    process_type = models.CharField(max_length=15, choices=PROCESS_TYPE_CHOICES, default='quantitateive')
+    test_result = models.CharField(max_length=50, blank=True, null=True)
+    specification_result = models.CharField(max_length=50, blank=True, null=True)
+    process_type = models.CharField(max_length=15, choices=PROCESS_TYPE_CHOICES, default='quantitative')
 
 
     rm_status = models.CharField(max_length=50, choices=[

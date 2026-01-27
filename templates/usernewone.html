@@ -4,6 +4,19 @@
 
             <div class="page-wrapper">
                 <div class="content">
+                    {% if request.GET.updated %}
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated',
+                                text: 'User updated successfully',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        });
+                    </script>
+                    {% endif %}
                     <div class="page-header">
                         <div class="page-title">
                             <h4>User List</h4>
@@ -27,9 +40,9 @@
                                 <div class="col-md-12">
                                     <div class="card bg-white">
                                         <div class="card-header">
-                                            <h5 class="card-title">Solid justified</h5>
+                                            <h5 class="card-title">Active / Inactive Users</h5>
                                         </div>
-                                        <div class="card-body">
+                                    <div class="card-body">
                                             <ul class="nav nav-tabs nav-tabs-solid nav-justified">
                                                 <li class="nav-item"><a class="nav-link active" href="#solid-justified-tab1" data-bs-toggle="tab">Active</a></li>
                                                 <li class="nav-item"><a class="nav-link" href="#solid-justified-tab2" data-bs-toggle="tab">Inactive</a></li>
@@ -67,11 +80,7 @@
                                                                             {{ div.name }}{% if not forloop.last %}, {% endif %}
                                                                         {% endfor %}
                                                                     </td>
-                                                                    <td>
-                                                                        {% for role in user.role.all %}
-                                                                            {{ role.name }}{% if not forloop.last %}, {% endif %}
-                                                                        {% endfor %}
-                                                                    </td>
+                                                                    <td>{{ user.display_role_name|default:"" }}</td>
                                                                     <td>{{ user.date_joined }}</td>
                                                                     <td>
                                                                         <div class="status-toggle d-flex justify-content-between align-items-center">
@@ -80,10 +89,9 @@
                                                                         </div>
                                                                     </td>
                                                                      <td>
-                                                                         <a class="me-3 update-user-btn" href="editquotation.html" data-bs-toggle="modal" data-bs-target="#exampleModal"data-user-id="{{ user.id }}">
-                                                                            <!-- <img src="assets/img/icons/edit.svg" alt="img"> -->
+                                                                         <a class="me-3" href="{% url 'user-edit-page' user.id %}">
                                                                             <i class="fa fa-edit"></i>
-                                                                            </a>                                                            
+                                                                         </a>                                                            
                                                                   
                                                                     </td>
                                                                    
@@ -116,22 +124,17 @@
                                                                     <td>{{ user.username }}</td>
                                                                     <td>{{ user.usertype }}</td>
                                                                     <td>{{ user.email }}</td>
-                                                                    <td><select id="options" name="options">
+                                                                    <td><select id="options_{{ user.id }}" name="options_{{ user.id }}" class="role-select">
                                                                         {% for role in all_roles %}
-                                                                        <option value="{{ role.id }}">{{ role.name }}</option>
+                                                                        <option value="{{ role.id }}" {% if role.id in user.groups.all|stringformat:"s" %}selected{% endif %}>{{ role.name }}</option>
                                                                     {% endfor %}
-                                                                       
                                                                     </select></td>
                                                                     <td>3/15/2022</td>
                                                                     <td><span class="bg-lightred badges">InActive</span></td>
                                                                     <td>
-                                                                          
-                                                                        <!-- <a class="me-3" href="newuseredit.html"> -->
-                                                                            <!-- <img src="assets/img/icons/edit.svg" alt="img"> -->
-                                                                            <!-- <span class="bg-lightgreen badges">Approve</span> -->
-                                                                            <button type="button" class="bg-lightgreen badges"  data-user-id="{{ user.id }}"  id="confirm-button-me">Approve User</button>
-                                                                        <!-- </a> -->
-                                                                        <a class="me-3 reject-user-btn" href="javascript:void(0);" data-user-id="{{ user.id }}"> <span class="bg-lightred badges">Reject User</span> </a>
+                                                                        <a class="me-3" href="{% url 'user-edit-page' user.id %}">
+                                                                            <i class="fa fa-edit"></i>
+                                                                        </a>
                                                                     </td>
                                                                 </tr>
                                                                 
@@ -143,6 +146,45 @@
                                                     </div>
                                                 </div>
                                                 
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="card bg-white">
+                                        <div class="card-header">
+                                            <h5 class="card-title">Default Roles</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Role</th>
+                                                            <th>Page Codes</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for r in default_roles %}
+                                                        <tr>
+                                                            <td>{{ r.group__name }}</td>
+                                                            <td>{{ r.page_codes|default:"-" }}</td>
+                                                            <td>
+                                                                {% if is_super_admin %}
+                                                                <a href="{% url 'group-list' %}" class="btn btn-sm btn-primary">Manage</a>
+                                                                {% else %}
+                                                                <span class="text-muted">No access</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% empty %}
+                                                        <tr>
+                                                            <td colspan="3">No default roles found.</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
@@ -447,7 +489,7 @@ $(document).ready(function() {
     $(document).on("click", "#confirm-button-me", function () {
 
         const userId = $(this).data('user-id');
-        const selectedRoles = $('#options').val(); // Get selected roles from dropdown
+        const selectedRoles = $(this).closest('tr').find('.role-select').val(); // Get selected roles from dropdown
         console.log(selectedRoles)
         const url = `${baseUrl}${userId}/`; // Append user ID to the base URL
         Swal.fire({

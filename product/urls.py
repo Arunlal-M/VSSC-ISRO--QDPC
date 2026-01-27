@@ -9,23 +9,16 @@ from .views.raw_material_batch import RawmatrialBatchAcceptenceTest
 from django.urls import path,include
 from django.conf.urls.static import static
 from django.conf import settings
-from .views.product_view import ProductListView,ProductAddView,DeleteProductView,UpdateProductStatusView,AddProductDocumentView,ViewProductDetailView
+from .views.product_view import ProductListView,ProductAddView,DeleteProductView,UpdateProductStatusView,AddProductDocumentView,ViewProductDetailView,ProductUpdateView
 from .views.ProductBatch import *
 from product.views.product import *  
+from .views.ProductBatch_clean import ProductBatchApproveView, ProductBatchQAApprovalView, SubmitToSectionView, SubmitToDivisionView, RejectBatchView, ProductBatchQARReportView
 
 raw_material_batch_add_view = RawMatrialBatchAddView()
 
 urlpatterns = [
 
     path('', product_home, name='product-home'), 
-
-
-
-
-
-
-
-
 
 path('raw-material/', RawMatrialListFetchView.as_view(), name='raw-material'),
 path('raw-material-add/', RawMaterialAdd.as_view(), name='raw-material-add'),
@@ -72,14 +65,18 @@ path('view/acceptancetest/<int:acceptanceTestId>/', ViewAcceptanceTestDetailView
 
 path('list-view/',ProductListView.as_view(),name='product-view'),
 path('product-add/',ProductAddView.as_view(),name='product-add'),
-path('list-view/<str:productId>/',DeleteProductView.as_view(),name='product-delete'),
-path('update-product-status/<str:productId>/', UpdateProductStatusView.as_view(), name='update-product-status'),
+path('list-view/<int:productId>/',DeleteProductView.as_view(),name='product-delete'),
+path('update-product-status/<int:productId>/', UpdateProductStatusView.as_view(), name='update-product-status'),
+path('product/<int:productId>/edit/', ProductUpdateView.as_view(), name='product-edit'),
 path('product-document/add/', AddProductDocumentView.as_view(), name='add-product-document'),
 path('view-product/<int:productId>/', ViewProductDetailView.as_view(), name='view-product-detail'),
 
 #product batch
 path('product-batches/',ProductBatchFetchView.as_view(), name='product-batch-list'),
 path('product-batches/add/',ProductBatchAddView.as_view(), name='product-batch-add'),
+path('product-batches/<int:pk>/edit/', ProductBatchEditView.as_view(), name='product-batch-edit'),
+path('product-batches/<int:pk>/approve/', ProductBatchApproveView.as_view(), name='product-batch-approve'),
+path('product-batches/<int:pk>/reject/', ProductBatchRejectView.as_view(), name='product-batch-reject'),
 path('api/raw-materials/', RawMaterialBatchListView.as_view(), name='raw-materials-api'),
 path('api/components/', ComponentBatchListView.as_view(), name='component-api'),
 path('api/consumables/', ConsumableWithBatchesAPIView.as_view(), name='consumables-with-batches'),
@@ -95,9 +92,21 @@ path('api/get-acceptance-tests/', ProductAcceptanceTestApiView.as_view(), name='
     path('product-batch/<int:pk>/delete/', ProductBatchDeleteView.as_view(), name='product-batch-delete'),
 
 path('product-batch/view/<int:pk>/', SingleProductBatchView.as_view(), name='product-batch-single-view'),
+path('product-batches/<int:pk>/', SingleProductBatchView.as_view(), name='product-batch-view'),
 
+# Product batch approval endpoint
+path('product-batch/<int:batch_id>/approve/', ProductBatchApproveView.as_view(), name='product-batch-approve'),
 
+# Product batch QA approval page
+path('product-batch/<int:batch_id>/qa-approval/', ProductBatchQAApprovalView.as_view(), name='product-batch-qa-approval'),
 
+# Product batch QAR report download
+path('product-batch/<int:batch_id>/qar-report/', ProductBatchQARReportView.as_view(), name='product-batch-qar-report'),
+
+# Hierarchical approval workflow endpoints
+path('product-batch/<int:batch_id>/submit-to-section/', SubmitToSectionView.as_view(), name='submit-to-section'),
+path('product-batch/<int:batch_id>/submit-to-division/', SubmitToDivisionView.as_view(), name='submit-to-division'),
+path('product-batch/<int:batch_id>/reject/', RejectBatchView.as_view(), name='reject-batch'),
 
 # BATCH LIST DETAILED VIEW
 

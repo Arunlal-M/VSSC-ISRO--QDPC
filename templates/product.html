@@ -105,28 +105,24 @@
 																		<td>{{ prod.specific_use}}</td>
 	
 																		<td>
-																			<div
-																				class="status-toggle d-flex justify-content-between align-items-center">
-																				<input type="checkbox"
-																					id="{{ prod.name }}"
-																					class="check status-checkbox"
-																					data-id="{{ prod.name }}" {% if
-																					prod.is_active %} checked {% endif
-																					%}>
-																				<label for="{{ prod.name }}"
-																					class="checktoggle">checkbox</label>
-																			</div>
+                                                                            <div class="status-toggle d-flex justify-content-between align-items-center">
+                                                                                <input type="checkbox"
+                                                                                    id="product-{{ prod.id }}"
+                                                                                    class="check status-checkbox"
+                                                                                    data-id="{{ prod.id }}" {% if prod.is_active %} checked {% endif %}>
+                                                                                <label for="product-{{ prod.id }}" class="checktoggle">checkbox</label>
+                                                                            </div>
 																		</td>
 																		<td>
 																			<a class="me-3 view-product-btn" data-product-id="{{ prod.id }}" data-bs-toggle="modal" data-bs-target="#viewProductModal">
 																				<img src="{% static 'assets/img/icons/eye.svg' %}" alt="View">
 																			</a>
-																			<a class="me-3" href="editproduct.html">
+                                                                            <a class="me-3" href="{% url 'product-edit' prod.id %}">
 																				<img src="{% static 'assets/img/icons/edit.svg' %}"
 																					alt="img">
 																			</a>
-																			<a id="delete-btn"
-																				data-id="{{ prod.name }}">
+                                                                            <a class="delete-btn"
+                                                                                data-id="{{ prod.id }}">
 																				<img src="{% static 'assets/img/icons/delete.svg' %}"
 																					alt="img">
 																			</a>
@@ -172,17 +168,13 @@
 																		<td>{{ prod.prefix }}</td>
 																		<td>{{ prod.suffix }}</td> {% endcomment %}
 																		<td>
-																			<div
-																				class="status-toggle d-flex justify-content-between align-items-center">
-																				<input type="checkbox"
-																					id="{{ prod.name }}"
-																					class="check status-checkbox"
-																					data-id="{{ prod.name }}" {% if not
-																					prod.is_active %} unchecked {% endif
-																					%}>
-																				<label for="{{ prod.name }}"
-																					class="checktoggle">checkbox</label>
-																			</div>
+                                                                            <div class="status-toggle d-flex justify-content-between align-items-center">
+                                                                                <input type="checkbox"
+                                                                                    id="product-{{ prod.id }}"
+                                                                                    class="check status-checkbox"
+                                                                                    data-id="{{ prod.id }}" {% if not prod.is_active %} unchecked {% endif %}>
+                                                                                <label for="product-{{ prod.id }}" class="checktoggle">checkbox</label>
+                                                                            </div>
 																		</td>
 																		<td>
 																			<a class="me-3" data-bs-toggle="modal"
@@ -190,12 +182,12 @@
 																				<img src="{% static 'assets/img/icons/eye.svg' %}"
 																					alt="img">
 																			</a>
-																			<a class="me-3" href="editproduct.html">
+                                                                            <a class="me-3" href="{% url 'product-edit' prod.id %}">
 																				<img src="{% static 'assets/img/icons/edit.svg' %}"
 																					alt="img">
 																			</a>
-																			<a id="delete-btn"
-																				data-id="{{ prod.name }}">
+                                                                            <a class="delete-btn"
+                                                                                data-id="{{ prod.id }}">
 																				<img src="{% static 'assets/img/icons/delete.svg' %}"
 																					alt="img">
 																			</a>
@@ -342,7 +334,7 @@
 {% block scripts %}
 <script>
 
-$(document).on('click', '#delete-btn', function (e) {
+$(document).on('click', '.delete-btn', function (e) {
         e.preventDefault(); // Prevent default link behavior
 
         var productId = $(this).data('id'); // Get PRODUCT ID from data attribute
@@ -368,8 +360,7 @@ $(document).on('click', '#delete-btn', function (e) {
         }
 
         // Construct the URL dynamically
-        const baseUrl = "{% url 'product-view' %}";
-        const deleteUrl = `${baseUrl}${productId}/`;
+        const deleteUrl = `/product/list-view/${productId}/`;
 
         // Perform the AJAX request for deletion
         $.ajax({
@@ -408,12 +399,12 @@ $(document).on('click', '#delete-btn', function (e) {
 
 
 	$(document).on('click', '.status-checkbox', function () { 
-    var productId = String($(this).data('id')); // Get the product ID
+    var productId = String($(this).data('id'));
     var isActive = $(this).is(':checked'); // Get the checkbox state (true/false)
 
     if (productId) {
         const baseUrl = "/product/update-product-status/";
-        const updateUrl = `${baseUrl}${productId}/`; // URL for updating product status
+        const updateUrl = `${baseUrl}${productId}/`;
 
         $.ajax({
             url: updateUrl,
@@ -445,7 +436,7 @@ $(document).on('click', '#delete-btn', function (e) {
 		$('.status-checkbox').change(function () {
 			var productId = $(this).data('id');
 			var status = $(this).is(':checked');
-			const updateUrl = `/update-product-status/${productId}/`;  // Check URL structure
+            const updateUrl = `/product/update-product-status/${productId}/`;
 
 			if (!productId) {
 				alert('Product ID not found.');

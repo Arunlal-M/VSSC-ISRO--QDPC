@@ -9,9 +9,11 @@
 				<h6>Manage your Equipment Configuration</h6>
 			</div>
 			<div class="page-btn">
-				<a href="{% url 'equipment-add' %}" class="btn btn-added"><img
-						src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add New
-					Equipment</a>
+				{% if user.is_superuser or can_add_equipment %}
+					<a href="{% url 'equipment-add' %}" class="btn btn-added"><img
+							src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add New
+						Equipment</a>
+				{% endif %}
 			</div>
 		</div>
 
@@ -96,16 +98,25 @@
 
 
 								<td>
+									<!-- View button - always visible -->
 									<a class="me-3 view-btn" data-id="{{ equ.id }}">
 										<img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
 									</a>
-									<a class="me-3 view-equipment-btn" data-bs-toggle="modal"
-										data-bs-target="#equipmentModal" data-equipment-id="{{equ.id}}">
-										<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
-									</a>
-									<a id="delete-btn" data-id="{{equ.id}}" href="javascript:void(0);">
-										<img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
-									</a>
+									
+									<!-- Edit button - only if user has edit permission -->
+									{% if user.is_superuser or can_edit_equipment %}
+										<a class="me-3 view-equipment-btn" data-bs-toggle="modal"
+											data-bs-target="#equipmentModal" data-equipment-id="{{equ.id}}">
+											<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+										</a>
+									{% endif %}
+									
+									<!-- Delete button - only if user has delete permission -->
+									{% if user.is_superuser or can_delete_equipment %}
+										<a id="delete-btn" data-id="{{equ.id}}" href="javascript:void(0);">
+											<img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
+										</a>
+									{% endif %}
 								</td>
 							</tr>
 

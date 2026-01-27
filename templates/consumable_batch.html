@@ -2,6 +2,9 @@
 {% block content %}
 {% load static %}
 
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -15,49 +18,62 @@
                 <div class="row">
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Batch ID</label>
-                            <input type="text" id="batch-id" name="batch-id" class="form-control">
+                            <label>Batch ID <span class="text-danger">*</span></label>
+                            <input type="text" id="batch-id" name="batch-id" class="form-control" required>
+                            <div class="invalid-feedback">Batch ID is required.</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label for="procurement_date">Procurement Date</label>
-                            <input type="date" id="procurement_date" name="procurement_date" class="form-control">
+                            <label for="procurement_date">Procurement Date <span class="text-danger">*</span></label>
+                            <input type="date" id="procurement_date" name="procurement_date" class="form-control" required>
+                            <div class="invalid-feedback">Procurement date is required.</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Consumable</label>
-							<select id="consumable" name="consumable"  class="form-control" >
+                            <label>Consumable <span class="text-danger">*</span></label>
+							<select id="consumable" name="consumable"  class="form-control" required>
                                 <option value="">Select a Consumable</option>
 								{% for con in consumables %}
 									<option value="{{ con.id }}">{{ con.name }}</option>
 								{% endfor %}
 							</select>
+                            <div class="invalid-feedback">Please select a consumable.</div>
                         </div>
                     </div>
                     
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Batch Size</label>
-                            <input type="text" name="batch_size_value" id="batch_size_value" class="form-control">
+                            <label>Batch Size <span class="text-danger">*</span></label>
+                            <input type="number" name="batch_size_value" id="batch_size_value" class="form-control" min="0" step="0.01" required>
+                            <div class="invalid-feedback">Batch size must be a positive number.</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Unit</label>
-                            <select class="select" id="batch_size_unit" name="batch_size_unit" >
+                            <label>Unit <span class="text-danger">*</span></label>
+                            <select class="select" id="batch_size_unit" name="batch_size_unit" required>
                                 <option value="">Select a Unit</option>
                                 {% for unit in units %}
                                 <option value="{{ unit.id }}">{{ unit.name }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Please select a unit.</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Packing Details</label>
-                            <input type="text" name="packing_details" id="packing_details" class="form-control">
+                            <label>Packing Details <span class="text-danger">*</span></label>
+                            <input type="text" name="packing_details" id="packing_details" class="form-control" required>
+                            <div class="invalid-feedback">Packing details are required.</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="date" id="expiry_date" name="expiry_date" class="form-control">
+                            <div class="invalid-feedback">Expiry date must be after procurement date.</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
@@ -67,7 +83,13 @@
                         </div>
                     </div>
                     <div class="col-lg-12">
-                        <button id="submitButton" class="btn btn-submit me-2">Submit</button>
+                        <button id="submitButton" class="btn btn-submit me-2">
+                            <span class="btn-text">Submit</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...
+                            </span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear</button>
                     </div>
                 </div>
             </div>
@@ -96,6 +118,46 @@
 
 <script>
     $(document).ready(function () {
+        // Real-time validation for batch size
+        $('#batch_size_value').on('input', function() {
+            var value = parseFloat($(this).val());
+            if (value <= 0) {
+                $(this).addClass('is-invalid');
+                $(this).siblings('.invalid-feedback').show();
+            } else {
+                $(this).removeClass('is-invalid');
+                $(this).siblings('.invalid-feedback').hide();
+            }
+        });
+        
+        // Real-time validation for expiry date
+        $('#expiry_date').on('change', function() {
+            var procurementDate = $('#procurement_date').val();
+            var expiryDate = $(this).val();
+            
+            if (expiryDate && procurementDate && new Date(expiryDate) <= new Date(procurementDate)) {
+                $(this).addClass('is-invalid');
+                $(this).siblings('.invalid-feedback').show();
+            } else {
+                $(this).removeClass('is-invalid');
+                $(this).siblings('.invalid-feedback').hide();
+            }
+        });
+        
+        // Real-time validation for procurement date
+        $('#procurement_date').on('change', function() {
+            var expiryDate = $('#expiry_date').val();
+            var procurementDate = $(this).val();
+            
+            if (expiryDate && procurementDate && new Date(expiryDate) <= new Date(procurementDate)) {
+                $('#expiry_date').addClass('is-invalid');
+                $('#expiry_date').siblings('.invalid-feedback').show();
+            } else {
+                $('#expiry_date').removeClass('is-invalid');
+                $('#expiry_date').siblings('.invalid-feedback').hide();
+            }
+        });
+        
         $('#consumable').on('change', function () {
             var selectedValue = $(this).val();
             if (selectedValue) {
@@ -112,11 +174,18 @@
                         var shelfLifeUnit = consumableData.shelf_life_unit;
                         var expiryDate = null;
 
-                        // ✅ CHANGE: Calculate Expiry Date if procurement date is available
+                        // ✅ Calculate Expiry Date if procurement date is available
                         if (procurementDate && shelfLifeValue && shelfLifeUnit) {
-                        expiryDate = calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit);
-                        $('#expiry_date').val(expiryDate);
-                        } 
+                            expiryDate = calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit);
+                            $('#expiry_date').val(expiryDate);
+                            
+                            // Show success message for auto-calculation
+                            if (shelfLifeValue && shelfLifeUnit) {
+                                showSwalAlert(`📅 Expiry date automatically calculated: ${expiryDate} (${shelfLifeValue} ${shelfLifeUnit} from procurement date)`, 'success');
+                            }
+                        } else if (shelfLifeValue && shelfLifeUnit) {
+                            showSwalAlert('⚠️ Please set procurement date to automatically calculate expiry date', 'warning');
+                        }
 
                         var acceptanceTests = consumableData.acceptance_test;
                         var tabContent = $('#tab-content');
@@ -414,10 +483,11 @@
                                 processData: false,
                                 contentType: false,
                                 success: function (response) {
-                                    alert('Files and test values submitted successfully.');
+                                    showSwalAlert('📄 Files and test values submitted successfully!', 'success');
                                     $('#modal-close-btn').click();
                                 },
                                 error: function (error) {
+                                    showSwalAlert('❌ Error submitting test data. Please try again.', 'error');
                                     console.log('Error submitting data:', error);
                                 }
                             });
@@ -426,6 +496,7 @@
                         
                     },
                     error: function (error) {
+                        showSwalAlert('❌ Error fetching consumable data. Please try again.', 'error');
                         console.log('Error fetching data:', error);
                     }
                 });
@@ -433,56 +504,203 @@
         });
     });
 
-    $(document).ready(function() {
+            $(document).ready(function() {
         $('#submitButton').click(function(event) {
-            alert("clicked")
-            event.preventDefault(); 
-            // Check if this alert shows
+            event.preventDefault();
+            
+            // Clear previous error messages and validation states
+            $('.error-message').remove();
+            $('.form-control').removeClass('is-invalid');
+            $('.invalid-feedback').hide();
+            
+            // Validate required fields
+            var isValid = true;
+            var requiredFields = ['batch-id', 'procurement_date', 'consumable', 'batch_size_value', 'batch_size_unit', 'packing_details'];
+            
+            requiredFields.forEach(function(fieldId) {
+                var field = $('#' + fieldId);
+                if (!field.val().trim()) {
+                    field.addClass('is-invalid');
+                    field.siblings('.invalid-feedback').show();
+                    isValid = false;
+                }
+            });
+            
+            // Validate batch size value
+            var batchSizeValue = parseFloat($('#batch_size_value').val());
+            if (batchSizeValue <= 0) {
+                $('#batch_size_value').addClass('is-invalid');
+                $('#batch_size_value').siblings('.invalid-feedback').show();
+                isValid = false;
+            }
+            
+            // Validate expiry date if provided
+            var procurementDate = $('#procurement_date').val();
+            var expiryDate = $('#expiry_date').val();
+            if (expiryDate && procurementDate && new Date(expiryDate) <= new Date(procurementDate)) {
+                $('#expiry_date').addClass('is-invalid');
+                $('#expiry_date').siblings('.invalid-feedback').show();
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                showSwalAlert('⚠️ Please fill in all required fields correctly before submitting.', 'error');
+                return;
+            }
+
+            // Show loading state
+            $('#submitButton').prop('disabled', true);
+            $('.btn-text').hide();
+            $('.btn-loading').show();
 
             // Gather form data
             var consum = $('#consumable').val();
             var batchId = $('#batch-id').val();
             var procurementDate = $('#procurement_date').val();
-            var batchSizeValue = parseFloat($('#batch_size_value').val()); // Ensure float conversion
+            var batchSizeValue = parseFloat($('#batch_size_value').val());
             var batchSizeUnit = $('#batch_size_unit').val();
-            // var batchSizeUnit = $('#batch_size_unit').val() ? $('#batch_size_unit').val().map(Number) : [];
             var packingDetails = $('#packing_details').val();
-            var expiryDate = $('#expiry_date').val(); //  Get expiry date from the form
+            var expiryDate = $('#expiry_date').val();
 
-            // Create the data object
-            var consumableBatchData = {
+            // Create FormData for proper form submission
+            var formData = new FormData();
+            formData.append('consumable', consum);
+            formData.append('batch_id', batchId);
+            formData.append('procurement_date', procurementDate);
+            formData.append('batch_size_value', batchSizeValue);
+            formData.append('batch_size_unit', batchSizeUnit);
+            formData.append('packing_details', packingDetails);
+            if (expiryDate) {
+                formData.append('expiry_date', expiryDate);
+            }
+
+            console.log('Submitting consumable batch data:', {
                 consumable: consum,
                 batch_id: batchId,
                 procurement_date: procurementDate,
                 batch_size_value: batchSizeValue,
                 batch_size_unit: batchSizeUnit,
                 packing_details: packingDetails,
-                expiry_date:expiryDate// Send expiry date to backend
-            };
-        // Debug: Check the data object
+                expiry_date: expiryDate
+            });
 
-            // Send data as JSON
+            // Send data as FormData
             $.ajax({
                 type: 'POST',
-                url: '{% url "consumable-batch-add" %}', // URL to your Django view
-                data: JSON.stringify(consumableBatchData),
-                contentType: 'application/json',
+                url: '{% url "consumable-batch-add" %}',
+                data: formData,
+                processData: false,
+                contentType: false,
                 headers: {
-                    'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+                    'X-CSRFToken': '{{ csrf_token }}'
                 },
                 success: function(response) {
-                // Check the response
                     if (response.success) {
-                        window.location.href = "{% url 'consumable-batch-fetch' %}"; // Redirect or update the UI as needed
+                        var batchId = $('#batch-id').val();
+                        showSwalAlert(`🎉 Consumable batch "${batchId}" created successfully! The batch has been added to your inventory and will redirect you to the list page.`, 'success');
+                        setTimeout(function() {
+                            window.location.href = "{% url 'consumable-batch-fetch' %}";
+                        }, 3000);
                     } else {
-                        $('#error-message').text(response.message).show(); // Show error message
+                        showSwalAlert(response.message || '❌ Failed to create consumable batch. Please check your input and try again.', 'error');
                     }
                 },
-                error: function() {
-                    $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+                error: function(xhr, status, error) {
+                    var errorMessage = '❌ An error occurred while creating the consumable batch. Please try again.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = '❌ ' + xhr.responseJSON.message;
+                    }
+                    showSwalAlert(errorMessage, 'error');
+                },
+                complete: function() {
+                    // Reset button state
+                    $('#submitButton').prop('disabled', false);
+                    $('.btn-text').show();
+                    $('.btn-loading').hide();
                 }
             });
         });
+
+        function showSwalAlert(message, type) {
+            if (typeof Swal !== 'undefined') {
+                var title, confirmButtonColor;
+                
+                switch(type) {
+                    case 'success':
+                        title = 'Success!';
+                        confirmButtonColor = '#28a745';
+                        break;
+                    case 'error':
+                        title = 'Error!';
+                        confirmButtonColor = '#dc3545';
+                        break;
+                    case 'warning':
+                        title = 'Warning!';
+                        confirmButtonColor = '#ffc107';
+                        break;
+                    default:
+                        title = 'Info!';
+                        confirmButtonColor = '#17a2b8';
+                }
+                
+                Swal.fire({
+                    title: title,
+                    text: message,
+                    icon: type,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: confirmButtonColor,
+                    timer: type === 'success' ? 3000 : undefined,
+                    timerProgressBar: type === 'success' ? true : false
+                });
+            } else {
+                // Fallback to regular alert if SweetAlert is not loaded
+                var alertClass;
+                switch(type) {
+                    case 'success':
+                        alertClass = 'alert-success';
+                        break;
+                    case 'error':
+                        alertClass = 'alert-danger';
+                        break;
+                    case 'warning':
+                        alertClass = 'alert-warning';
+                        break;
+                    default:
+                        alertClass = 'alert-info';
+                }
+                
+                var alertHtml = `
+                    <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                $('.page-header').after(alertHtml);
+            }
+        }
+        
+        function clearForm() {
+            // Clear all form fields
+            $('#batch-id').val('').removeClass('is-invalid');
+            $('#procurement_date').val('').removeClass('is-invalid');
+            $('#consumable').val('').removeClass('is-invalid');
+            $('#batch_size_value').val('').removeClass('is-invalid');
+            $('#batch_size_unit').val('').removeClass('is-invalid');
+            $('#packing_details').val('').removeClass('is-invalid');
+            $('#expiry_date').val('').removeClass('is-invalid');
+            
+            // Hide all validation messages
+            $('.invalid-feedback').hide();
+            $('.error-message').remove();
+            
+            // Reset button state
+            $('#submitButton').prop('disabled', false);
+            $('.btn-text').show();
+            $('.btn-loading').hide();
+            
+            // Show success message
+            showSwalAlert('✅ Form cleared successfully!', 'success');
+        }
     });
 
 //  Function to calculate expiry date
@@ -506,29 +724,148 @@
 
 
 <style>
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control, .select {
+        border-radius: 0.375rem;
+        border: 1px solid #ced4da;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus, .select:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-control.is-invalid, .select.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .btn-submit {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+    }
+
+    .btn-submit:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        color: white;
+    }
+
+    .btn-submit:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
+    }
+    
+    .btn-loading {
+        display: none;
+    }
+    
+    .btn-submit:disabled .btn-loading {
+        display: inline-block;
+    }
+    
+    .btn-submit:disabled .btn-text {
+        display: none;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    .page-title h4 {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .page-title h6 {
+        color: #6c757d;
+        font-weight: 400;
+    }
+
+    label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Alert styling */
+    .alert {
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+    
+    .alert-warning {
+        background-color: #fff3cd;
+        border-color: #ffeaa7;
+        color: #856404;
+    }
+    
+    .alert-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+
+    /* Modal styling */
     .modal-dialog {
         max-width: 1250px;
         margin-left: 290px;
     }
 
-    /* Add border to each row */
-    .row.border-bottom {
-        border-bottom: 1px solid #ccc;
+    .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
     }
 
-    /* Make the style responsive for mobile view */
+    .modal-title {
+        color: #495057;
+        font-weight: 600;
+    }
+
+    /* Form validation styling */
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Responsive design */
     @media (max-width: 768px) {
         .modal-dialog {
             max-width: 90%;
             margin-left: 5%;
-        }
-
-        .row.border-bottom {
-            flex-direction: column;
-        }
-
-        .row.border-bottom>div {
-            margin-bottom: 10px;
         }
     }
 </style>

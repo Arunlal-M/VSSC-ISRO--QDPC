@@ -7,14 +7,28 @@ from .views.center import CenterListView,DeleteCenterView,EditCenterView
 from .views.unit import UnitView,DeleteUnitView,EditUnitView
 from .views.group import GroupListView
 from .views.permission import GroupPermissionListView  # Import the views from the views module
+from .views.debug_role import debug_user_role
+from .views.page_permission_management import (
+    page_permission_dashboard, manage_page_permissions, 
+    group_page_permissions, update_page_permission
+)
+from .views.acceptance_test import (
+    acceptance_test_list, acceptance_test_create, acceptance_test_create_enhanced, acceptance_test_edit,
+    acceptance_test_delete, acceptance_test_view, acceptance_test_ajax
+)
+
 from .views.grade import GradeView,DeleteGradeView,EditGradeView
 from .views.enduse import EnduseView,DeleteEnduseView,EditEnduseView
 from .views.product_category import ProductCategoryView,DeleteProductCategoryView,EditProductCategoryView
 from .views.document_type import DocumentTypeView,DeleteDocumentTypeView,EditDocumentTypeView
-from .views.notification import view_all_notifications,mark_notification_as_read
+from .views.notification_views import notification_list, notification_api, test_notification_api
 from .views.dashboard import DashboardSummaryAPI,ResourceStatusAPI,InventoryTrendsAPI,InventoryDistributionAPI,RecentActivityAPI
+
 from django.conf import settings
 from django.conf.urls.static import static
+
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,8 +48,9 @@ urlpatterns = [
     path('component/',include('component.urls')),
     path('report/',include('report.urls')),
     path('stage-clearance/',include('stage_clearance.urls')),
-    path('notifications/', view_all_notifications, name='view_all_notifications'),
-    path('notifications/mark_as_read/<int:notification_id>/', mark_notification_as_read, name='mark_notification_as_read'),
+    path('notifications/', notification_list, name='view_all_notifications'),
+    path('notifications/api/', notification_api, name='notification_api'),
+    path('notifications/test/', test_notification_api, name='test_notification_api'),
 
     path('sources/', SourceListView.as_view(), name='source-list'),
     path('sources/view/<int:sourceId>/', EditSourceView.as_view(), name='source-view'),
@@ -52,8 +67,8 @@ urlpatterns = [
     path('centers/<int:centerId>/', DeleteCenterView.as_view(), name='center-delete'),
     
     path('divisions/', DivisionListView.as_view(), name='division-list'),
-    path('divisions/view/<int:divisionId>/', EditDivisionView.as_view(), name='division-view'),
-    path('divisions/edit/<int:divisionId>/', EditDivisionView.as_view(), name='division-edit'),
+    path('divisions/view/<int:divisionId>/', EditCenterView.as_view(), name='division-view'),
+    path('divisions/edit/<int:divisionId>/', EditCenterView.as_view(), name='division-edit'),
     path('divisions/<int:divisionId>/', DeleteDivisonView.as_view(), name='division-delete'),
     
     path('divisions/center/<int:center_id>/', DivisionAjax.as_view(), name='get-divisions-by-center'),    
@@ -74,7 +89,6 @@ urlpatterns = [
     
     
     path('enduse/', EnduseView.as_view(), name='enduse-list'),
-    path('enduse/<int:enduseId>/', DeleteEnduseView.as_view(), name='enduse-grade'),
     path('enduse/view/<int:enduseId>/', EditEnduseView.as_view(), name='enduse-view'),
     path('enduse/edit/<int:enduseId>/', EditEnduseView.as_view(), name='enduse-edit'),
     
@@ -95,6 +109,32 @@ urlpatterns = [
     path('groups/<int:group_id>/permissions/', GroupPermissionListView.as_view(), name='group-permission-list'),  # Map the URL to the GroupPermissionListView
     path('groups/create/', GroupListView.as_view(), name='group-create'),
     path('groups/<int:group_id>/delete/', GroupPermissionListView.as_view(), name='group-delete'),  # URL to delete a group
+    
+    # Acceptance Test URLs
+    path('acceptance-tests/', acceptance_test_list, name='acceptance-test-list'),
+    path('acceptance-tests/create/', acceptance_test_create, name='acceptance-test-create'),
+    path('acceptance-tests/add/', acceptance_test_create_enhanced, name='acceptance-test-add-enhanced'),
+    path('acceptance-tests/<int:test_id>/edit/', acceptance_test_edit, name='acceptance-test-edit'),
+    path('acceptance-tests/<int:test_id>/delete/', acceptance_test_delete, name='acceptance-test-delete'),
+    path('acceptance-tests/<int:test_id>/view/', acceptance_test_view, name='acceptance-test-view'),
+    path('acceptance-tests/ajax/', acceptance_test_ajax, name='acceptance-test-ajax'),
+    
+    # Debug URL for role checking
+    path('debug/role/', debug_user_role, name='debug-role'),
+    
+    # Page Permission Management
+    path('page-permissions/', page_permission_dashboard, name='page-permission-dashboard'),
+    path('page-permissions/manage/', manage_page_permissions, name='manage-page-permissions'),
+    path('page-permissions/group/<int:group_id>/', group_page_permissions, name='group-page-permissions'),
+    path('page-permissions/update/', update_page_permission, name='update-page-permission'),
+    
+    # Workflow URLs - DISABLED
+    # path('workflow/', include('qdpc.urls.workflow_urls')),
+    
+    
+    
+    
+
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

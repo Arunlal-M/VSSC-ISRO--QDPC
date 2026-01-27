@@ -11,7 +11,7 @@
 			</div>
 			<div class="page-btn">
 				<a href="{% url 'raw-material-batch-add' %}" class="btn btn-added"><img
-						src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Batch</a>
+						src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Raw MaterialsBatch</a>
 			</div>
 		</div>
 
@@ -329,6 +329,16 @@
 					status: $('#edit-status').val()
 				};
 				console.log('Updated raw material batch data:', updatedData);
+
+				// Get the batch ID from the modal
+				const batchId = $('#batch-id').val();
+				if (!batchId) {
+					alert('Batch ID not found');
+					return;
+				}
+
+				// Encode the batch ID for the URL
+				const encodedbatchId = encodeURIComponent(batchId);
 
 				// Send PUT request
 				$.ajax({

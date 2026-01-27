@@ -6,26 +6,20 @@
 
 <div class="page-wrapper">
     <div class="content">
-        <div class="page-header">
-            <div class="page-title">
-                <h4>Product Add</h4>
-            </div>
-        </div>
+        
 
         <div class="card">
             <div class="card-body">
                 <div class="row">
                     <!-- Section-1: Name, Category, Owner -->
-                    <div class="col-lg-12 mb-4">
-                        <h5>Section-1</h5>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Name</label>
-                            <input type="text" id="name" name="name">
+                            <input type="text" id="name" name="name" class="form-control">
                         </div>
                     </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Category </label>
                             <select id="category" name="category" class="form-control">
@@ -36,7 +30,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Owner</label>
                             <select id="product_owner" name="product_owner" class="form-control">
@@ -49,10 +43,8 @@
                     </div>
 
                     <!-- Section-2: End Use, Specific Use -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-2</h5>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>End Use</label>
                             <select id="end_uses" name="end_uses" class="form-control">
@@ -63,10 +55,10 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Specific Use</label>
-                            <input type="text" id="specific_use" name="specific_use">
+                            <input type="text" id="specific_use" name="specific_use" class="form-control">
                         </div>
                     </div>
                     {% comment %} <div class="col-md-6 col-lg-4">
@@ -80,10 +72,8 @@
                     </div> {% endcomment %}
 
                     <!-- Section-3: Processing Agencies, Testing Agencies -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-3</h5>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Processing Agencies</label>
                             <select id="processing_agencies" name="processing_agencies" class="form-control">
@@ -94,7 +84,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Testing Agencies</label>
                             <select id="testing_agencies" name="testing_agencies" class="form-control">
@@ -107,10 +97,8 @@
                     </div>
 
                     <!-- Section-4: Shelf Life Value, Shelf Life Unit -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-4</h5>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label for="shelf_life_type">Shelf Life</label>
                             <select id="shelf_life_type" name="shelf_life_type" class="form-control">
@@ -122,7 +110,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-lg-4" id="shelf_life_duration_group" style="display: none;">
+                    <div class="col-lg-3 col-md-6 col-12" id="shelf_life_duration_group" style="display: none;">
                         <div class="form-group">
                             <label for="shelf_life_value">Shelf Life Duration</label>
                             <input type="number" id="shelf_life_value" name="shelf_life_value" class="form-control"
@@ -130,7 +118,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-lg-4" id="shelf_life_period_group" style="display: none;">
+                    <div class="col-lg-3 col-md-6 col-12" id="shelf_life_period_group" style="display: none;">
                         <div class="form-group">
                             <label for="unit">Shelf Life Period</label>
                             <select id="unit" name="unit" class="form-control">
@@ -141,12 +129,10 @@
                     </div>
 
                     <!-- Section-5: Drawing Applicable, Drawing Number, Drawing Status -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-5</h5>
-                    </div>
+                    
 
                     <!-- Drawing Applicable Checkbox -->
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Drawing Applicable</label>
                             <div class="form-check">
@@ -202,59 +188,60 @@
 
 
                     <!-- Section-6: Components, Raw Materials, Consumables, Equipment Used -->
-                    <div class="col-lg-12 mt-4 mb-4">
-                        <h5>Section-6</h5>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Components</label>
                             <select id="components" name="components" class="form-control" >
-                                <option>Choose components</option>
+                                <option value="">Choose components</option>
                                 {% for comp in components %}
                                 <option value="{{ comp.id }}">{{ comp.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Raw Materials</label>
                             {% comment %} <input type="text" id="raw_materials" name="raw_materials"> {% endcomment %}
                             <select id="raw_material" name="raw_material" class="form-control">
-                                <option>Choose rawmaterials</option>
+                                <option value="">Choose rawmaterials</option>
                                 {% for rwm in rawmaterial %}
                                 <option value="{{ rwm.id }}">{{ rwm.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Consumable</label>
                             {% comment %} <input type="text" id="consumable" name="consumable"> {% endcomment %}
                             <select id="consumable" name="consumable" class="form-control">
-                                <option>Choose consumables</option>
+                                <option value="">Choose consumables</option>
                                 {% for con in consumable %}
                                 <option value="{{ con.id }}">{{ con.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Equipment Used</label>
                             {% comment %} <input type="text" id="equipment_used" name="equipment_used"> {% endcomment %}
                             <select id="equipment" name="equipment" class="form-control">
-                                <option>Choose equipment</option>
+                                <option value="">Choose equipment</option>
                                 {% for equ in equipment %}
                                 <option value="{{ equ.id }}">{{ equ.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="col-lg-3 col-md-6 col-12">
+                            
+                        </div>
                     </div>
 
 
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-6 col-12">
                         <div class="form-group">
                             <label>Process</label>
                             <!-- <select id="process" name="process[]" class="select" multiple onchange="handleSelectionP()"> -->
@@ -273,9 +260,7 @@
                 </div> {% endcomment %}
 
                
-<div class="col-lg-12 mt-4 mb-4">
-    <h5>Section-7</h5>
-</div>
+
 
 <div class="col-lg-12">
     <div class="form-group">
@@ -290,7 +275,6 @@
 
 <div class="col-lg-12">
     <div class="form-group">
-        <h5>Acceptance Test Specifications</h5>
         <div class="content" id="acceptance_test_table" style="display: none;">
             <!-- Table will be generated dynamically by JavaScript -->
         </div>
@@ -299,9 +283,7 @@
 
 <!-- Section-8: Add Documents -->
 
-                <div class="col-lg-12 mt-4 mb-4">
-                    <h5>Section-8</h5>
-                </div>
+                
                 <div class="col-lg-4">
                     <div class="form-group">
                         <label for="document_category" class="form-label">Add Documents</label>
@@ -316,9 +298,9 @@
 
 
                 <!-- Submit and Cancel Buttons -->
-                <div class="col-lg-12 mt-4 mb-4">
-                    <a href="product.html" id="submit-btn" class="btn btn-submit me-2">Submit</a>
-                    <a href="{% url 'product-add' %}" class="btn btn-cancel">Cancel</a>
+                <div class="col-lg-12 mt-4 mb-2">
+                    <button id="submit-btn" class="btn btn-submit me-2" type="button">Save Product</button>
+                    <a href="{% url 'product-view' %}" class="btn btn-cancel">Cancel</a>
                 </div>
             </div>
         </div>
@@ -619,6 +601,48 @@ $(document).ready(function () {
     // Submit product form
     $('#submit-btn').click(function (event) {     
         event.preventDefault();
+        
+        // Frontend validation
+        const validationErrors = [];
+        
+        // Check required fields
+        if (!$('#name').val().trim()) {
+            validationErrors.push('Product name is required');
+        }
+        if (!$('#category').val()) {
+            validationErrors.push('Product category is required');
+        }
+        if (!$('#product_owner').val()) {
+            validationErrors.push('Product owner is required');
+        }
+        
+        // Check for placeholder text in select fields
+        const selectFields = [
+            { id: 'components', name: 'Components' },
+            { id: 'raw_material', name: 'Raw Materials' },
+            { id: 'consumable', name: 'Consumables' },
+            { id: 'equipment', name: 'Equipment' },
+            { id: 'process', name: 'Process' }
+        ];
+        
+        selectFields.forEach(field => {
+            const value = $(`#${field.id}`).val();
+            if (value && typeof value === 'string' && value.startsWith('Choose')) {
+                validationErrors.push(`Please select a valid ${field.name} instead of '${value}'`);
+            }
+        });
+        
+        // Show validation errors if any
+        if (validationErrors.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Failed',
+                html: validationErrors.map(error => `<div>• ${error}</div>`).join(''),
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+        
         const productData = new FormData();
         productData.append('name', $('#name').val());
         productData.append('category', $('#category').val());
@@ -686,6 +710,11 @@ $(document).ready(function () {
                 productData.append(item.key, item.file);
             });
 
+        // Show loading state
+        const submitBtn = $(this);
+        const originalText = submitBtn.text();
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+        
         $.ajax({
             url: '{% url "product-add" %}',
             type: 'POST',
@@ -696,16 +725,61 @@ $(document).ready(function () {
                 'X-CSRFToken': getCSRFToken()
             },
             success: function (response) {
+                    // Reset button state
+                    submitBtn.prop('disabled', false).text(originalText);
+                    
                     if (response.success) {
-                        Swal.fire('Success', response.message, 'success');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            // Redirect to product list or refresh page
+                            window.location.href = '{% url "product-view" %}';
+                        });
                     } else {
-                        let errorMessage = response.data?.name?.[0] || 'Validation failed.';
-                        Swal.fire('Error', errorMessage, 'error');
+                        let errorMessage = 'Validation failed.';
+                        if (response.data && Array.isArray(response.data)) {
+                            errorMessage = response.data.join('<br>• ');
+                        } else if (response.data && typeof response.data === 'object') {
+                            errorMessage = Object.values(response.data).flat().join('<br>• ');
+                        }
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validation Failed',
+                            html: errorMessage,
+                            confirmButtonText: 'OK'
+                        });
                     }
                 },
                 error: function (xhr) {
-                    let message = xhr.responseJSON?.data?.name?.[0] || xhr.responseJSON?.message || 'Something went wrong.';
-                    Swal.fire('Error', message, 'error');
+                    // Reset button state
+                    submitBtn.prop('disabled', false).text(originalText);
+                    
+                    let message = 'Something went wrong.';
+                    
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON.data && Array.isArray(xhr.responseJSON.data)) {
+                            message = xhr.responseJSON.data.join('<br>• ');
+                        } else if (xhr.responseJSON.data && typeof xhr.responseJSON.data === 'object') {
+                            message = Object.values(xhr.responseJSON.data).flat().join('<br>• ');
+                        }
+                    } else if (xhr.status === 500) {
+                        message = 'Internal server error. Please try again later.';
+                    } else if (xhr.status === 404) {
+                        message = 'Resource not found. Please refresh the page.';
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        html: message,
+                        confirmButtonText: 'OK'
+                    });
                 }
         });
     });

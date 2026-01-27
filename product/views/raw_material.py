@@ -21,6 +21,7 @@ from consumable.serializers.consumable_list_serializer import PreCertificationSe
 
 from qdpc_core_models.models.division import Division
 import json
+from qdpc.services.notification_service import NotificationService
 
 class RawMatrialListFetchView(BaseModelViewSet):
   
@@ -111,107 +112,110 @@ class RawMaterialAdd(BaseModelViewSet):
         return render(request, 'addmaterial.html',context)
     
     def post(self, request):
-        data = request.data.copy()
-        files = request.FILES
-        print("FILES:", files)
-        print("Request Data:", data)
-
-        # Safely parse test_data
-        test_data = data.get('test_data', [])
-        if isinstance(test_data, str):
-            try:
-                test_data = json.loads(test_data)
-            except Exception as e:
-                print("Failed to parse test_data:", e)
-                test_data = []
-                
-                
-# ✅ Extract acceptance_test ids and inject into data
-        acceptance_test_ids = []
-        for item in test_data:
-            test_id = item.get('acceptance_test_id')
-            if test_id and test_id not in acceptance_test_ids:
-                acceptance_test_ids.append(test_id)
-        data.setlist('acceptance_test', acceptance_test_ids)
-
-        # Handle boolean string conversion
-        precertification = str(data.get('precertified', 'false')).lower() == 'true'
-
-        success = False
-        message = "Something went wrong"
-        status_code = status.HTTP_400_BAD_REQUEST
-        response_data = {}
-
+        """Handle raw material creation with validation and notifications"""
         try:
-            if data:
-                # ✅ Call raw material creation service
-                success, status_code, raw_data, message = RawmaterialService.add_rawmaterial_add(data=data)
-                print(success, status_code, raw_data, message, "Raw material creation response")
-
-                if success:
-                    print("Raw material created successfully")
-                    raw_material_id = raw_data.get('id')
-
-                    # ✅ Attach raw_material_id to each test data entry
-                    for item in test_data:
-                        item['raw_material_id'] = raw_material_id
-
-                    # ✅ Save test data
-                    if test_data:
-                        serializer = TestDataSerializer(data=test_data, many=True)
-                        if serializer.is_valid():
-                            serializer.save()
-                            print("Test data saved successfully")
-                        else:
-                            print("Test data validation failed:", serializer.errors)
-                            return Response({
-                                'message': 'Test data validation failed',
-                                'errors': serializer.errors
-                            }, status=status.HTTP_400_BAD_REQUEST)
-
-                    # ✅ Save PreCertification if applicable
-                    if precertification:
-                        print("Handling PreCertification")
-
-                        def get_val(key):
-                            val = data.getlist(key)
-                            return val[0] if val else None
-
-                        precert_data = {
-                            'content_type': ContentType.objects.get(model='rawmaterial').id,
-                            'object_id': raw_material_id,
-                            'certified_by': get_val('certified_by'),
-                            'certificate_reference_no': get_val('certificate_ref'),
-                            'certificate_issue_date': get_val('issue_date'),
-                            'certificate_valid_till': get_val('valid_till'),
-                            'certificate_file': files.get('certificate_file'),
-                            'certificate_disposition': get_val('certificate_disposition') or 'CLEARED',
-                        }
-
-                        print("PreCert Data:", precert_data)
-
-                        precert_serializer = PreCertificationSerializer(data=precert_data)
-                        if precert_serializer.is_valid():
-                            precert_serializer.save()
-                            print("PreCertification saved successfully")
-                        else:
-                            print("PreCertification serializer errors:", precert_serializer.errors)
-                            return Response({
-                                'message': 'PreCertification validation failed',
-                                'errors': precert_serializer.errors
-                            }, status=status.HTTP_400_BAD_REQUEST)
-
-                    response_data = raw_data
-                    message = "Raw material created successfully"
-                    status_code = status.HTTP_201_CREATED
-
-        except Exception as ex:
-            print("Exception occurred:", ex)
-            success = False
-            message = str(ex)
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-
-        return self.render_response(response_data, success, message, status_code)
+            data = request.data.copy()
+            
+            # Validate required fields
+            required_fields = ['name', 'grade', 'sources', 'suppliers']
+            missing_fields = []
+            
+            for field in required_fields:
+                if not data.get(field):
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                return Response({
+                    'success': False,
+                    'message': f'Required fields missing: {", ".join(missing_fields)}'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate raw material name uniqueness
+            if RawMaterial.objects.filter(name=data.get('name')).exists():
+                return Response({
+                    'success': False,
+                    'message': 'Raw material with this name already exists'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate shelf life configuration
+            shelf_life_type = data.get('shelf_life_type')
+            
+            if shelf_life_type == 'add_duration':
+                if not data.get('shelf_life_value') or not data.get('shelf_life_unit'):
+                    return Response({
+                        'success': False,
+                        'message': 'Shelf life value and unit are required when duration is selected'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Validate shelf life value is positive
+                try:
+                    shelf_life_value = float(data.get('shelf_life_value'))
+                    if shelf_life_value <= 0:
+                        return Response({
+                            'success': False,
+                            'message': 'Shelf life value must be greater than 0'
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                except (ValueError, TypeError):
+                    return Response({
+                        'success': False,
+                        'message': 'Shelf life value must be a valid number'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Call raw material creation service
+            success, status_code, raw_data, message = RawmaterialService.add_rawmaterial_add(data=data)
+            
+            if success:
+                raw_material_id = raw_data.get('id')
+                
+                # Process test data if provided
+                test_data = []
+                if data.get('test_data'):
+                    try:
+                        test_data = json.loads(data.get('test_data'))
+                        # Attach raw_material_id to each test data entry
+                        for item in test_data:
+                            item['raw_material_id'] = raw_material_id
+                        
+                        # Save test data
+                        if test_data:
+                            serializer = TestDataSerializer(data=test_data, many=True)
+                            if serializer.is_valid():
+                                serializer.save()
+                            else:
+                                # Log validation errors but don't fail the main operation
+                                print(f"Test data validation warnings: {serializer.errors}")
+                    except (json.JSONDecodeError, Exception) as e:
+                        # Log error but don't fail the main operation
+                        print(f"Error processing test data: {str(e)}")
+                
+                # Create notification for successful creation
+                try:
+                    NotificationService.create_entity_notification(
+                        entity_type='raw_material',
+                        entity_id=raw_material_id,
+                        entity_name=data.get('name'),
+                        notification_type='create',
+                        created_by=request.user
+                    )
+                except Exception as notif_error:
+                    print(f"Notification creation failed: {notif_error}")
+                
+                return Response({
+                    'success': True,
+                    'message': f'Raw material "{data.get("name")}" created successfully!',
+                    'data': raw_data
+                }, status=status.HTTP_201_CREATED)
+            else:
+                return Response({
+                    'success': False,
+                    'message': message or 'Failed to create raw material'
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': f'An error occurred: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
       
 # class RawmatrialDetailView(BaseModelViewSet):

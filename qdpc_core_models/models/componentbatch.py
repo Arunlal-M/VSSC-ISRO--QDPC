@@ -25,8 +25,13 @@ class ComponentBatch(models.Model):
     expiry_date = models.DateField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if not self.expiry_date:
-            self.expiry_date = self.component.calculate_expiry_date(self.procurement_date)
+        if not self.expiry_date and self.component.shelf_life_value and self.component.shelf_life_unit:
+            if self.component.shelf_life_unit == 'days':
+                self.expiry_date = self.procurement_date + timedelta(days=self.component.shelf_life_value)
+            elif self.component.shelf_life_unit == 'months':
+                self.expiry_date = self.procurement_date + timedelta(days=self.component.shelf_life_value * 30)
+            elif self.component.shelf_life_unit == 'years':
+                self.expiry_date = self.procurement_date + timedelta(days=self.component.shelf_life_value * 365)
         super().save(*args, **kwargs)
         
     def __str__(self): 

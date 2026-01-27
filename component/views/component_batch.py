@@ -11,40 +11,54 @@ from component.serializers.component_batch_serializer import ComponentBatchSeria
 from component.serializers.component_acceptance_test_serializer import ComponentAcceptanceTestSerializer
 from qdpc_core_models.models.acceptance_test import AcceptanceTest
 from component.services.component_service import ComponentService
+from qdpc.services.notification_service import NotificationService
 from datetime import datetime, timedelta
 from urllib.parse import unquote
 from collections import defaultdict
 import re
 from qdpc_core_models.models.componentGradeAcceptance import ComponentGradeAcceptanceTest
+import logging
 
+# Set up logging
+logger = logging.getLogger(__name__)
 
 class ComponentBatchFetchView(BaseModelViewSet):
   
 
     def get(self,request,pk=None):
-        if pk:
-            data={}
-            success = False
-            message = constants.USER_FETCH_FAILED
-            status_code = status.HTTP_403_FORBIDDEN
-            try:
-                success, status_code, data, message = ComponentService.get_component_batch_list(pk=None)
-                context = {'batches':data}
-                return render(request,'component_batchlist.html',context)
-
-            except Exception as ex:
+        try:
+            if pk:
+                data={}
                 success = False
-                message = constants.USER_FETCH_FAILED
-                status_code = status.HTTP_400_BAD_REQUEST
-                
-                return self.render_response(data,success, message, status_code)
-        else:
-            component_batches =self.get_all_obj(model_name=ComponentBatch)
-            serializer = ComponentBatchSerializer(component_batches, many=True)
-            context = {'batches': serializer.data}
+                message = constants.COMPONENT_BATCH_FAILED
+                status_code = status.HTTP_403_FORBIDDEN
+                try:
+                    success, status_code, data, message = ComponentService.get_component_batch_list(pk=None)
+                    context = {'batches':data}
+                    return render(request,'component_batchlist.html',context)
 
-           
-        return render(request,'component_batchlist.html',context)
+                except Exception as ex:
+                    logger.error(f"Error fetching component batch list: {str(ex)}")
+                    success = False
+                    message = constants.COMPONENT_BATCH_FAILED
+                    status_code = status.HTTP_400_BAD_REQUEST
+                    
+                    return self.render_response(data,success, message, status_code)
+            else:
+                component_batches =self.get_all_obj(model_name=ComponentBatch)
+                serializer = ComponentBatchSerializer(component_batches, many=True)
+                context = {'batches': serializer.data}
+
+               
+            return render(request,'component_batchlist.html',context)
+        except Exception as e:
+            logger.error(f"Error in ComponentBatchFetchView.get: {str(e)}")
+            return Response({
+                'success': False,
+                'message': 'Failed to fetch component batch data'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+   
     
    
     
@@ -98,6 +112,100 @@ class ComponentBatchEditView(BaseModelViewSet):
         except Exception as e:
             print("Error:", str(e))  # Debugging
             return Response({'isSuccess': False, 'errors': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+   
+class ComponentBatchEditView(BaseModelViewSet):
+
+    def get(self, request, batch_id):
+        try:
+            logger.info(f"Fetching component batch for editing: {batch_id}")
+            # Fetch the ComponentBatch batch by ID
+            component_batch = ComponentBatch.objects.get(batch_id=batch_id)
+            serializer = ComponentBatchSerializer(component_batch)
+            logger.info(f"Successfully fetched component batch: {component_batch.batch_id}")
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        except ComponentBatch.DoesNotExist:
+            logger.warning(f"Component batch not found with ID: {batch_id}")
+            return Response({
+                'success': False,
+                'message': 'Component batch not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error fetching component batch {batch_id}: {str(e)}")
+            return Response({
+                'success': False,
+                'message': 'Failed to fetch component batch'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, batch_id):
+        try:
+            logger.info(f"Updating component batch: {batch_id}")
+            decoded_batch_id = unquote(batch_id)  # Decode URL-encoded string
+            component_batches = ComponentBatch.objects.filter(batch_id=decoded_batch_id)
+
+            if not component_batches.exists():
+                logger.warning(f"Component batch not found with ID: {decoded_batch_id}")
+                return Response({
+                    'success': False,
+                    'message': 'Component batch not found'
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            logger.debug(f"Received data for batch {decoded_batch_id}: {request.data}")
+
+            # Expecting a list of units in the request data
+            units = request.data.get('units', [])
+            if not units:
+                logger.warning(f"No units provided for batch {decoded_batch_id}")
+                return Response({
+                    'success': False,
+                    'message': 'No units provided'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            updated_units = []
+            for unit_data in units:
+                # Fetch or create a ComponentBatch for each unit
+                unit, created = ComponentBatch.objects.update_or_create(
+                    batch_id=decoded_batch_id,
+                    component_name=unit_data.get('component_name'),
+                    defaults={
+                        'procurement_date': unit_data.get('procurement_date'),
+                        'batch_size_value': unit_data.get('batch_size_value'),
+                        'packing_details': unit_data.get('packing_details'),
+                        'status': unit_data.get('status'),
+                    }
+                )
+                updated_units.append(unit)
+
+            # Serialize the updated units
+            serializer = ComponentBatchSerializer(updated_units, many=True)
+            
+            # Create notification for successful batch update
+            try:
+                NotificationService.create_entity_notification(
+                    entity_type='component_batch',
+                    entity_id=decoded_batch_id,
+                    entity_name=f"Component Batch {decoded_batch_id}",
+                    notification_type='update',
+                    created_by=request.user
+                )
+                logger.info(f"Update notification created successfully for component batch {decoded_batch_id}")
+            except Exception as notif_error:
+                logger.error(f"Update notification creation failed for component batch {decoded_batch_id}: {notif_error}")
+                # Don't fail the operation for notification issues
+
+            logger.info(f"Successfully updated component batch {decoded_batch_id} with {len(updated_units)} units")
+            return Response({
+                'success': True,
+                'message': f'Component batch updated successfully with {len(updated_units)} units',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error updating component batch {batch_id}: {str(e)}")
+            return Response({
+                'success': False,
+                'message': 'An error occurred while updating the component batch.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
    
 

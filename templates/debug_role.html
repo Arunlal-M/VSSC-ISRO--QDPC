@@ -1,0 +1,135 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="page-title">Role-Based Permission Debug</h3>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'user-dashboard' %}">Home</a></li>
+                        <li class="breadcrumb-item active">Debug Role</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- /Page Header -->
+
+        <!-- Role Information -->
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">User Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Username:</strong> {{ debug_info.username }}</p>
+                                <p><strong>Is Superuser:</strong> {{ debug_info.is_superuser|yesno:"Yes,No" }}</p>
+                                <p><strong>Is Staff:</strong> {{ debug_info.is_staff|yesno:"Yes,No" }}</p>
+                                <p><strong>Is Active:</strong> {{ debug_info.is_active|yesno:"Yes,No" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Groups Count:</strong> {{ debug_info.groups_count }}</p>
+                                <p><strong>Has Role Attribute:</strong> {{ debug_info.has_role_attribute|yesno:"Yes,No" }}</p>
+                                <p><strong>Role Name:</strong> {{ debug_info.role_name|default:"None" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <h6>User Groups:</h6>
+                            {% if debug_info.groups %}
+                                <ul class="list-group">
+                                    {% for group in debug_info.groups %}
+                                        <li class="list-group-item">{{ group }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">No groups assigned</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Role-Based Permissions</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Role-Based Pages:</strong></p>
+                        <ul class="list-group mb-3">
+                            {% for page in debug_info.role_based_pages %}
+                                <li class="list-group-item">{{ page }}</li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <p><strong>User Has All Access:</strong> {{ debug_info.user_has_all_access|yesno:"Yes,No" }}</p>
+                        
+                        <p><strong>Available Roles:</strong></p>
+                        <ul class="list-group">
+                            {% for role in debug_info.available_roles %}
+                                <li class="list-group-item">{{ role }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Access Testing -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Page Access Testing</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for page, has_access in debug_info.test_page_access.items %}
+                            <div class="col-md-3 mb-3">
+                                <div class="card {% if has_access %}border-success{% else %}border-danger{% endif %}">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">{{ page|title }}</h6>
+                                        <span class="badge {% if has_access %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if has_access %}Access Granted{% else %}Access Denied{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Role Pages -->
+        {% if debug_info.current_role_pages %}
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Current Role Allowed Pages</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for page in debug_info.current_role_pages %}
+                            <div class="col-md-2 mb-2">
+                                <span class="badge bg-primary">{{ page }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

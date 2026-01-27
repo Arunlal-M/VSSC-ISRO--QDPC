@@ -11,6 +11,10 @@ from qdpc_core_models.models.division import Division
 from qdpc_core_models.models.user_type import UserType
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+import traceback
+
 class Signup(BaseModelViewSet):
     permission_classes = [AllowAny]  
     authentication_classes = []     
@@ -30,22 +34,50 @@ class Signup(BaseModelViewSet):
         status_code = status.HTTP_400_BAD_REQUEST
         
         try:
-            
             # Handle user signup via the service
             data = request.data
             if data:
+                print(f"DEBUG: Received signup data: {data}")
                 success, status_code, data, message = LoginService.signup_user(data=data)
-                print(f"Signup service response: success={success}, status_code={status_code}, data={data}")
+                print(f"DEBUG: Signup service response: success={success}, status_code={status_code}, data={data}, message={message}")
             else:
                 message = "No data received"
+                print(f"DEBUG: No data received in signup request")
+                
+        except ValidationError as ve:
+            # Handle Django validation errors
+            print(f"DEBUG: Validation error during signup: {ve}")
+            success = False
+            message = "Validation failed"
+            status_code = status.HTTP_400_BAD_REQUEST
+            # Format validation errors for frontend
+            if hasattr(ve, 'error_dict'):
+                data = [{"errors": ve.error_dict}]
+            else:
+                data = [{"errors": {"general": [str(ve)]}}]
+                
+        except IntegrityError as ie:
+            # Handle database integrity errors (like duplicate email/username)
+            print(f"DEBUG: Integrity error during signup: {ie}")
+            success = False
+            if "username" in str(ie).lower():
+                message = "Username already exists. Please choose a different username."
+            elif "email" in str(ie).lower():
+                message = "Email already exists. Please use a different email address."
+            else:
+                message = "A user with this information already exists."
+            status_code = status.HTTP_400_BAD_REQUEST
+            
         except Exception as ex:
             # Log the exception for debugging purposes
-            print(f"Error during signup: {ex}")
+            print(f"DEBUG: General error during signup: {ex}")
+            print(f"DEBUG: Traceback: {traceback.format_exc()}")
             success = False
-            message = str(ex)
+            message = "An unexpected error occurred. Please try again."
             status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
         # Render response back to the client
+        print(f"DEBUG: Final response - success={success}, message={message}, status_code={status_code}")
         return self.render_response(data, success, message, status_code)
     
     

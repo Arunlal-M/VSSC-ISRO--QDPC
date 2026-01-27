@@ -2,27 +2,28 @@
 {% load static %}
 
 {% block content %}
-<!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+<!-- SweetAlert2 CDN for better alerts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<form action="{% url 'equipment-add' %}" method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="page-wrapper">
-        <div class="content">
-            <div class="page-header">
-                <div class="page-title">
-                    <h4>Equipment Add</h4>
-                    <h6>Equipment Configuration</h6>
-                </div>
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Equipment Add</h4>
+                <h6>Equipment Configuration</h6>
             </div>
+        </div>
 
-            <div class="card">
-                <div class="card-body">
+        <div class="card">
+            <div class="card-body">
+                <form id="equipmentForm" enctype="multipart/form-data">
+                    {% csrf_token %}
                     <div class="row">
 
                         <!-- Name -->
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
-                                <label>Name</label>
+                                <label>Name <span class="text-danger">*</span></label>
                                 <input type="text" id="name" name="name" class="form-control" required>
                             </div>
                         </div>
@@ -30,7 +31,7 @@
                         <!-- Owner -->
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
-                                <label>Equipment Owner</label>
+                                <label>Equipment Owner <span class="text-danger">*</span></label>
                                 <select id="owner" name="equipment_owner" class="form-select" required>
                                     <option value="">Choose owner</option>
                                     {% for own in equipment_owner %}
@@ -43,33 +44,33 @@
                         <!-- Serial No -->
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
-                                <label>Serial No</label>
-                                <input type="text" id="serial_no" name="serial_no" class="form-control">
+                                <label>Serial No <span class="text-danger">*</span></label>
+                                <input type="text" id="serial_no" name="serial_no" class="form-control" required>
                             </div>
                         </div>
 
                         <!-- Make -->
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
-                                <label>Make</label>
-                                <input type="text" id="make" name="make" class="form-control">
+                                <label>Make <span class="text-danger">*</span></label>
+                                <input type="text" id="make" name="make" class="form-control" required>
                             </div>
                         </div>
 
                         <!-- Last Calibration Date -->
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
-                                <label>Last Calibration Date</label>
-                                <input type="date" id="last_calibration_date" name="last_calibration_date" class="form-control">
+                                <label>Last Calibration Date <span class="text-danger">*</span></label>
+                                <input type="date" id="last_calibration_date" name="last_calibration_date" class="form-control" required>
                             </div>
                         </div>
 
                         <!-- Validity Duration Type -->
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
-                                <label>Calibration Validity Duration Type</label>
-                                <select id="calibration_validity_duration_type" name="calibration_validity_duration_type" class="form-select">
-                                    <option value="" disabled selected>Select duration type</option>
+                                <label>Calibration Validity Duration Type <span class="text-danger">*</span></label>
+                                <select id="calibration_validity_duration_type" name="calibration_validity_duration_type" class="form-select" required>
+                                    <option value="">Select duration type</option>
                                     <option value="days">Days</option>
                                     <option value="months">Months</option>
                                     <option value="years">Years</option>
@@ -80,8 +81,8 @@
                         <!-- Validity Duration Value -->
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
-                                <label>Calibration Validity Duration Value</label>
-                                <input type="number" min="0" id="calibration_validity_duration_value" name="calibration_validity_duration_value" class="form-control">
+                                <label>Calibration Validity Duration Value <span class="text-danger">*</span></label>
+                                <input type="number" min="1" id="calibration_validity_duration_value" name="calibration_validity_duration_value" class="form-control" required>
                             </div>
                         </div>
 
@@ -90,6 +91,7 @@
                             <div class="form-group">
                                 <label>Calibration Due Date</label>
                                 <input type="date" id="calibration_due_date" name="calibration_due_date" class="form-control" readonly>
+                                <small class="form-text text-muted">Auto-calculated based on calibration date and validity</small>
                             </div>
                         </div>
 
@@ -134,28 +136,179 @@
 
                         <!-- Submit/Cancel -->
                         <div class="col-lg-12 mt-4">
-                            <button type="submit" class="btn btn-primary me-2">Submit</button>
+                            <button type="submit" id="submitBtn" class="btn btn-primary me-2">
+                                <span class="btn-text">Submit</span>
+                                <span class="btn-loading" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i> Submitting...
+                                </span>
+                            </button>
                             <a href="{% url 'equipment-add' %}" class="btn btn-secondary">Cancel</a>
                         </div>
 
                     </div> <!-- .row -->
-                </div> <!-- .card-body -->
-            </div> <!-- .card -->
-        </div> <!-- .content -->
-    </div> <!-- .page-wrapper -->
-</form>
+                </form>
+            </div> <!-- .card-body -->
+        </div> <!-- .card -->
+    </div> <!-- .content -->
+</div> <!-- .page-wrapper -->
 {% endblock %}
 
 {% block scripts %}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
     $(document).ready(function () {
+        // Form validation and submission
+        $('#equipmentForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return false;
+            }
+            
+            submitForm();
+        });
+
+        // Form validation function
+        function validateForm() {
+            let isValid = true;
+            let errorMessage = '';
+            
+            // Clear previous error styling
+            $('.form-control, .form-select').removeClass('is-invalid');
+            
+            // Required field validation
+            const requiredFields = [
+                { id: 'name', label: 'Equipment Name' },
+                { id: 'owner', label: 'Equipment Owner' },
+                { id: 'serial_no', label: 'Serial Number' },
+                { id: 'make', label: 'Make' },
+                { id: 'last_calibration_date', label: 'Last Calibration Date' },
+                { id: 'calibration_validity_duration_type', label: 'Calibration Validity Duration Type' },
+                { id: 'calibration_validity_duration_value', label: 'Calibration Validity Duration Value' }
+            ];
+            
+            requiredFields.forEach(field => {
+                const value = $(`#${field.id}`).val().trim();
+                if (!value) {
+                    $(`#${field.id}`).addClass('is-invalid');
+                    errorMessage += `• ${field.label} is required\n`;
+                    isValid = false;
+                }
+            });
+            
+            // Validate calibration validity value
+            const validityValue = $('#calibration_validity_duration_value').val();
+            if (validityValue && (isNaN(validityValue) || parseInt(validityValue) <= 0)) {
+                $('#calibration_validity_duration_value').addClass('is-invalid');
+                errorMessage += '• Calibration validity value must be a positive number\n';
+                isValid = false;
+            }
+            
+            // Validate calibration date is not in the future
+            const calibrationDate = $('#last_calibration_date').val();
+            if (calibrationDate) {
+                const today = new Date().toISOString().split('T')[0];
+                if (calibrationDate > today) {
+                    $('#last_calibration_date').addClass('is-invalid');
+                    errorMessage += '• Calibration date cannot be in the future\n';
+                    isValid = false;
+                }
+            }
+            
+            if (!isValid) {
+                showErrorAlert('Validation Error', errorMessage);
+            }
+            
+            return isValid;
+        }
+
+        // Form submission function
+        function submitForm() {
+            const submitBtn = $('#submitBtn');
+            const btnText = submitBtn.find('.btn-text');
+            const btnLoading = submitBtn.find('.btn-loading');
+            
+            // Show loading state
+            submitBtn.prop('disabled', true);
+            btnText.hide();
+            btnLoading.show();
+            
+            // Create FormData object
+            const formData = new FormData($('#equipmentForm')[0]);
+            
+            $.ajax({
+                url: '{% url "equipment-add" %}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showSuccessAlert('Success!', 'Equipment has been added successfully.');
+                        // Reset form after success
+                        setTimeout(() => {
+                            window.location.href = "{% url 'equipment-list' %}";
+                        }, 2000);
+                    } else {
+                        showErrorAlert('Error', response.message || 'Failed to add equipment.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    let errorMessage = 'An error occurred while adding equipment.';
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        errorMessage = xhr.responseJSON.errors.join('\n');
+                    } else if (xhr.status === 400) {
+                        errorMessage = 'Bad request. Please check your input.';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error. Please try again later.';
+                    }
+                    
+                    showErrorAlert('Error', errorMessage);
+                },
+                complete: function() {
+                    // Reset button state
+                    submitBtn.prop('disabled', false);
+                    btnText.show();
+                    btnLoading.hide();
+                }
+            });
+        }
+
+        // Alert functions
+        function showSuccessAlert(title, message) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+        }
+
+        function showErrorAlert(title, message) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+
+        // Auto-calculate due date
         function calculateDueDate() {
             const start = $('#last_calibration_date').val();
             const unit = $('#calibration_validity_duration_type').val();
             const value = parseInt($('#calibration_validity_duration_value').val());
 
-            if (start && unit && !isNaN(value)) {
+            if (start && unit && !isNaN(value) && value > 0) {
                 const due = new Date(start);
                 if (unit === 'days') due.setDate(due.getDate() + value);
                 else if (unit === 'months') due.setMonth(due.getMonth() + value);
@@ -163,14 +316,63 @@
 
                 const formatted = due.toISOString().split('T')[0];
                 $('#calibration_due_date').val(formatted);
+            } else {
+                $('#calibration_due_date').val('');
             }
         }
 
+        // Event listeners
         $('#last_calibration_date, #calibration_validity_duration_type, #calibration_validity_duration_value').on('change', calculateDueDate);
 
         $('#calibration_certificate').on('change', function () {
             $('#document-section').toggle(this.checked);
         });
+
+        // Real-time validation feedback
+        $('.form-control, .form-select').on('blur', function() {
+            const field = $(this);
+            const value = field.val().trim();
+            
+            if (field.hasClass('required') || field.prop('required')) {
+                if (!value) {
+                    field.addClass('is-invalid');
+                } else {
+                    field.removeClass('is-invalid').addClass('is-valid');
+                }
+            }
+        });
     });
 </script>
+
+<style>
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .form-control.is-valid,
+    .form-select.is-valid {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    
+    .text-danger {
+        color: #dc3545 !important;
+    }
+    
+    .form-text {
+        font-size: 0.875em;
+        color: #6c757d;
+    }
+    
+    .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+    
+    .btn-loading {
+        display: inline-block;
+    }
+</style>
 {% endblock %}

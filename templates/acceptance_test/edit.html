@@ -1,0 +1,176 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="page-title">{{ page_title }}</h3>
+                    <ul class="breadcrumb">
+                        {% for item in breadcrumb %}
+                            {% if forloop.last %}
+                                <li class="breadcrumb-item active">{{ item.name }}</li>
+                            {% else %}
+                                <li class="breadcrumb-item"><a href="{% url item.url %}">{{ item.name }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-auto text-end float-end ms-auto">
+                    <a href="{% url 'acceptance-test-list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- /Page Header -->
+
+        <!-- Edit Acceptance Test Form -->
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Edit Acceptance Test</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="name">Test Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="name" name="name" 
+                                               value="{{ acceptance_test.name }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="test_type">Test Type <span class="text-danger">*</span></label>
+                                        <select class="form-control" id="test_type" name="test_type" required>
+                                            <option value="quantitative" {% if acceptance_test.test_type == 'quantitative' %}selected{% endif %}>Quantitative</option>
+                                            <option value="qualitative" {% if acceptance_test.test_type == 'qualitative' %}selected{% endif %}>Qualitative</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="min_value">Minimum Value</label>
+                                        <input type="number" class="form-control" id="min_value" name="min_value" 
+                                               value="{{ acceptance_test.min_value|default:'' }}" step="0.01">
+                                        <small class="form-text text-muted">Leave blank if not applicable</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="max_value">Maximum Value</label>
+                                        <input type="number" class="form-control" id="max_value" name="max_value" 
+                                               value="{{ acceptance_test.max_value|default:'' }}" step="0.01">
+                                        <small class="form-text text-muted">Leave blank if not applicable</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="unit">Unit</label>
+                                        <select class="form-control" id="unit" name="unit">
+                                            <option value="">Select Unit</option>
+                                            {% for unit in units %}
+                                                <option value="{{ unit.id }}" {% if acceptance_test.unit and acceptance_test.unit.id == unit.id %}selected{% endif %}>
+                                                    {{ unit.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="reevaluation_frequency_value">Reevaluation Frequency</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="reevaluation_frequency_value" 
+                                                   name="reevaluation_frequency_value" 
+                                                   value="{{ acceptance_test.reevaluation_frequency_value }}" min="1">
+                                            <select class="form-control" id="reevaluation_frequency_unit" name="reevaluation_frequency_unit">
+                                                <option value="days" {% if acceptance_test.reevaluation_frequency_unit == 'days' %}selected{% endif %}>Days</option>
+                                                <option value="months" {% if acceptance_test.reevaluation_frequency_unit == 'months' %}selected{% endif %}>Months</option>
+                                                <option value="years" {% if acceptance_test.reevaluation_frequency_unit == 'years' %}selected{% endif %}>Years</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="test_result">Test Result <small class="text-muted">(Max 100 characters)</small></label>
+                                        <input type="text" class="form-control" id="test_result" name="test_result" 
+                                               value="{{ acceptance_test.test_result|default:'' }}"
+                                               placeholder="e.g., Pass/Fail, Within specification limits" maxlength="100">
+                                        <small class="form-text text-muted">Maximum 100 characters allowed</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="specification_result">Specification Result <small class="text-muted">(Max 100 characters)</small></label>
+                                        <input type="text" class="form-control" id="specification_result" name="specification_result" 
+                                               value="{{ acceptance_test.specification_result|default:'' }}"
+                                               placeholder="e.g., Within specification limits, Meets requirements" maxlength="100">
+                                        <small class="form-text text-muted">Maximum 100 characters allowed</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Update Acceptance Test
+                                </button>
+                                <a href="{% url 'acceptance-test-list' %}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Edit Acceptance Test Form -->
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide min/max value fields based on test type
+    const testTypeSelect = document.getElementById('test_type');
+    const minValueGroup = document.getElementById('min_value').closest('.form-group');
+    const maxValueGroup = document.getElementById('max_value').closest('.form-group');
+    const unitGroup = document.getElementById('unit').closest('.form-group');
+
+    function toggleValueFields() {
+        if (testTypeSelect.value === 'quantitative') {
+            minValueGroup.style.display = 'block';
+            maxValueGroup.style.display = 'block';
+            unitGroup.style.display = 'block';
+        } else {
+            minValueGroup.style.display = 'none';
+            maxValueGroup.style.display = 'none';
+            unitGroup.style.display = 'none';
+        }
+    }
+
+    // Only toggle fields when user changes test type - no automatic validation on load
+    testTypeSelect.addEventListener('change', toggleValueFields);
+    
+    // Set initial state without validation
+    toggleValueFields();
+});
+</script>
+{% endblock %}

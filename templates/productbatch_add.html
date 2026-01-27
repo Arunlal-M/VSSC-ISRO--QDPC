@@ -3,6 +3,51 @@
 {% block content %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<style>
+/* Header notification styles */
+.header-notification {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.header-notification.alert-error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.header-notification.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Ensure notification count is visible */
+#notification-count {
+    transition: all 0.3s ease;
+}
+
+#notification-count.pulse {
+    animation: pulse 0.6s ease-in-out;
+}
+</style>
+
 <div class="page-wrapper">
   <div class="content">
     <div class="page-header d-flex justify-content-between align-items-center">
@@ -156,13 +201,18 @@
           </div>
           <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-              <h5 class="mb-0">Raw Material Process</h5>
+              <h5 class="mb-0">Process Details</h5>
             </div>
             <div class="card-body" id="processSetionContainer">
-            <table class="raw-material-acceptance-table" >
-
-                <th>Process Name</th>
-              </table>             
+              <div class="alert alert-info">
+                Select a product to view detailed process information including all steps, materials, equipment, and specifications.
+              </div>
+              <div id="processSummary" class="mb-3" style="display: none;">
+                <div class="alert alert-success">
+                  <strong>Selected Processes:</strong> <span id="selectedProcessCount">0</span> processes selected
+                </div>
+              </div>
+              <div id="processDetailsContainer"></div>
             </div>
           </div>
             <div class="card mb-4">
@@ -242,14 +292,174 @@
   .is-invalid {
     border: 2px solid red !important;
   }
+  
+  /* Process Display Styling */
+  .process-section {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .process-header {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .table-responsive {
+    margin-bottom: 1rem;
+  }
+  
+  .table th {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    font-weight: 600;
+  }
+  
+  .form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+  }
 </style>
 {% block scripts %}
 <script>
 let rawMaterialsList = [];
 let drawings = [];
 let componentList = [];
+
+// Function to create detailed process HTML
+function createProcessHTML(process) {
+  let stepsHtml = '';
+  
+  if (process.steps && process.steps.length > 0) {
+    stepsHtml = `
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm">
+          <thead class="table-light">
+            <tr>
+              <th>Step ID</th>
+              <th>Description</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>RM Status</th>
+              <th>Equipment Status</th>
+              <th>Consumable Status</th>
+              <th>Component Status</th>
+              <th>Min Value</th>
+              <th>Max Value</th>
+              <th>Test Result</th>
+              <th>Specification</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>`;
+    
+    process.steps.forEach((step, stepIndex) => {
+      stepsHtml += `
+        <tr>
+          <td>${step.step_id}</td>
+          <td>${step.process_description || 'N/A'}</td>
+          <td>${step.process_type || 'N/A'}</td>
+          <td>${step.process_date || 'N/A'}</td>
+          <td>${step.rm_status || 'N/A'}</td>
+          <td>${step.equipment_status || 'N/A'}</td>
+          <td>${step.consumable_status || 'N/A'}</td>
+          <td>${step.component_status || 'N/A'}</td>
+          <td>${step.min_value || 'N/A'}</td>
+          <td>${step.max_value || 'N/A'}</td>
+          <td>${step.test_result || 'N/A'}</td>
+          <td>${step.specification_result || 'N/A'}</td>
+          <td>${step.remarks || 'N/A'}</td>
+        </tr>`;
+    });
+    
+    stepsHtml += `
+          </tbody>
+        </table>
+      </div>`;
+      
+    // Add related materials section below the table
+    stepsHtml += `
+      <div class="row mt-3">
+        <div class="col-md-3">
+          <strong>Raw Materials:</strong>
+          <div class="mt-1">
+            ${process.steps[0].raw_materials && process.steps[0].raw_materials.length > 0 ? 
+              process.steps[0].raw_materials.map(rm => `<div>• ${rm.name}</div>`).join('') : 
+              '<div class="text-muted">None</div>'}
+          </div>
+        </div>
+        <div class="col-md-3">
+          <strong>Equipment:</strong>
+          <div class="mt-1">
+            ${process.steps[0].equipment && process.steps[0].equipment.length > 0 ? 
+              process.steps[0].equipment.map(eq => `<div>• ${eq.name}</div>`).join('') : 
+              '<div class="text-muted">None</div>'}
+          </div>
+        </div>
+        <div class="col-md-3">
+          <strong>Consumables:</strong>
+          <div class="mt-1">
+            ${process.steps[0].consumables && process.steps[0].consumables.length > 0 ? 
+              process.steps[0].consumables.map(cons => `<div>• ${cons.name}</div>`).join('') : 
+              '<div class="text-muted">None</div>'}
+          </div>
+        </div>
+        <div class="col-md-3">
+          <strong>Components:</strong>
+          <div class="mt-1">
+            ${process.steps[0].components && process.steps[0].components.length > 0 ? 
+              process.steps[0].components.map(comp => `<div>• ${comp.name}</div>`).join('') : 
+              '<div class="text-muted">None</div>'}
+          </div>
+        </div>
+      </div>`;
+  } else {
+    stepsHtml = `
+      <div class="alert alert-warning">
+        No process steps found for this process.
+      </div>
+    `;
+  }
+  
+  return `
+    <div class="process-section mb-4">
+      <div class="process-header mb-3">
+        <div class="form-check">
+          <input class="form-check-input process-checkbox" type="checkbox" value="${process.id}" 
+                 id="process${process.id}" name="processes[]">
+          <label class="form-check-label" for="process${process.id}">
+            <strong>${process.process_title}</strong>
+          </label>
+        </div>
+        <small class="text-muted">${process.steps ? process.steps.length : 0} steps</small>
+      </div>
+      <div class="process-body">
+        ${stepsHtml}
+      </div>
+    </div>
+  `;
+}
+
+// Function to update process selection summary
+function updateProcessSummary() {
+  const selectedCount = $('#processSetionContainer input[name="processes[]"]:checked').length;
+  const totalCount = $('#processSetionContainer input[name="processes[]"]').length;
+  
+  if (totalCount > 0) {
+    $('#selectedProcessCount').text(selectedCount);
+    $('#processSummary').show();
+  } else {
+    $('#processSummary').hide();
+  }
+}
 let consumableList = [];
 $(document).ready(function () {
+  // Handle process checkbox changes
+  $(document).on('change', '.process-checkbox', function() {
+    updateProcessSummary();
+  });
 
  $('#unitIdContainer').hide();
 
@@ -320,19 +530,27 @@ $.ajax({
       method: 'GET',
       data: { product_id: productId },
       success: function (data) {      
-        const container =$('#processSetionContainer');
-         container.empty();
-          $.each(data, function(index, process) {
-            const html = `
-                <div class="process-item">
-                    <span>${process.process_title}</span>
-                </div>
-            `;
-            container.append(html);
-        });
+        const container = $('#processSetionContainer');
+        container.empty();
+        
+        if (data.length === 0) {
+          container.html(`
+            <div class="alert alert-warning">
+              No processes found for this product.
+            </div>
+          `);
+        } else {
+          // Display detailed process information
+          data.forEach((process, index) => {
+            const processHtml = createProcessHTML(process);
+            container.append(processHtml);
+          });
+          // Update summary after loading processes
+          updateProcessSummary();
+        }
       },
       error: function () {
-        alert('Failed to load components');
+        alert('Failed to load process information');
       }
     });
     $.ajax({
@@ -822,9 +1040,8 @@ $('#batchForm').on('submit', function (e) {
   });
 
   // Processes
-  $('#processSetionContainer .process-item').each(function () {
-    const id = $(this).data('process-id');
-    if (id) formData.append('processes[]', id);
+  $('#processSetionContainer input[name="processes[]"]:checked').each(function () {
+    formData.append('processes[]', $(this).val());
   });
 
   // Equipment
@@ -874,7 +1091,7 @@ $('.raw-acceptance-row').each(function () {
   const testId = row.data('acceptance-test-id');
   const result = row.find('.result-input').val();
   const date = row.find('.date-input').val();
-  const remarks = row.find('.remarks-input').val();
+  const remarks = row.find('.remark-input').val();
   const fileInput = row.find('.report-input')[0];
   if (rawMaterialId && testId) {     
     formData.append(`raw_acceptance[${rawTestIndex}][raw_material_id]`, rawMaterialId);
@@ -898,12 +1115,27 @@ appendDynamicTablesToFormData(formData);
     processData: false,
     contentType: false,
     success: function (response) {
+      // Show header notification
+      if (response.success && response.notifications_created > 0) {
+        showHeaderNotification(response.message, 'success', response.batch_name);
+        
+        // Refresh header notifications to show the new one
+        if (typeof loadNotifications === 'function') {
+          loadNotifications();
+        }
+      }
+      
       Swal.fire('Success', response.message, 'success').then(() => {
         window.location.href = "{% url 'product-batch-list' %}";
       });
     },
     error: function (xhr) {
-      Swal.fire('Error', xhr.responseJSON?.error || 'Something went wrong.', 'error');
+      const errorMessage = xhr.responseJSON?.error || 'Something went wrong.';
+      
+      // Show header notification for error
+      showHeaderNotification(errorMessage, 'error', '');
+      
+      Swal.fire('Error', errorMessage, 'error');
     }
   });
 });
@@ -1079,6 +1311,65 @@ function appendDynamicTablesToFormData(formData) {
             });
         });
     });
+}
+
+// Function to show header notification
+function showHeaderNotification(message, type, batchName) {
+    // Create notification element
+    const notification = document.createElement('div');
+    const alertClass = type === 'success' ? 'success' : (type === 'error' ? 'danger' : 'info');
+    notification.className = `header-notification alert alert-${alertClass} alert-dismissible fade show`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 70px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border: none;
+        border-radius: 8px;
+    `;
+    
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-triangle' : 'info-circle')} me-2"></i>
+            <div class="flex-grow-1">
+                <strong>${message}</strong>
+                ${batchName ? `<br><small class="text-muted">${batchName}</small>` : ''}
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+    
+    // Also update the header notification count
+    updateHeaderNotificationCount();
+}
+
+// Function to update header notification count
+function updateHeaderNotificationCount() {
+    // Find the notification count element in the header
+    const countElement = document.getElementById('notification-count');
+    if (countElement) {
+        const currentCount = parseInt(countElement.textContent) || 0;
+        countElement.textContent = currentCount + 1;
+        countElement.style.display = 'inline';
+        
+        // Trigger a visual pulse effect
+        countElement.style.animation = 'pulse 0.6s ease-in-out';
+        setTimeout(() => {
+            countElement.style.animation = '';
+        }, 600);
+    }
 }
 
 </script>

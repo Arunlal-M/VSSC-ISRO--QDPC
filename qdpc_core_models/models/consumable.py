@@ -40,14 +40,25 @@ class Consumable(models.Model):
 
     @property
     def calculate_expiry_date(self):
-        procurement_date = self.user_defined_date  # Use user_defined_date as the default procurement_date
-        if self.shelf_life_unit == 'days':
-            return procurement_date + timedelta(days=self.shelf_life_value)
-        elif self.shelf_life_unit == 'months':
-            return procurement_date + timedelta(days=self.shelf_life_value * 30)  # Approximation for months
-        elif self.shelf_life_unit == 'years':
-             return procurement_date + timedelta(days=self.shelf_life_value * 365)  # Approximation for years
-        return None  # Handle cases where shelf_life_unit is not set or invalid
+        # Check if we have valid shelf life data
+        if not self.shelf_life_value or not self.shelf_life_unit:
+            return None
+            
+        # Use current date as base for calculation if no user_defined_date
+        base_date = self.user_defined_date if self.user_defined_date else now().date()
+        
+        try:
+            if self.shelf_life_unit == 'days':
+                return base_date + timedelta(days=self.shelf_life_value)
+            elif self.shelf_life_unit == 'months':
+                return base_date + timedelta(days=self.shelf_life_value * 30)  # Approximation for months
+            elif self.shelf_life_unit == 'years':
+                return base_date + timedelta(days=self.shelf_life_value * 365)  # Approximation for years
+            else:
+                return None  # Handle cases where shelf_life_unit is not set or invalid
+        except (TypeError, ValueError):
+            # Handle any calculation errors gracefully
+            return None
         
 
     def __str__(self):

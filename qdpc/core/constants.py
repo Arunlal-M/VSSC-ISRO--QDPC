@@ -89,3 +89,66 @@ PROCESS_STEP_DELETE_SUCCESSFULLY="Process Step deleted sucessfully"
 DOCUMENT_CREATION_FAILED="Document creation failed due to invalid data."
 DOCUMENT_CREATION_SUCESSFULLY="Document created successfully."
 DOCUMENT_DELETE_SUCCESSFULLY="Document deleted sucessfully"
+
+# Default Django auth groups to seed on fresh installs
+DEFAULT_AUTH_GROUPS = [
+   # Guest role
+                'Guest',
+
+                # In-house/Project roles
+                'Roles- In house process',
+                'DPD Project',
+                'Engineer Project',
+
+                # SDA roles
+                'Division Head SDA',
+                'Section Head SDA',
+                'Engineer SDA',
+                'Technical/Scientific staff SDA',
+                'Operator/Technicians SDA',
+
+                # QA roles
+                'Division Head QA',
+                'Section Head QA',
+                'Engineer QA',
+                'Technical/Scientific staff QA',
+
+                # QC roles
+                'Division Head QC',
+                'Section Head QC',
+                'Engineer QC',
+                'Technical/Scientific staff QC',
+
+                # Testing agency roles
+                'Division Head Testing agency',
+                'Section Head Testing agency',
+                'Engineer Testing agency',
+                'Technical/Scientific staff Testing agency',
+
+                # LSC roles
+                'Member secretary, LSC',
+                'Chairman, LSC',
+
+                # NCRB roles
+                'Member secretary, NCRB',
+                'Chairman, NCRB',
+
+                # Industry process roles
+                'Roles- Industry process',
+                'Operator/Technician industry',
+                'Process Manager industry',
+                'QC Manager industry',
+                'QA Manager industry',
+
+                # GOCO roles
+                'Roles- GOCO',
+                'GOCO operator',
+                'GOCO supervisor',
+
+                # System administrator roles
+                'Roles- System administrator',
+                'Master Admin/Super Admin',
+                'System Administrator-1',
+                'System Administrator-2',
+                'System Administrator-3'
+]
