@@ -1,0 +1,270 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+			
+			<div class="page-wrapper">
+				<div class="content">
+					<div class="page-header">
+						<div class="page-title">
+							<h4>Acceptance Test List</h4>
+						</div>
+						<div class="page-btn">
+							{% if user.is_superuser or can_add_acceptance_test %}
+								<a href="{% url 'acceptance-test-add-enhanced' %}" class="btn btn-added">
+									<img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add Acceptance Test
+								</a>
+							{% endif %}
+						</div>
+					</div>
+					
+
+					<!-- Acceptance Test List -->
+					<div class="card">
+						<div class="card-body">
+							<div class="table-responsive">
+								<table class="table datanew">
+									<thead>
+										<tr>
+											<th>Acceptance Test Name</th>
+											<th>Specification</th>
+											<th>Reevaluation Frequency</th>
+											<th>Action</th>	
+										</tr>
+									</thead>
+									<tbody>
+										{% for test in acceptance_tests %}
+										<tr>
+											<td>{{ test.name }}</td>
+											<td>
+												{% if test.min_value and test.max_value and test.unit %}
+													{{ test.min_value }} - {{ test.max_value }} {{ test.unit.name }}
+												{% elif test.test_result %}
+													{{ test.test_result }}
+												{% else %}
+													N/D
+												{% endif %}
+											</td>
+											<td>
+												{% if test.reevaluation_frequency_value %}
+													{{ test.reevaluation_frequency_value }} {{ test.reevaluation_frequency_unit }}
+												{% else %}
+													N/D
+												{% endif %}
+											</td>
+											<td>
+												<!-- View button - always visible -->
+												<a class="me-3 view-btn" data-id="{{ test.id }}" title="View">
+													<img src="{% static 'assets/img/icons/eye.svg' %}" alt="View">
+												</a>
+												
+												<!-- Edit button - only if user has edit permission -->
+												{% if user.is_superuser or can_edit_acceptance_test %}
+													<a class="me-3 edit-btn" href="{% url 'acceptance-test-edit' test.id %}" title="Edit">
+														<img src="{% static 'assets/img/icons/edit.svg' %}" alt="Edit">
+													</a>
+												{% endif %}
+												
+												<!-- Delete button - only if user has delete permission -->
+												{% if user.is_superuser or can_delete_acceptance_test %}
+													<a class="delete-btn" data-id="{{ test.id }}" data-name="{{ test.name }}" title="Delete">
+														<img src="{% static 'assets/img/icons/delete.svg' %}" alt="Delete">
+													</a>
+												{% endif %}
+											</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<!-- /Acceptance Test List -->
+				</div>
+			</div>
+
+       <!-- VIEW ACCEPTANCE TEST MODAL -->
+<div class="modal fade" id="viewAcceptanceTestModal" tabindex="-1" aria-labelledby="viewAcceptanceTestLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewAcceptanceTestLabel">View Acceptance Test Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <!-- Column 1 -->
+                        <div class="col-6 mb-2">
+                            <label>Test Name</label>
+                            <input type="text" id="view_name" class="form-control" readonly>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label>Test Type</label>
+                            <input type="text" id="view_test_type" class="form-control" readonly>
+                        </div>
+                        
+                        <!-- Quantitative Fields (conditionally shown) -->
+                        <div class="col-6 mb-2" id="view_min_value_container">
+                            <label>Min Value</label>
+                            <input type="text" id="view_min_value" class="form-control" readonly>
+                        </div>
+                        <div class="col-6 mb-2" id="view_max_value_container">
+                            <label>Max Value</label>
+                            <input type="text" id="view_max_value" class="form-control" readonly>
+                        </div>
+                        
+                        <!-- Qualitative Fields (conditionally shown) -->
+                        <div class="col-6 mb-2" id="view_test_result_container">
+                            <label>Test Result</label>
+                            <input type="text" id="view_test_result" class="form-control" readonly>
+                        </div>
+                        <div class="col-6 mb-2" id="view_spec_result_container">
+                            <label>Specification Result</label>
+                            <input type="text" id="view_spec_result" class="form-control" readonly>
+                        </div>
+                        
+                        <!-- Common Fields -->
+                        <div class="col-6 mb-2" id="view_unit_container">
+                            <label>Unit</label>
+                            <input type="text" id="view_unit" class="form-control" readonly>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label>Reevaluation Frequency</label>
+                            <input type="text" id="view_reevaluation" class="form-control" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+		{% endblock %}
+
+		{% block scripts %}
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+	$(document).ready(function() {
+		// View button click handler
+		$('.view-btn').on('click', function() {
+			const testId = $(this).data('id');
+			$.ajax({
+				type: 'POST',
+				url: `/acceptance-tests/ajax/`,
+				headers: {
+					'X-CSRFToken': '{{ csrf_token }}',
+					'Content-Type': 'application/json'
+				},
+				data: JSON.stringify({
+					action: 'get_test',
+					test_id: testId
+				}),
+				success: function(response) {
+					if (response.status === 'success') {
+						const data = response.test;
+						
+						// Basic fields
+						$('#view_name').val(data.name);
+						$('#view_test_type').val(data.test_type);
+						$('#view_reevaluation').val(
+							`${data.reevaluation_frequency_value} ${data.reevaluation_frequency_unit}`
+						);
+						
+						// Handle quantitative fields
+						if (data.test_type === 'quantitative') {
+							$('#view_min_value_container').show();
+							$('#view_max_value_container').show();
+							$('#view_unit_container').show();
+							$('#view_test_result_container').hide();
+							$('#view_spec_result_container').hide();
+							
+							$('#view_min_value').val(data.min_value || 'N/A');
+							$('#view_max_value').val(data.max_value || 'N/A');
+							$('#view_unit').val(data.unit_name || 'N/A');
+						} 
+						// Handle qualitative fields
+						else {
+							$('#view_min_value_container').hide();
+							$('#view_max_value_container').hide();
+							$('#view_unit_container').hide();
+							$('#view_test_result_container').show();
+							$('#view_spec_result_container').show();
+							
+							$('#view_test_result').val(data.test_result || 'N/A');
+							$('#view_spec_result').val(data.specification_result || 'N/A');
+						}
+						
+						$('#viewAcceptanceTestModal').modal('show');
+					} else {
+						Swal.fire({
+							icon: 'error',
+							title: 'Error',
+							text: response.message || 'Failed to fetch acceptance test details.'
+						});
+					}
+				},
+				error: function(xhr, status, error) {
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: 'Failed to fetch acceptance test details.'
+					});
+				}
+			});
+		});
+
+		// Delete button click handler
+		$('.delete-btn').on('click', function(e) {
+			e.preventDefault();
+			
+			const testId = $(this).data('id');
+			const testName = $(this).data('name');
+			
+			Swal.fire({
+				title: 'Confirm Deletion',
+				text: `Are you sure you want to delete the acceptance test "${testName}"?`,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#d33',
+				cancelButtonColor: '#3085d6',
+				confirmButtonText: 'Yes, delete it!',
+				cancelButtonText: 'Cancel'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					deleteAcceptanceTest(testId, testName);
+				}
+			});
+		});
+
+		function deleteAcceptanceTest(testId, testName) {
+			$.ajax({
+				url: `/acceptance-tests/${testId}/delete/`,
+				type: 'POST',
+				headers: {
+					'X-CSRFToken': '{{ csrf_token }}'
+				},
+				success: function(response) {
+					Swal.fire({
+						icon: 'success',
+						title: 'Deleted!',
+						text: `Acceptance test "${testName}" has been deleted successfully.`,
+						timer: 2000,
+						showConfirmButton: false
+					}).then(() => {
+						window.location.reload();
+					});
+				},
+				error: function(xhr, status, error) {
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: 'An error occurred while deleting the acceptance test.'
+					});
+				}
+			});
+		}
+	});
+</script>
+{% endblock %}

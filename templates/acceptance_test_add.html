@@ -1,0 +1,369 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<div class="page-wrapper">
+	<div class="content">
+		<div class="page-header">
+			<div class="page-title">
+				<h4>Acceptance Test Add</h4>
+				<h6>Acceptance Test Configuration</h6>
+			</div>
+		</div>
+
+		<!-- /add -->
+		<div class="card">
+			<div class="card-body">
+				<form id="acceptanceTestForm">
+					<div class="row">
+						<!-- Test Name Input -->
+						<div class="col-lg-4 col-sm-6 col-12">
+							<div class="form-group">
+								<label>Acceptance Test Name <span class="text-danger">*</span></label>
+								<input type="text" name="name" id="name" class="form-control" required>
+								<div class="invalid-feedback">Test name is required</div>
+							</div>
+						</div>
+
+						<!-- Test Type Selection -->
+						<div class="col-lg-4 col-sm-6 col-12">
+							<div class="form-group">
+								<label for="test_type">Specification Type <span class="text-danger">*</span></label>
+								<select id="test_type" name="test_type" class="form-control" required>
+									<option value="">Choose Type</option>
+									<option value="quantitative">Quantitative</option>
+									<option value="qualitative">Qualitative</option>
+								</select>
+								<div class="invalid-feedback">Test type is required</div>
+							</div>
+						</div>
+
+						<!-- Quantitative Fields -->
+						<div class="col-12" id="quantitative-fields" style="display: none;">
+							<div class="form-group row">
+								<div class="col-lg-3 col-sm-4">
+									<label class="col-form-label">Min Value <span class="text-danger">*</span></label>
+									<input type="number" name="min_value" id="min_value" class="form-control" min="0">
+									<div class="invalid-feedback">Min value is required for quantitative tests</div>
+								</div>
+								<div class="col-lg-2 col-sm-3 text-center align-self-end">
+									<label class="col-form-label">to</label>
+								</div>
+								<div class="col-lg-3 col-sm-4">
+									<label class="col-form-label">Max Value <span class="text-danger">*</span></label>
+									<input type="number" name="max_value" id="max_value" class="form-control" min="0">
+									<div class="invalid-feedback">Max value is required for quantitative tests</div>
+								</div>
+							</div>
+							<div class="form-group row">
+								<div class="col-lg-3 col-sm-4">
+									<label class="col-form-label">Unit <span class="text-danger">*</span></label>
+									<select name="unit" id="unit" class="form-control" required>
+										<option value="">Select Unit</option>
+										{% for unit in units %}
+										<option value="{{ unit.id }}">{{ unit.name }}</option>
+										{% endfor %}
+									</select>
+									<div class="invalid-feedback">Unit is required for quantitative tests</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Qualitative Fields -->
+						<div class="row" id="qualitative-fields" style="display: none;">
+							<div class="col-lg-4 col-sm-6 col-12">
+
+								<div class="form-group">
+								<label for="test_result">Test Result <small class="text-muted">(Max 100 characters)</small></label>
+								<input type="text" name="test_result" id="test_result" class="form-control" maxlength="100" placeholder="e.g., Pass/Fail, Within specification limits">
+								<div class="invalid-feedback">Test result must be 100 characters or less</div>
+								<small class="form-text text-muted">Maximum 100 characters allowed</small>
+							</div>
+							</div>
+							<div class="col-lg-4 col-sm-6 col-12">
+															<div class="form-group">
+								<label for="specification_result">Specification Result <small class="text-muted">(Max 100 characters)</small></label>
+								<input type="text" name="specification_result" id="specification_result" class="form-control" maxlength="100" placeholder="e.g., Within specification limits, Meets requirements">
+								<div class="invalid-feedback">Specification result must be 100 characters or less</div>
+								<small class="form-text text-muted">Maximum 100 characters allowed</small>
+							</div>
+							</div>
+						</div>
+
+						<!-- Reevaluation Frequency Value -->
+						<div class="col-lg-4 col-sm-6 col-12">
+							<div class="form-group">
+								<label>Reevaluation Frequency Value <span class="text-danger">*</span></label>
+								<input type="number" placeholder="Enter value" name="reevaluation_frequency_value"
+									id="reevaluation_frequency_value" class="form-control" min="1" required>
+								<div class="invalid-feedback">Reevaluation frequency value is required</div>
+							</div>
+						</div>
+
+						<!-- Reevaluation Time Period -->
+						<div class="col-lg-4 col-sm-6 col-12">
+							<div class="form-group">
+								<label for="reevaluation_frequency_unit">Time Period <span class="text-danger">*</span></label>
+								<select id="reevaluation_frequency_unit" name="reevaluation_frequency_unit"
+									class="form-control" required>
+									<option value="">Select Timeperiod</option>
+									<option value="months">Months</option>
+									<option value="days">Days</option>
+									<option value="years">Years</option>
+								</select>
+								<div class="invalid-feedback">Time period is required</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<!-- Submit and Cancel Buttons -->
+		<div class="col-lg-12 d-flex justify-content-start">
+			<button type="button" id="submitButton" class="btn btn-submit me-2">
+				<span class="btn-text">Submit</span>
+				<span class="btn-loading" style="display: none;">
+					<i class="fas fa-spinner fa-spin"></i> Submitting...
+				</span>
+			</button>
+			<a href="{% url 'acceptance-test-list' %}" class="btn btn-cancel">Cancel</a>
+		</div>
+
+	</div>
+</div>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+	$(document).ready(function () {
+		// Handle dropdown change event
+		$('#test_type').on('change', function () {
+			var selectedValue = $(this).val();
+			clearValidation();
+
+			if (selectedValue === 'quantitative') {
+				$('#quantitative-fields').show();
+				$('#qualitative-fields').hide();
+				// Make quantitative fields required
+				$('#min_value, #max_value, #unit').prop('required', true);
+			} else if (selectedValue === 'qualitative') {
+				$('#qualitative-fields').show();
+				$('#quantitative-fields').hide();
+				// Remove required from quantitative fields
+				$('#min_value, #max_value, #unit').prop('required', false);
+			} else {
+				$('#quantitative-fields').hide();
+				$('#qualitative-fields').hide();
+			}
+		});
+
+		// Real-time validation
+		$('#name, #test_type, #reevaluation_frequency_value, #reevaluation_frequency_unit').on('input change', function() {
+			validateField($(this));
+		});
+
+		$('#min_value, #max_value, #unit').on('input change', function() {
+			if ($('#test_type').val() === 'quantitative') {
+				validateField($(this));
+			}
+		});
+
+		$('#submitButton').click(function (event) {
+			event.preventDefault();
+			
+			if (validateForm()) {
+				submitForm();
+			}
+		});
+
+		function validateField(field) {
+			const value = field.val().trim();
+			const isRequired = field.prop('required');
+			
+			if (isRequired && !value) {
+				field.addClass('is-invalid').removeClass('is-valid');
+				return false;
+			} else if (value) {
+				field.addClass('is-valid').removeClass('is-invalid');
+				return true;
+			} else {
+				field.removeClass('is-invalid is-valid');
+				return true;
+			}
+		}
+
+		function validateForm() {
+			let isValid = true;
+			clearValidation();
+
+			// Validate required fields
+			const requiredFields = ['#name', '#test_type', '#reevaluation_frequency_value', '#reevaluation_frequency_unit'];
+			requiredFields.forEach(field => {
+				if (!validateField($(field))) {
+					isValid = false;
+				}
+			});
+
+			// Validate quantitative test requirements
+			if ($('#test_type').val() === 'quantitative') {
+				const quantitativeFields = ['#min_value', '#max_value', '#unit'];
+				quantitativeFields.forEach(field => {
+					if (!validateField($(field))) {
+						isValid = false;
+					}
+				});
+
+				// Validate min < max
+				const minValue = parseInt($('#min_value').val());
+				const maxValue = parseInt($('#max_value').val());
+				if (minValue >= maxValue) {
+					$('#min_value, #max_value').addClass('is-invalid');
+					$('#min_value').next('.invalid-feedback').text('Min value must be less than max value');
+					$('#max_value').next('.invalid-feedback').text('Max value must be greater than min value');
+					isValid = false;
+				}
+			}
+
+			// Validate qualitative test result and specification result
+			if ($('#test_type').val() === 'qualitative') {
+				const testResultField = $('#test_result');
+				const specificationResultField = $('#specification_result');
+
+				if (!validateField(testResultField)) {
+					isValid = false;
+				} else if (testResultField.val().length > 100) {
+					testResultField.addClass('is-invalid');
+					testResultField.next('.invalid-feedback').text('Test result must be 100 characters or less');
+					isValid = false;
+				}
+
+				if (!validateField(specificationResultField)) {
+					isValid = false;
+				} else if (specificationResultField.val().length > 100) {
+					specificationResultField.addClass('is-invalid');
+					specificationResultField.next('.invalid-feedback').text('Specification result must be 100 characters or less');
+					isValid = false;
+				}
+			}
+
+			// Validate numeric values
+			const frequencyValue = parseInt($('#reevaluation_frequency_value').val());
+			if (frequencyValue <= 0) {
+				$('#reevaluation_frequency_value').addClass('is-invalid');
+				$('#reevaluation_frequency_value').next('.invalid-feedback').text('Value must be greater than 0');
+				isValid = false;
+			}
+
+			return isValid;
+		}
+
+		function clearValidation() {
+			$('.form-control').removeClass('is-invalid is-valid');
+			$('.invalid-feedback').text('');
+		}
+
+		function submitForm() {
+			// Show loading state
+			$('.btn-text').hide();
+			$('.btn-loading').show();
+			$('#submitButton').prop('disabled', true);
+
+			// Gather form data
+			var formData = new FormData();
+			formData.append('name', $('#name').val().trim());
+			formData.append('test_type', $('#test_type').val());
+			formData.append('reevaluation_frequency_value', $('#reevaluation_frequency_value').val());
+			formData.append('reevaluation_frequency_unit', $('#reevaluation_frequency_unit').val());
+
+			// Only add quantitative fields if test type is quantitative
+			if ($('#test_type').val() === 'quantitative') {
+				formData.append('min_value', $('#min_value').val());
+				formData.append('max_value', $('#max_value').val());
+				formData.append('unit', $('#unit').val());
+			} else {
+				// For qualitative tests, add qualitative fields
+				formData.append('test_result', $('#test_result').val().trim());
+				formData.append('specification_result', $('#specification_result').val().trim());
+			}
+
+			// Send AJAX request
+			$.ajax({
+				type: 'POST',
+				url: '{% url "acceptance-test-add-enhanced" %}',
+				data: formData,
+				processData: false,
+				contentType: false,
+				headers: {
+					'X-CSRFToken': '{{ csrf_token }}',
+					'X-Requested-With': 'XMLHttpRequest'
+				},
+				success: function (response) {
+					if (response.success) {
+						showSuccessAlert('Success!', response.message);
+						setTimeout(function () {
+							window.location.href = "{% url 'acceptance-test-list' %}";
+						}, 1500);
+					} else {
+						showErrorAlert('Error!', response.message);
+					}
+				},
+				error: function (xhr, status, error) {
+					let errorMessage = 'An error occurred while submitting the form.';
+					if (xhr.responseJSON && xhr.responseJSON.message) {
+						errorMessage = xhr.responseJSON.message;
+					}
+					showErrorAlert('Error!', errorMessage);
+				},
+				complete: function() {
+					// Reset button state
+					$('.btn-text').show();
+					$('.btn-loading').hide();
+					$('#submitButton').prop('disabled', false);
+				}
+			});
+		}
+
+		function showSuccessAlert(title, message) {
+			Swal.fire({
+				icon: 'success',
+				title: title,
+				text: message,
+				timer: 2000,
+				showConfirmButton: false
+			});
+		}
+
+		function showErrorAlert(title, message) {
+			Swal.fire({
+				icon: 'error',
+				title: title,
+				text: message,
+				confirmButtonText: 'OK'
+			});
+		}
+	});
+</script>
+
+<style>
+	.is-invalid {
+		border-color: #dc3545 !important;
+	}
+	.is-valid {
+		border-color: #198754 !important;
+	}
+	.invalid-feedback {
+		display: block;
+		width: 100%;
+		margin-top: 0.25rem;
+		font-size: 0.875em;
+		color: #dc3545;
+	}
+	.text-danger {
+		color: #dc3545 !important;
+	}
+</style>
+{% endblock %}

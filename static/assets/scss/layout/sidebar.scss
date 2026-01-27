@@ -18,7 +18,8 @@
     @include respond-below(custom575) {
         width: $__full__width;
     }
-    .slimScrollDiv {
+    
+    .sidebar-inner {
         width: 260px !important;
         overflow: $__visible !important;
         background: $__white;

@@ -428,6 +428,7 @@
         event.preventDefault();
 
         // Gather form data
+        var name = $('#raw-material').val(); // Get the raw material name
         var grade = $('#grade').val() ? $('#grade').val().map(Number) : [];
         var shelf_life_value = parseInt($('#shelf_life_value').val(), 10);
         var shelf_life_unit = $('#unit').val();
@@ -436,6 +437,12 @@
         var sources = $('#sources').val() ? $('#sources').val().map(Number) : [];
         var suppliers = $('#supplier').val() ? $('#supplier').val().map(Number) : [];
         var acceptance_test = $('#acceptance_test').val() ? $('#acceptance_test').val().map(Number) : [];
+
+        // Validate required fields
+        if (!name || name.trim() === '') {
+            $('#error-message').text("Raw Material name is required.").show();
+            return; // Stop form submission if validation fails
+        }
 
         // Validate shelf life value
         if (isNaN(shelf_life_value) || shelf_life_value <= 0) {
@@ -449,7 +456,9 @@
 
         // Create the data object
         var rawMaterialData = {
+            name: name.trim(), // Include the name field
             grade: grade,
+            shelf_life_type: $('#shelf_life_type').val() || 'tbd', // Include shelf life type
             shelf_life_value: shelf_life_value,
             shelf_life_unit: shelf_life_unit,
             user_defined_date: userDefinedDate, // Autofill current date
@@ -468,10 +477,11 @@
                 'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
             },
             success: function(response) {
+                console.log('Response received:', response); // Debug log
                 if (response.success) {
                     window.location.href = "{% url 'raw-material' %}";
                 } else {
-                    $('#error-message').text(response.message).show(); // Show error message
+                    $('#error-message').text(response.message || 'An error occurred').show(); // Show error message
                 }
             },
             error: function() {

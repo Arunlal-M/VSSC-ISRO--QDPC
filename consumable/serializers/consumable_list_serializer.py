@@ -1,11 +1,13 @@
 from rest_framework import serializers
-from qdpc_core_models.models.consumable import Consumable
+from qdpc_core_models.models.consumable import Consumable,PreCertification
 from product.serializers.source_serializer import SourcesSerializer
 from product.serializers.supplier_serializer import SuppliersSerializer
 from qdpc_core_models.models.source import Sources
 from qdpc_core_models.models.supplier import Suppliers
 from qdpc_core_models.models.acceptance_test import AcceptanceTest
 from qdpc_core_models.models.grade import Grade
+from django.contrib.contenttypes.models import ContentType
+
 
 class ConsumableSerializer(serializers.ModelSerializer):
      # Define fields for Many-to-Many relationships
@@ -34,7 +36,7 @@ class ConsumableSerializer(serializers.ModelSerializer):
             'shelf_life_value',
             'acceptance_test',
             'shelf_life_unit',
-            'user_defined_date',
+            # 'user_defined_date',
             'source_names',
             'supplier_names',
             'grade_names',
@@ -97,7 +99,7 @@ class ConsumableSerializer(serializers.ModelSerializer):
         instance.name = validated_data.get('name', instance.name)
         instance.shelf_life_value = validated_data.get('shelf_life_value', instance.shelf_life_value)
         instance.shelf_life_unit = validated_data.get('shelf_life_unit', instance.shelf_life_unit)
-        instance.user_defined_date = validated_data.get('user_defined_date', instance.user_defined_date)
+        # instance.user_defined_date = validated_data.get('user_defined_date', instance.user_defined_date)
         instance.save()
 
         if sources is not None:
@@ -113,3 +115,21 @@ class ConsumableSerializer(serializers.ModelSerializer):
             instance.acceptance_test.set(acceptance_test)
 
         return instance
+
+class PreCertificationSerializer(serializers.ModelSerializer):
+    content_type = serializers.PrimaryKeyRelatedField(queryset=ContentType.objects.all())
+    certificate_file = serializers.FileField(required=True)
+
+    class Meta:
+        model = PreCertification
+        fields = [
+            'id',
+            'content_type',
+            'object_id',
+            'certified_by',
+            'certificate_reference_no',
+            'certificate_issue_date',
+            'certificate_valid_till',
+            'certificate_file',
+            'certificate_disposition',
+        ]

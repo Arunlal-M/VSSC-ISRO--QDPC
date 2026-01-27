@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load permission_tags %}
+
+{% block title %}Role Permission Summary{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-users"></i>
+                        Role Permission Summary
+                    </h4>
+                    <p class="card-subtitle">Overview of all role permissions across all pages</p>
+                </div>
+                <div class="card-body">
+                    <!-- Role Summary Cards -->
+                    <div class="row mb-4">
+                        {% for role in roles %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-user-shield"></i>
+                                        {{ role.name }}
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <div class="permission-stat">
+                                                <h4 class="text-primary">{{ role_summaries|get_item:role|get_item:'total_permissions' }}</h4>
+                                                <small class="text-muted">Total Permissions</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="permission-stat">
+                                                <h4 class="text-success">{{ role_summaries|get_item:role|get_item:'pages_with_permissions' }}</h4>
+                                                <small class="text-muted">Pages Access</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Permission Breakdown -->
+                                    <div class="permission-breakdown mt-3">
+                                        <h6>Permission Types:</h6>
+                                        {% for perm_type, count in role_summaries|get_item:role|get_item:'permission_breakdown'|items %}
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="badge {{ perm_type|permission_badge_class }}">{{ perm_type|title }}</span>
+                                            <span class="badge bg-light text-dark">{{ count }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <!-- User Count -->
+                                    <div class="mt-3 text-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-users"></i>
+                                            {{ role.users_count }} users assigned
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Detailed Role Permissions Table -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Detailed Role Permissions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Role</th>
+                                            <th>Page</th>
+                                            <th>Permissions</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for role in roles %}
+                                            {% for section_name, pages in pages_by_section.items %}
+                                                {% for page in pages %}
+                                                {% with page_perms=role_summaries|get_item:role|get_item:'page_permissions'|get_item:page.name %}
+                                                {% if page_perms %}
+                                                <tr>
+                                                    <td>
+                                                        <strong>{{ role.name }}</strong>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-file-alt me-2"></i>
+                                                            <div>
+                                                                <strong>{{ page.name }}</strong>
+                                                                <small class="d-block text-muted">{{ page.url }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {% for perm_type in page_perms %}
+                                                        <span class="badge {{ perm_type|permission_badge_class }} me-1">
+                                                            <i class="{{ perm_type|permission_icon }}"></i>
+                                                            {{ perm_type|title }}
+                                                        </span>
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary" 
+                                                                onclick="editRolePermissions('{{ role.id }}', '{{ page.name }}')">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endwith %}
+                                                {% endfor %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Permissions Modal -->
+<div class="modal fade" id="editPermissionsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Role Permissions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editPermissionsForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Role:</label>
+                            <input type="text" class="form-control" id="editRoleName" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Page:</label>
+                            <input type="text" class="form-control" id="editPageName" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <label class="form-label">Permissions:</label>
+                        <div class="row">
+                            {% for perm_type, perm_label in permission_types %}
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="edit_{{ perm_type }}" name="edit_{{ perm_type }}" value="1">
+                                    <label class="form-check-label" for="edit_{{ perm_type }}">
+                                        <span class="badge {{ perm_type|permission_badge_class }}">
+                                            <i class="{{ perm_type|permission_icon }}"></i>
+                                            {{ perm_label }}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveRolePermissions()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.permission-stat h4 {
+    margin-bottom: 0;
+    font-weight: bold;
+}
+
+.permission-breakdown .badge {
+    font-size: 0.75rem;
+}
+
+.permission-breakdown .badge.bg-light {
+    font-size: 0.7rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+</style>
+
+<script>
+let currentEditRole = null;
+let currentEditPage = null;
+
+function editRolePermissions(roleId, pageName) {
+    currentEditRole = roleId;
+    currentEditPage = pageName;
+    
+    // Get current permissions for this role and page
+    const permissions = getRolePagePermissions(roleId, pageName);
+    
+    // Reset form
+    document.getElementById('editPermissionsForm').reset();
+    
+    // Set modal values
+    document.getElementById('editRoleName').value = getRoleName(roleId);
+    document.getElementById('editPageName').value = pageName;
+    
+    // Check appropriate permission checkboxes
+    permissions.forEach(perm => {
+        const checkbox = document.getElementById(`edit_${perm}`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+    });
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('editPermissionsModal'));
+    modal.show();
+}
+
+function saveRolePermissions() {
+    if (!currentEditRole || !currentEditPage) {
+        return;
+    }
+    
+    // Collect form data
+    const formData = new FormData();
+    formData.append('role_id', currentEditRole);
+    formData.append('page_name', currentEditPage);
+    
+    // Add permission data
+    {% for perm_type, perm_label in permission_types %}
+    const {{ perm_type }}Checkbox = document.getElementById('edit_{{ perm_type }}');
+    if ({{ perm_type }}Checkbox && {{ perm_type }}Checkbox.checked) {
+        formData.append('permission_{{ perm_type }}', '1');
+    }
+    {% endfor %}
+    
+    // Send update request
+    fetch('{% url "update-page-permission" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Close modal and refresh page
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editPermissionsModal'));
+            modal.hide();
+            location.reload();
+        } else {
+            alert('Error saving permissions: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error saving permissions: ' + error.message);
+    });
+}
+
+function getRoleName(roleId) {
+    // This would need to be implemented to get role name from roleId
+    // For now, we'll use the display value
+    return document.getElementById('editRoleName').value;
+}
+
+function getRolePagePermissions(roleId, pageName) {
+    // This would need to be implemented to get current permissions
+    // For now, we'll return an empty array
+    return [];
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

@@ -21,7 +21,7 @@ class RawMaterialAcceptanceTest(models.Model):
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
     min_value = models.IntegerField(blank=True, null=True)  # Add min_value field
     max_value = models.IntegerField(blank=True, null=True)  # Add max_value field
-    file = models.FileField(upload_to='raw_material_acceptance_tests/')
+    file = models.FileField(upload_to='raw_material_acceptance_tests/', blank=True, null=True)
     created_by = models.CharField(max_length=255)
     status = models.CharField(max_length=255,blank=True, null=True)
     remark = models.TextField(blank=True, null=True)

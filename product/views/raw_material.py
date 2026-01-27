@@ -1,3 +1,4 @@
+from product.serializers.testdataserialiser import TestDataSerializer
 from qdpc.core.modelviewset import BaseModelViewSet
 from rest_framework import status
 from qdpc.core import constants
@@ -15,7 +16,12 @@ from rest_framework.response import Response
 from django.db.models import Max
 from qdpc_core_models.models.grade import Grade
 from qdpc_core_models.models.document_type import DocumentType
+from django.contrib.contenttypes.models import ContentType
+from consumable.serializers.consumable_list_serializer import PreCertificationSerializer
 
+from qdpc_core_models.models.division import Division
+import json
+from qdpc.services.notification_service import NotificationService
 
 class RawMatrialListFetchView(BaseModelViewSet):
   
@@ -45,6 +51,7 @@ class RawMatrialListFetchView(BaseModelViewSet):
         all_suppliers = Suppliers.objects.all().values('id', 'name')
         all_grades = Grade.objects.all().values('id', 'name','abbreviation')
         all_acceptance = AcceptanceTest.objects.all().values('id', 'name')
+        
         
         raw_materials_data = {
             'id': material.id,
@@ -93,152 +100,239 @@ class RawMaterialAdd(BaseModelViewSet):
         # Filter the AcceptanceTest objects to get only the most recent ones
         latest_acceptance_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
         document_types = DocumentType.objects.all()  # Add this line to fetch document types
-
+        owner = Division.objects.all()
         context = {
             'sources': sources,
             'suppliers': suppliers,
             'acceptence_test':latest_acceptance_tests,
             'grades' : grades,
             'document_types': document_types,  # Pass document types to the template
+            'owner': owner,  # Pass document types to the template
         }
         return render(request, 'addmaterial.html',context)
     
     def post(self, request):
-        data=request.data
-        print(request.data)
-        success=False
-        message=constants.USERNAME_PASSWORD_EMPTY
-        status_code=status.HTTP_403_FORBIDDEN
-
+        """Handle raw material creation with validation and notifications"""
         try:
-            if data:
-                success, status_code, data, message = RawmaterialService.add_rawmaterial_add(data=data)
-                print( success, status_code, data, message,"what i got afer testing")
-
-        except Exception as ex:
-            data={}
-            success = False
-            message = constants.USERNAME_PASSWORD_EMPTY
-            status_code = status.HTTP_400_BAD_REQUEST
+            data = request.data.copy()
             
-        return self.render_response(data, success, message, status_code)
-
-
-class RawmatrialDetailView(BaseModelViewSet):
-    """
-    View to handle detailed raw material operations, including fetching, listing, and adding raw materials.
-    """
-
-    def get(self, request,batch_id=None):
-        if batch_id:
-            sources = self.get_all_obj(model_name=Sources)
-            suppliers = self.get_all_obj(model_name=Suppliers)
-            acceptance_tests = AcceptanceTest.objects.values('name').annotate(latest_id=Max('id'))
-            grades = self.get_all_obj(model_name=Grade)
-            # Filter the AcceptanceTest objects to get only the most recent ones
-            latest_acceptance_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
+            # Validate required fields
+            required_fields = ['name', 'grade', 'sources', 'suppliers']
+            missing_fields = []
             
-            # Fetch detailed information for a specific raw material by batch_id
-            raw_material = get_object_or_404(RawMaterial, id=batch_id)
-        
-        # Get all raw materials with the same name
-            raw_materials_with_same_name = RawMaterial.objects.filter(name=raw_material.name)
-            # latest_raw_materials = RawMaterial.objects.filter(id__in=[rm['latest_id'] for rm in raw_materials])
-            serializer = RawMaterialSerializer(raw_materials_with_same_name, many=True)
-
-            context = {
-                'sources': sources,
-                'suppliers': suppliers,
-                'acceptence_test': latest_acceptance_tests,
-                'batches': serializer.data,
-                'grades' : grades,
-            }
-            return render(request, 'raw_detailed_view.html', context)
-        # else:
-        #     # If no batch_id is provided, render the form for adding raw materials with a list of existing materials
-        #     sources = self.get_all_obj(model_name=Sources)
-        #     suppliers = self.get_all_obj(model_name=Suppliers)
-        #     acceptance_tests = AcceptanceTest.objects.values('name').annotate(latest_id=Max('id'))
+            for field in required_fields:
+                if not data.get(field):
+                    missing_fields.append(field)
             
-        #     # Filter the AcceptanceTest objects to get only the most recent ones
-        #     latest_acceptance_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
+            if missing_fields:
+                return Response({
+                    'success': False,
+                    'message': f'Required fields missing: {", ".join(missing_fields)}'
+                }, status=status.HTTP_400_BAD_REQUEST)
             
-        #     # Get the most recent raw materials
-        #     raw_material = get_object_or_404(RawMaterial, id=9)
-        
-        # # Get all raw materials with the same name
-        #     raw_materials_with_same_name = RawMaterial.objects.filter(name=raw_material.name)
-        #     # latest_raw_materials = RawMaterial.objects.filter(id__in=[rm['latest_id'] for rm in raw_materials])
-        #     serializer = RawMaterialSerializer(raw_materials_with_same_name, many=True)
-
-        #     context = {
-        #         'sources': sources,
-        #         'suppliers': suppliers,
-        #         'acceptence_test': latest_acceptance_tests,
-        #         'batches': serializer.data
-        #     }
-        #     return render(request, 'raw_detailed_view.html', context)
-
-    def get_raw_material_data(self, batch_id):
-        # Fetch the raw material object using the batch_id
-        raw_material = get_object_or_404(RawMaterial, id=batch_id)
-        
-        # Get all raw materials with the same name
-        raw_materials_with_same_name = RawMaterial.objects.filter(name=raw_material.name)
-        
-        # Create a list to hold data for all raw materials with the same name
-        raw_materials_data = []
-        
-        # Loop through each raw material and prepare the data
-        for material in raw_materials_with_same_name:
-            logger.debug(f"Raw Material ID: {material.id} has {material.acceptance_test.count()} acceptance tests.")
+            # Validate raw material name uniqueness
+            if RawMaterial.objects.filter(name=data.get('name')).exists():
+                return Response({
+                    'success': False,
+                    'message': 'Raw material with this name already exists'
+                }, status=status.HTTP_400_BAD_REQUEST)
             
-            material_data = {
-                'id': material.id,
-                'name': material.name,
-                'sources': [{'id': source.id, 'name': source.name} for source in material.sources.all()],
-                'suppliers': [{'id': supplier.id, 'name': supplier.name} for supplier in material.suppliers.all()],
-                'grade': [{'id': grade.id, 'name': grade.name} for grade in material.grade.all()],                    'shelf_life_value': material.shelf_life_value,
-                'shelf_life_unit': material.shelf_life_unit,
-                'user_defined_date': material.user_defined_date,
-                'calculate_expiry_date': material.calculate_expiry_date,
-            }
-            raw_materials_data.append(material_data)
+            # Validate shelf life configuration
+            shelf_life_type = data.get('shelf_life_type')
+            
+            if shelf_life_type == 'add_duration':
+                if not data.get('shelf_life_value') or not data.get('shelf_life_unit'):
+                    return Response({
+                        'success': False,
+                        'message': 'Shelf life value and unit are required when duration is selected'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Validate shelf life value is positive
+                try:
+                    shelf_life_value = float(data.get('shelf_life_value'))
+                    if shelf_life_value <= 0:
+                        return Response({
+                            'success': False,
+                            'message': 'Shelf life value must be greater than 0'
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                except (ValueError, TypeError):
+                    return Response({
+                        'success': False,
+                        'message': 'Shelf life value must be a valid number'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Call raw material creation service
+            success, status_code, raw_data, message = RawmaterialService.add_rawmaterial_add(data=data)
+            
+            if success:
+                raw_material_id = raw_data.get('id')
+                
+                # Process test data if provided
+                test_data = []
+                if data.get('test_data'):
+                    try:
+                        test_data = json.loads(data.get('test_data'))
+                        # Attach raw_material_id to each test data entry
+                        for item in test_data:
+                            item['raw_material_id'] = raw_material_id
+                        
+                        # Save test data
+                        if test_data:
+                            serializer = TestDataSerializer(data=test_data, many=True)
+                            if serializer.is_valid():
+                                serializer.save()
+                            else:
+                                # Log validation errors but don't fail the main operation
+                                print(f"Test data validation warnings: {serializer.errors}")
+                    except (json.JSONDecodeError, Exception) as e:
+                        # Log error but don't fail the main operation
+                        print(f"Error processing test data: {str(e)}")
+                
+                # Create notification for successful creation
+                try:
+                    NotificationService.create_entity_notification(
+                        entity_type='raw_material',
+                        entity_id=raw_material_id,
+                        entity_name=data.get('name'),
+                        notification_type='create',
+                        created_by=request.user
+                    )
+                except Exception as notif_error:
+                    print(f"Notification creation failed: {notif_error}")
+                
+                return Response({
+                    'success': True,
+                    'message': f'Raw material "{data.get("name")}" created successfully!',
+                    'data': raw_data
+                }, status=status.HTTP_201_CREATED)
+            else:
+                return Response({
+                    'success': False,
+                    'message': message or 'Failed to create raw material'
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': f'An error occurred: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return raw_materials_data
+      
+# class RawmatrialDetailView(BaseModelViewSet):
+#     """
+#     View to handle detailed raw material operations, including fetching, listing, and adding raw materials.
+#     """
 
-    def post(self, request):
-        data = request.data
-        logger.debug(f"Request data: {data}")
-        success = False
-        message = constants.USERNAME_PASSWORD_EMPTY
-        status_code = status.HTTP_403_FORBIDDEN
+#     def get(self, request,batch_id=None):
+#         if batch_id:
+#             sources = self.get_all_obj(model_name=Sources)
+#             suppliers = self.get_all_obj(model_name=Suppliers)
+#             acceptance_tests = AcceptanceTest.objects.values('name').annotate(latest_id=Max('id'))
+#             grades = self.get_all_obj(model_name=Grade)
+#             # Filter the AcceptanceTest objects to get only the most recent ones
+#             latest_acceptance_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
+            
+#             # Fetch detailed information for a specific raw material by batch_id
+#             raw_material = get_object_or_404(RawMaterial, id=batch_id)
+        
+#         # Get all raw materials with the same name
+#             raw_materials_with_same_name = RawMaterial.objects.filter(name=raw_material.name)
+#             # latest_raw_materials = RawMaterial.objects.filter(id__in=[rm['latest_id'] for rm in raw_materials])
+#             serializer = RawMaterialSerializer(raw_materials_with_same_name, many=True)
 
-        try:
-            if data:
-                success, status_code, data, message = RawmaterialService.add_rawmaterial_add(data=data)
-                logger.debug(f"Response: success={success}, status_code={status_code}, data={data}, message={message}")
+#             context = {
+#                 'sources': sources,
+#                 'suppliers': suppliers,
+#                 'acceptence_test': latest_acceptance_tests,
+#                 'batches': serializer.data,
+#                 'grades' : grades,
+#             }
+#             return render(request, 'raw_detailed_view.html', context)
+#         # else:
+#         #     # If no batch_id is provided, render the form for adding raw materials with a list of existing materials
+#         #     sources = self.get_all_obj(model_name=Sources)
+#         #     suppliers = self.get_all_obj(model_name=Suppliers)
+#         #     acceptance_tests = AcceptanceTest.objects.values('name').annotate(latest_id=Max('id'))
+            
+#         #     # Filter the AcceptanceTest objects to get only the most recent ones
+#         #     latest_acceptance_tests = AcceptanceTest.objects.filter(id__in=[test['latest_id'] for test in acceptance_tests])
+            
+#         #     # Get the most recent raw materials
+#         #     raw_material = get_object_or_404(RawMaterial, id=9)
+        
+#         # # Get all raw materials with the same name
+#         #     raw_materials_with_same_name = RawMaterial.objects.filter(name=raw_material.name)
+#         #     # latest_raw_materials = RawMaterial.objects.filter(id__in=[rm['latest_id'] for rm in raw_materials])
+#         #     serializer = RawMaterialSerializer(raw_materials_with_same_name, many=True)
 
-        except Exception as ex:
-            logger.error(f"Error occurred: {ex}")
-            data = {}
-            success = False
-            message = constants.USERNAME_PASSWORD_EMPTY
-            status_code = status.HTTP_400_BAD_REQUEST
+#         #     context = {
+#         #         'sources': sources,
+#         #         'suppliers': suppliers,
+#         #         'acceptence_test': latest_acceptance_tests,
+#         #         'batches': serializer.data
+#         #     }
+#         #     return render(request, 'raw_detailed_view.html', context)
 
-        return self.render_response(data, success, message, status_code)
+#     def get_raw_material_data(self, batch_id):
+#         # Fetch the raw material object using the batch_id
+#         raw_material = get_object_or_404(RawMaterial, id=batch_id)
+        
+#         # Get all raw materials with the same name
+#         raw_materials_with_same_name = RawMaterial.objects.filter(name=raw_material.name)
+        
+#         # Create a list to hold data for all raw materials with the same name
+#         raw_materials_data = []
+        
+#         # Loop through each raw material and prepare the data
+#         for material in raw_materials_with_same_name:
+#             logger.debug(f"Raw Material ID: {material.id} has {material.acceptance_test.count()} acceptance tests.")
+            
+#             material_data = {
+#                 'id': material.id,
+#                 'name': material.name,
+#                 'sources': [{'id': source.id, 'name': source.name} for source in material.sources.all()],
+#                 'suppliers': [{'id': supplier.id, 'name': supplier.name} for supplier in material.suppliers.all()],
+#                 'grade': [{'id': grade.id, 'name': grade.name} for grade in material.grade.all()],                    'shelf_life_value': material.shelf_life_value,
+#                 'shelf_life_unit': material.shelf_life_unit,
+#                 'user_defined_date': material.user_defined_date,
+#                 'calculate_expiry_date': material.calculate_expiry_date,
+#             }
+#             raw_materials_data.append(material_data)
 
-    def put(self, request, batch_id):
-        try:
-            raw_material = RawMaterial.objects.get(id=batch_id)
-        except RawMaterial.DoesNotExist:
-            return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+#         return raw_materials_data
 
-        serializer = RawMaterialSerializer(raw_material, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     def post(self, request):
+#         data = request.data
+#         logger.debug(f"Request data: {data}")
+#         success = False
+#         message = constants.USERNAME_PASSWORD_EMPTY
+#         status_code = status.HTTP_403_FORBIDDEN
+
+#         try:
+#             if data:
+#                 success, status_code, data, message = RawmaterialService.add_rawmaterial_add(data=data)
+#                 logger.debug(f"Response: success={success}, status_code={status_code}, data={data}, message={message}")
+
+#         except Exception as ex:
+#             logger.error(f"Error occurred: {ex}")
+#             data = {}
+#             success = False
+#             message = constants.USERNAME_PASSWORD_EMPTY
+#             status_code = status.HTTP_400_BAD_REQUEST
+
+#         return self.render_response(data, success, message, status_code)
+
+#     def put(self, request, batch_id):
+#         try:
+#             raw_material = RawMaterial.objects.get(id=batch_id)
+#         except RawMaterial.DoesNotExist:
+#             return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+#         serializer = RawMaterialSerializer(raw_material, data=request.data, partial=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DeleteRawMatrialView(BaseModelViewSet):
@@ -343,4 +437,38 @@ class AddRawMaterialDocumentView(BaseModelViewSet):
             return Response({
                 'success': False,
                 'message': f"An error occurred: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class ViewRawMaterialDetailView(BaseModelViewSet):
+    """
+    View to handle viewing of raw material details using POST method.
+    """
+    def post(self, request, rawId, format=None):
+        try:
+            raw = RawMaterial.objects.get(id=rawId)
+            serializer = RawMaterialSerializer(raw)
+            data = serializer.data
+
+            data['sources'] = [{'id': s.id, 'name': s.name} for s in raw.sources.all()]
+            data['suppliers'] = [{'id': s.id, 'name': s.name} for s in raw.suppliers.all()]
+            data['grades'] = [{'id': g.id, 'name': g.name} for g in raw.grade.all()]
+            data['acceptance_test'] = [{'id': a.id, 'name': a.name} for a in raw.acceptance_test.all()]
+
+            return Response({
+                'success': True,
+                'message': "Raw material data fetched successfully.",
+                'data': data
+            }, status=status.HTTP_200_OK)
+
+        except RawMaterial.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Raw material not found.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -16,11 +16,13 @@ class ConsumableService:
         try:
            consumable_manager = ConsumableManager()
            success, status_code, data, message = consumable_manager.consumable_list_fetch(pk=pk, *args,**kwargs)
-        except:
-            message = constants.USER_FETCH_FAILED
+        except Exception as e:
+            print(f"Exception in get_consumable_list: {e}")
+            traceback.print_exc()
+            message = constants.CONSUMABLE_FETCH_FAILED
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            data = {"error": "Invalid data"}
+            data = {"error": "Failed to fetch consumable list"}
 
         return success, status_code, data, message
 
@@ -30,11 +32,13 @@ class ConsumableService:
         try:
             consumable_manager = ConsumableManager()
             success, status_code, data, message = consumable_manager.consumable_batch_fetch(pk=None, *args,**kwargs)
-        except:
-            message = constants.USER_FETCH_FAILED
+        except Exception as e:
+            print(f"Exception in get_consumable_batch_list: {e}")
+            traceback.print_exc()
+            message = constants.CONSUMABLE_BATCH_FAILD
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            data = {"error": "Invalid data"}
+            data = {"error": "Failed to fetch consumable batch list"}
 
         return success, status_code, data, message
     
@@ -48,11 +52,13 @@ class ConsumableService:
             print(data,"data2")
             consumable_manager = ConsumableManager()
             success, status_code, data, message = consumable_manager.consumable_batch_add(data=data)
-        except:
-            message = constants.USER_FETCH_FAILED
+        except Exception as e:
+            print(f"Exception in add_consumable_bach_add: {e}")
+            traceback.print_exc()
+            message = constants.CONSUMABLE_BATCH_FAILD
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            data = {"error": "Invalid data"}
+            data = {"error": "Failed to add consumable batch"}
 
         return success, status_code, data, message
     
@@ -67,10 +73,10 @@ class ConsumableService:
             print("Entered except here")
             print(f"Exception: {e}")
             traceback.print_exc()  # This will print the full traceback
-            message = constants.USER_FETCH_FAILED
+            message = constants.CONSUMABLE_BATCH_FAILD
             success = False
             status_code = status.HTTP_400_BAD_REQUEST
-            data = {"error": "Invalid data"}
+            data = {"error": "Failed to add consumable"}
 
         return success, status_code, data, message
 

@@ -28,6 +28,7 @@ class ComponentAcceptanceTestSerializer(serializers.ModelSerializer):
         fields = [
             'batch_id',
             'component',
+            'component_unit',   # <-- Add this line
             'sources',
             'suppliers',
             'grade',

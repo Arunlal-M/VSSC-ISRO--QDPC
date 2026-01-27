@@ -20,12 +20,11 @@ class CenterSerializer(serializers.ModelSerializer):
         
 
 class DivisionSerializer(serializers.ModelSerializer):
-    center_name=serializers.SerializerMethodField()
-    
+    center_name = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Division
-        fields = ['id','name','center','center_name' ]
-        
-    def get_center_name(self,obj):
-        
-        return obj.center.name
+        fields = ['id', 'name', 'center', 'center_name']
+
+    def get_center_name(self, obj):
+        return obj.center.name if obj.center_id else ''

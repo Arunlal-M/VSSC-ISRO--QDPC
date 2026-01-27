@@ -6,6 +6,66 @@ from qdpc_core_models.models.center import Center
 from product.serializers.div_center_serializers import DivisionSerializer  
 from django.shortcuts import render
 from qdpc.core import constants
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from rest_framework.views import APIView
+
+
+
+
+class DivisionAjax(APIView):
+    permission_classes = [AllowAny]  
+    authentication_classes = []  
+
+    def get(self, request, center_id=None, format=None):
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+        if center_id is not None:
+            divisions = Division.objects.filter(center_id=center_id)
+            center = get_object_or_404(Center, id=center_id)
+
+            division_data = [
+                {
+                    'id': div.id,
+                    'name': div.name,
+                    'center_id': div.center_id,
+                    'center_name': center.name
+                }
+                for div in divisions
+            ]
+
+            if is_ajax:
+                return JsonResponse({'divisions': division_data})
+
+            return render(request, 'division.html', {
+                'divisions': division_data,
+                'center_name': center.name
+            })
+
+        # No center_id: return all divisions
+        divisions = Division.objects.all()
+        centers = Center.objects.all()
+
+        division_data = [
+            {
+                'id': div.id,
+                'name': div.name,
+                'center_id': div.center_id,
+                'center_name': div.center.name
+            }
+            for div in divisions
+        ]
+
+        if is_ajax:
+            return JsonResponse({'divisions': division_data})
+
+        return render(request, 'division.html', {
+            'divisions': division_data,
+            'center_name': [center.name for center in centers]  # or pass full center objects
+        })
+
+
 
 class DivisionListView(BaseModelViewSet):
 

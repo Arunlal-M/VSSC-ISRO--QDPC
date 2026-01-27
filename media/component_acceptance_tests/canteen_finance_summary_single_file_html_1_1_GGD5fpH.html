@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canteen Finance Summary</title>
+  <style>
+    :root{
+      --bg:#0f172a; /* slate-900 */
+      --panel:#111827; /* gray-900 */
+      --muted:#1f2937; /* gray-800 */
+      --line:#374151; /* gray-700 */
+      --text:#e5e7eb; /* gray-200 */
+      --text-dim:#9ca3af; /* gray-400 */
+      --accent:#22c55e; /* green-500 */
+      --accent-2:#3b82f6; /* blue-500 */
+      --warning:#f59e0b; /* amber-500 */
+      --danger:#ef4444; /* red-500 */
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+      --radius: 14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background:linear-gradient(180deg, #0b1225 0%, #0a0f1e 100%);
+      color:var(--text);
+    }
+    .container{max-width:1200px; margin:32px auto; padding:0 16px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .header{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:20px 24px}
+    .title{font-size:22px; font-weight:800; letter-spacing:.2px}
+    .role{display:flex; align-items:center; gap:8px}
+    .role select{background:var(--muted); border:1px solid var(--line); color:var(--text); padding:8px 10px; border-radius:10px}
+
+    .filters{display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; padding:16px 24px; border-top:1px solid rgba(255,255,255,.06)}
+    .f-col{display:flex; flex-direction:column; gap:6px}
+    .f-col label{font-size:12px; color:var(--text-dim)}
+    .f-col input, .f-col select {background:var(--muted); border:1px solid var(--line); color:var(--text); padding:10px 12px; border-radius:10px}
+    .actions{display:flex; align-items:center; gap:10px}
+    .btn{border:none; border-radius:12px; padding:10px 14px; font-weight:700; cursor:pointer; transition:transform .05s ease, filter .2s ease;}
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{background:var(--accent-2); color:white}
+    .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--text)}
+    .btn-export{background:transparent; border:1px dashed var(--line); color:var(--text-dim)}
+
+    .table-wrap{padding:8px 12px 16px 12px}
+    table{width:100%; border-collapse:separate; border-spacing:0 10px}
+    thead th{font-size:12px; color:var(--text-dim); font-weight:600; text-align:left; padding:0 10px}
+    tbody tr{background:var(--panel); border:1px solid rgba(255,255,255,.06)}
+    tbody td{padding:12px 10px; border-top:1px solid rgba(255,255,255,.06); border-bottom:1px solid rgba(255,255,255,.06)}
+    tbody tr td:first-child{border-left:1px solid rgba(255,255,255,.06); border-top-left-radius:12px; border-bottom-left-radius:12px}
+    tbody tr td:last-child{border-right:1px solid rgba(255,255,255,.06); border-top-right-radius:12px; border-bottom-right-radius:12px}
+    .chip{display:inline-flex; align-items:center; font-weight:700; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px}
+    .chip.open{background:rgba(59,130,246,.12); color:#93c5fd}
+    .chip.closed{background:rgba(34,197,94,.12); color:#86efac}
+    .chip.reopened{background:rgba(245,158,11,.12); color:#fbbf24}
+    .chip.pending{background:rgba(239,68,68,.12); color:#fca5a5}
+    .chip.settled{background:rgba(34,197,94,.12); color:#86efac}
+    .numeric{text-align:right}
+
+    .summary{display:flex; flex-wrap:wrap; gap:12px; padding:12px 16px 20px 16px; border-top:1px solid rgba(255,255,255,.06)}
+    .kpi{flex:1 1 220px; background:var(--panel); border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:14px}
+    .kpi h4{margin:0; font-size:12px; color:var(--text-dim)}
+    .kpi p{margin:6px 0 0 0; font-size:22px; font-weight:800}
+
+    .pill-toggle{display:flex; gap:8px; align-items:center}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px; background:var(--muted); border:1px solid var(--line); color:var(--text-dim); cursor:pointer}
+    .pill input{accent-color:var(--accent)}
+
+    .link{color:#93c5fd; text-decoration:none}
+    .link:hover{text-decoration:underline}
+
+    .right{display:flex; gap:10px; align-items:center}
+
+    /* Modal */
+    .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:50}
+    .modal{width:min(560px, 92vw); background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:16px; box-shadow:var(--shadow)}
+    .modal header{padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; justify-content:space-between}
+    .modal header h3{margin:0; font-size:18px}
+    .modal section{padding:16px 18px; display:flex; flex-direction:column; gap:12px}
+    .modal footer{padding:16px 18px; display:flex; gap:10px; justify-content:flex-end; border-top:1px solid rgba(255,255,255,.06)}
+    textarea{background:var(--muted); border:1px solid var(--line); color:var(--text); border-radius:12px; padding:10px; resize:vertical; min-height:92px}
+
+    /* Small helpers */
+    .muted{color:var(--text-dim); font-size:12px}
+    .badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; border:1px solid var(--line); padding:6px 10px; border-radius:999px; color:var(--text-dim)}
+    .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
+
+    /* Responsive tweaks */
+    @media (max-width: 860px){
+      .filters{grid-template-columns: repeat(6, 1fr)}
+    }
+    @media (max-width: 560px){
+      .filters{grid-template-columns: repeat(2, 1fr)}
+      .right{flex-wrap:wrap}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div class="title">Finance Summary — Canteen</div>
+        <div class="right">
+          <span class="badge" title="Today is auto-detected on load">📅 <span id="todayLabel"></span></span>
+          <div class="role">
+            <label class="muted" for="role">Role</label>
+            <select id="role">
+              <option value="Supervisor">Supervisor</option>
+              <option value="Manager">Manager</option>
+              <option value="Viewer">Viewer</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <div class="f-col" style="grid-column: span 2;">
+          <label for="canteen">Canteen</label>
+          <select id="canteen">
+            <option value="all">All</option>
+            <option>Central Canteen</option>
+            <option>Block A Kiosk</option>
+            <option>Block B Kiosk</option>
+          </select>
+        </div>
+        <div class="f-col" style="grid-column: span 2;">
+          <label for="from">From</label>
+          <input type="date" id="from"/>
+        </div>
+        <div class="f-col" style="grid-column: span 2;">
+          <label for="to">To</label>
+          <input type="date" id="to"/>
+        </div>
+        <div class="f-col" style="grid-column: span 2;">
+          <label for="closingStatus">Closing Status</label>
+          <select id="closingStatus">
+            <option value="all">All</option>
+            <option>Open</option>
+            <option>Closed</option>
+            <option>Reopened</option>
+          </select>
+        </div>
+        <div class="f-col" style="grid-column: span 2;">
+          <label for="settlementStatus">Settlement Status</label>
+          <select id="settlementStatus">
+            <option value="all">All</option>
+            <option>Settled</option>
+            <option>Pending</option>
+          </select>
+        </div>
+        <div class="f-col" style="grid-column: span 2;">
+          <label for="financeSettlementStatus">Finance Settlement</label>
+          <select id="financeSettlementStatus">
+            <option value="all">All</option>
+            <option>Settled</option>
+            <option>Pending</option>
+          </select>
+        </div>
+
+        <div class="actions" style="grid-column: 1 / -1; justify-content:flex-end;">
+          <label class="pill">
+            <input id="autoRefresh" type="checkbox"/>
+            Auto-refresh (60s)
+          </label>
+          <button class="btn btn-ghost" id="resetBtn">Reset</button>
+          <button class="btn btn-export" id="exportBtn">Export CSV</button>
+          <button class="btn btn-primary" id="applyBtn">Apply</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table id="summaryTable">
+          <thead>
+            <tr>
+              <th data-sort="date">Date ▲▼</th>
+              <th data-sort="canteen">Canteen</th>
+              <th class="numeric" data-sort="sales">Total Sales</th>
+              <th class="numeric" data-sort="wastage">Total Wastage</th>
+              <th class="numeric" data-sort="net">Net Amount</th>
+              <th>Closing Status</th>
+              <th>Settlement</th>
+              <th>Finance Settlement</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Summary KPIs -->
+      <div class="summary">
+        <div class="kpi">
+          <h4>Total Sales</h4>
+          <p id="kpiSales">₹0.00</p>
+        </div>
+        <div class="kpi">
+          <h4>Total Wastage</h4>
+          <p id="kpiWastage">₹0.00</p>
+        </div>
+        <div class="kpi">
+          <h4>Net Amount</h4>
+          <p id="kpiNet">₹0.00</p>
+        </div>
+        <div class="kpi">
+          <h4>Days Closed / Reopened</h4>
+          <p id="kpiDays">0 / 0</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="muted" style="margin-top:12px">Tip: Click column headers to sort. Filters apply to the dataset in memory; wire <code>fetchData()</code> to your API.</p>
+  </div>
+
+  <!-- Reopen Modal -->
+  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <header>
+        <h3 id="modalTitle">Reopen Day</h3>
+        <button class="btn btn-ghost" id="closeModal" aria-label="Close">✕</button>
+      </header>
+      <section>
+        <div>
+          <div class="muted">You are reopening: <span id="modalDate"></span> — <span id="modalCanteen"></span></div>
+        </div>
+        <label for="reason">Reason (required)</label>
+        <textarea id="reason" placeholder="Explain why this day is being reopened..."></textarea>
+        <label class="pill-toggle"><input id="notifyFinance" type="checkbox"/> Notify finance team</label>
+      </section>
+      <footer>
+        <button class="btn btn-ghost" id="cancelReopen">Cancel</button>
+        <button class="btn btn-primary" id="confirmReopen">Confirm Reopen</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Audit Log Modal -->
+  <div id="auditModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="auditTitle">
+    <div class="modal">
+      <header>
+        <h3 id="auditTitle">Audit Log</h3>
+        <button class="btn btn-ghost" id="closeAudit" aria-label="Close">✕</button>
+      </header>
+      <section>
+        <div id="auditBody" class="muted"></div>
+      </section>
+      <footer>
+        <button class="btn btn-primary" id="exportAudit">Export Log</button>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // ---- Dummy data (replace via API) ----
+    const rows = [
+      {date:"2025-08-13", canteen:"Central Canteen", sales: 84520, wastage: 1320, closingStatus:"Closed", settlement:"Settled", financeSettlement:"Pending"},
+      {date:"2025-08-13", canteen:"Block A Kiosk", sales: 22340, wastage: 320, closingStatus:"Closed", settlement:"Settled", financeSettlement:"Settled"},
+      {date:"2025-08-13", canteen:"Block B Kiosk", sales: 18760, wastage: 120, closingStatus:"Open", settlement:"Pending", financeSettlement:"Pending"},
+      {date:"2025-08-12", canteen:"Central Canteen", sales: 90210, wastage: 980, closingStatus:"Reopened", settlement:"Pending", financeSettlement:"Pending"},
+      {date:"2025-08-12", canteen:"Block A Kiosk", sales: 24410, wastage: 240, closingStatus:"Closed", settlement:"Settled", financeSettlement:"Settled"},
+      {date:"2025-08-12", canteen:"Block B Kiosk", sales: 19990, wastage: 260, closingStatus:"Closed", settlement:"Settled", financeSettlement:"Pending"},
+      {date:"2025-08-11", canteen:"Central Canteen", sales: 78100, wastage: 1400, closingStatus:"Closed", settlement:"Settled", financeSettlement:"Settled"},
+      {date:"2025-08-11", canteen:"Block A Kiosk", sales: 20100, wastage: 180, closingStatus:"Closed", settlement:"Settled", financeSettlement:"Settled"},
+      {date:"2025-08-11", canteen:"Block B Kiosk", sales: 17540, wastage: 210, closingStatus:"Closed", settlement:"Settled", financeSettlement:"Settled"},
+    ].map(r=>({...r, net: r.sales - r.wastage}));
+
+    const auditLog = [];
+
+    // ---- Elements ----
+    const tbody = document.getElementById('tbody');
+    const kpiSales = document.getElementById('kpiSales');
+    const kpiWastage = document.getElementById('kpiWastage');
+    const kpiNet = document.getElementById('kpiNet');
+    const kpiDays = document.getElementById('kpiDays');
+
+    const roleEl = document.getElementById('role');
+
+    const canteenEl = document.getElementById('canteen');
+    const fromEl = document.getElementById('from');
+    const toEl = document.getElementById('to');
+    const closingStatusEl = document.getElementById('closingStatus');
+    const settlementStatusEl = document.getElementById('settlementStatus');
+    const financeSettlementEl = document.getElementById('financeSettlementStatus');
+
+    const applyBtn = document.getElementById('applyBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const exportBtn = document.getElementById('exportBtn');
+
+    const autoRefresh = document.getElementById('autoRefresh');
+    let refreshTimer = null;
+
+    // Modal elements
+    const modal = document.getElementById('modal');
+    const modalDate = document.getElementById('modalDate');
+    const modalCanteen = document.getElementById('modalCanteen');
+    const reasonEl = document.getElementById('reason');
+    const confirmReopen = document.getElementById('confirmReopen');
+    const closeModal = document.getElementById('closeModal');
+    const cancelReopen = document.getElementById('cancelReopen');
+    const notifyFinance = document.getElementById('notifyFinance');
+
+    const auditModal = document.getElementById('auditModal');
+    const closeAudit = document.getElementById('closeAudit');
+    const exportAudit = document.getElementById('exportAudit');
+    const auditBody = document.getElementById('auditBody');
+
+    // ---- Formatting helpers ----
+    const fmtINR = n => new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR', maximumFractionDigits:2}).format(n);
+    const toDate = s => new Date(s + 'T00:00:00');
+
+    // ---- State ----
+    let currentSort = {key:'date', dir:'desc'};
+    let currentTarget = null; // row selected for reopen
+
+    // ---- Init ----
+    function bootstrap(){
+      const today = new Date();
+      document.getElementById('todayLabel').textContent = today.toLocaleDateString('en-GB', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+
+      // Default filter dates (last 3 days)
+      const max = new Date(Math.max(...rows.map(r=>+toDate(r.date))));
+      const min = new Date(max); min.setDate(min.getDate()-3);
+      fromEl.valueAsDate = min; toEl.valueAsDate = max;
+
+      render();
+
+      document.querySelectorAll('thead th[data-sort]').forEach(th=>{
+        th.style.cursor='pointer';
+        th.addEventListener('click', ()=>{
+          const key = th.getAttribute('data-sort');
+          if(currentSort.key===key){ currentSort.dir = currentSort.dir==='asc'?'desc':'asc'; }
+          else{ currentSort = {key, dir:'asc'}; }
+          render();
+        })
+      });
+
+      applyBtn.addEventListener('click', render);
+      resetBtn.addEventListener('click', resetFilters);
+      exportBtn.addEventListener('click', exportCSV);
+
+      document.getElementById('closeModal').onclick = hideModal;
+      cancelReopen.onclick = hideModal;
+      confirmReopen.onclick = doReopen;
+
+      document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ hideModal(); hideAudit(); }});
+
+      autoRefresh.addEventListener('change', ()=>{
+        if(autoRefresh.checked){
+          refreshTimer = setInterval(()=>{ render(); }, 60000);
+        } else { clearInterval(refreshTimer); }
+      });
+
+      // Double-click title to open audit
+      document.querySelector('.title').addEventListener('dblclick', showAudit);
+      closeAudit.addEventListener('click', hideAudit);
+      exportAudit.addEventListener('click', exportAuditLog);
+    }
+
+    function resetFilters(){
+      canteenEl.value='all';
+      closingStatusEl.value='all';
+      settlementStatusEl.value='all';
+      financeSettlementEl.value='all';
+      const max = new Date(Math.max(...rows.map(r=>+toDate(r.date))));
+      const min = new Date(max); min.setDate(min.getDate()-3);
+      fromEl.valueAsDate = min; toEl.valueAsDate = max;
+      render();
+    }
+
+    function filtered(){
+      const from = fromEl.value ? toDate(fromEl.value) : new Date('1900-01-01');
+      const to = toEl.value ? toDate(toEl.value) : new Date('2900-01-01');
+      return rows.filter(r=>{
+        if(canteenEl.value!=='all' && r.canteen!==canteenEl.value) return false;
+        if(r.date < fromEl.value || r.date > toEl.value) return false;
+        if(closingStatusEl.value!=='all' && r.closingStatus!==closingStatusEl.value) return false;
+        if(settlementStatusEl.value!=='all' && r.settlement!==settlementStatusEl.value) return false;
+        if(financeSettlementEl.value!=='all' && r.financeSettlement!==financeSettlementEl.value) return false;
+        return true;
+      });
+    }
+
+    function sortRows(arr){
+      const {key, dir} = currentSort;
+      const m = dir==='asc'?1:-1;
+      return arr.slice().sort((a,b)=>{
+        let va = a[key], vb = b[key];
+        if(key==='date'){ va = +toDate(a.date); vb = +toDate(b.date); }
+        if(typeof va === 'string'){ return va.localeCompare(vb)*m; }
+        return (va - vb)*m;
+      });
+    }
+
+    function chip(text){
+      const t = text.toLowerCase();
+      let cls = 'chip ';
+      if(['open','closed','reopened'].includes(t)) cls += t;
+      if(['settled','pending'].includes(t)) cls += (t==='settled'?' settled':' pending');
+      return `<span class="${cls}">${text}</span>`;
+    }
+
+    function canReopen(row){
+      const role = roleEl.value;
+      const hasRole = role==='Supervisor' || role==='Manager';
+      const closed = row.closingStatus==='Closed';
+      const financePending = row.financeSettlement==='Pending';
+      return hasRole && closed && financePending;
+    }
+
+    function render(){
+      const data = sortRows(filtered());
+      tbody.innerHTML = '';
+      let sumS=0, sumW=0, closedDays=0, reopenedDays=0;
+
+      data.forEach((r, idx)=>{
+        sumS += r.sales; sumW += r.wastage; if(r.closingStatus==='Closed') closedDays++; if(r.closingStatus==='Reopened') reopenedDays++;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
+          <td>${r.canteen}</td>
+          <td class="numeric">${fmtINR(r.sales)}</td>
+          <td class="numeric">${fmtINR(r.wastage)}</td>
+          <td class="numeric">${fmtINR(r.net)}</td>
+          <td>${chip(r.closingStatus)}</td>
+          <td>${chip(r.settlement)}</td>
+          <td>${chip(r.financeSettlement)}</td>
+          <td>
+            <div style="display:flex; gap:8px; justify-content:flex-end">
+              <button class="btn btn-ghost" title="View Details" onclick='alert("Wire to details page / drawer")'>Details</button>
+              <button class="btn ${canReopen(r)?'btn-primary':'btn-ghost'}" ${canReopen(r)?'':'disabled'} data-idx="${idx}">Reopen</button>
+            </div>
+          </td>`;
+        tr.querySelector('button[data-idx]')?.addEventListener('click', ()=> openReopenModal(r));
+        tbody.appendChild(tr);
+      });
+
+      kpiSales.textContent = fmtINR(sumS);
+      kpiWastage.textContent = fmtINR(sumW);
+      kpiNet.textContent = fmtINR(sumS - sumW);
+      kpiDays.textContent = `${closedDays} / ${reopenedDays}`;
+    }
+
+    function openReopenModal(row){
+      currentTarget = row;
+      modalDate.textContent = new Date(row.date).toLocaleDateString('en-GB');
+      modalCanteen.textContent = row.canteen;
+      reasonEl.value='';
+      notifyFinance.checked = true;
+      modal.style.display='flex';
+      setTimeout(()=>{ reasonEl.focus(); }, 50);
+    }
+
+    function hideModal(){ modal.style.display='none'; }
+
+    function doReopen(){
+      if(!currentTarget) return;
+      const reason = reasonEl.value.trim();
+      if(!reason){ alert('Reason is required.'); return; }
+
+      // Update in-memory row state
+      currentTarget.closingStatus = 'Reopened';
+      currentTarget.settlement = 'Pending';
+      // financeSettlement stays as-is (likely Pending)
+
+      // Add audit log
+      auditLog.push({
+        ts: new Date().toISOString(),
+        actor: roleEl.value,
+        action: 'REOPEN_DAY',
+        date: currentTarget.date,
+        canteen: currentTarget.canteen,
+        notifyFinance: !!notifyFinance.checked,
+        reason
+      });
+
+      // Simulate notifying finance
+      if(notifyFinance.checked){ console.info('[Notify] Finance team notified to re-validate day'); }
+
+      hideModal();
+      render();
+    }
+
+    function showAudit(){
+      auditBody.innerHTML = '';
+      if(auditLog.length===0){ auditBody.textContent = 'No actions recorded yet.'; }
+      else{
+        const ul = document.createElement('ul');
+        ul.style.listStyle='none'; ul.style.padding=0; ul.style.margin=0;
+        auditLog.forEach(a=>{
+          const li = document.createElement('li');
+          li.style.padding='8px 0';
+          li.innerHTML = `<span class="muted">${new Date(a.ts).toLocaleString()}</span> — <strong>${a.actor}</strong> reopened <em>${a.date}</em> (${a.canteen}) — Reason: ${a.reason}${a.notifyFinance? ' — Finance notified':''}`;
+          ul.appendChild(li);
+        });
+        auditBody.appendChild(ul);
+      }
+      auditModal.style.display='flex';
+    }
+
+    function hideAudit(){ auditModal.style.display='none'; }
+
+    function exportCSV(){
+      const data = sortRows(filtered());
+      const header = ['Date','Canteen','Total Sales','Total Wastage','Net Amount','Closing Status','Settlement','Finance Settlement'];
+      const lines = [header.join(',')].concat(
+        data.map(r=>[
+          r.date, '"'+r.canteen+'"', r.sales, r.wastage, r.net, r.closingStatus, r.settlement, r.financeSettlement
+        ].join(','))
+      );
+      const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `finance-summary-${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportAuditLog(){
+      const header = ['Timestamp','Actor','Action','Date','Canteen','NotifyFinance','Reason'];
+      const lines = [header.join(',')].concat(
+        auditLog.map(a=>[a.ts,a.actor,a.action,a.date,'"'+a.canteen+'"',a.notifyFinance,a.reason.replaceAll('"','""')].join(','))
+      );
+      const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'audit-log.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // Replace this with your API fetch and set rows = data
+    async function fetchData(){
+      // const res = await fetch('/api/canteen/finance-summary?from=...');
+      // const data = await res.json(); rows = data.map(/* normalize */);
+      // render();
+    }
+
+    bootstrap();
+  </script>
+</body>
+</html>

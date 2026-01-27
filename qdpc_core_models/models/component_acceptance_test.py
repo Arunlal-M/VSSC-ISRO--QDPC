@@ -15,6 +15,7 @@ class ComponentAcceptanceTest(models.Model):
     id = models.AutoField(primary_key=True)
     batch_id = models.CharField(max_length=255)
     component = models.ForeignKey(Component, on_delete=models.CASCADE, related_name='component_acceptance_tests')
+    component_unit = models.CharField(max_length=255)  # <-- Add this line
     acceptance_test = models.ForeignKey(AcceptanceTest, on_delete=models.CASCADE)
     test_value = models.CharField(max_length=255,blank=True,null=True)
     sources = models.ForeignKey(Sources, on_delete=models.CASCADE)

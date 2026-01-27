@@ -5,6 +5,7 @@ class AcceptanceTest(models.Model):
     TIME_UNIT_CHOICES = [
         ('months', 'Months'),
         ('days', 'Days'),
+        ('years','Years')
     ]
 
     TEST_TYPE_CHOICES = [
@@ -17,17 +18,18 @@ class AcceptanceTest(models.Model):
     min_value = models.IntegerField(blank=True, null=True)  # Optional field
     max_value = models.IntegerField(blank=True, null=True) 
     unit = models.ForeignKey('Unit', on_delete=models.CASCADE,null=True,blank=True)
-    sampling_plan = models.FileField(
-        upload_to='acceptance_test_results/',
-        blank=True,
-        null=True
-    )
+    # sampling_plan = models.FileField(
+    #     upload_to='acceptance_test_results/',
+    #     blank=True,
+    #     null=True
+    # )
     reevaluation_frequency_value = models.PositiveIntegerField(default=12)
     reevaluation_frequency_unit = models.CharField(max_length=10, choices=TIME_UNIT_CHOICES, default='months')
     
     # New fields
     test_type = models.CharField(max_length=15, choices=TEST_TYPE_CHOICES, default='quantitative')
-    test_result = models.CharField(max_length=10, blank=True, null=True)
+    test_result = models.CharField(max_length=100, blank=True, null=True)
+    specification_result = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -38,10 +40,12 @@ class AcceptanceTest(models.Model):
             return timedelta(days=self.reevaluation_frequency_value)
         elif self.reevaluation_frequency_unit == 'months':
             return timedelta(days=self.reevaluation_frequency_value * 30)  # Approximation for months
+        elif self.reevaluation_frequency_unit == 'years':
+            return timedelta(days=self.reevaluation_frequency_value * 365)  # Approximation for years
         return None
 
-    @property
-    def sampling_plan_filename(self):
-        if self.sampling_plan:
-            return self.sampling_plan.name.split('/')[-1]
-        return 'No file'
+    # @property
+    # def sampling_plan_filename(self):
+    #     if self.sampling_plan:
+    #         return self.sampling_plan.name.split('/')[-1]
+    #     return 'No file'

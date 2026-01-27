@@ -1,0 +1,1316 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load json_filters %}
+{% block content %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Store dropdown data as JSON for JavaScript -->
+{{ raw_materials_list|safe }}
+<script type="application/json" id="raw-materials-data">
+[
+    {% for material in raw_materials_list %}
+    {"id": "{{ material.id }}", "name": "{{ material.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
+<script type="application/json" id="components-data">
+[
+    {% for component in components_list %}
+    {"id": "{{ component.id }}", "name": "{{ component.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
+<script type="application/json" id="consumables-data">
+[
+    {% for consumable in consumables_list %}
+    {"id": "{{ consumable.id }}", "name": "{{ consumable.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
+<script type="application/json" id="equipment-data">
+[
+    {% for equip in equipment_list %}
+    {"id": "{{ equip.id }}", "name": "{{ equip.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
+<script type="application/json" id="processes-data">
+[
+    {% for process in processes_list %}
+    {"id": "{{ process.id }}", "name": "{{ process.process_title|escapejs }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
+<script type="application/json" id="acceptance-tests-data">
+[
+    {% for test in acceptance_tests_list %}
+    {"id": "{{ test.id }}", "name": "{{ test.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
+<!-- Debug Information -->
+
+
+<div class="page-wrapper">
+    <div class="content">
+        <!-- Page Header -->
+        <div class="page-header d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="page-title">Edit Product Batch</h4>
+                <p class="text-muted mb-0">
+                    {% if batch.batch_id %}
+                        Batch ID: <strong>{{ batch.batch_id }}</strong>
+                    {% else %}
+                        Unit ID: <strong>{{ batch.unit }}</strong>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'product-batch-view' batch.id %}" class="btn btn-info">
+                    <i class="fas fa-eye me-2"></i>View
+                </a>
+                <a href="{% url 'product-batch-list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </div>
+
+        <form id="editBatchForm" method="POST" action="{% url 'product-batch-edit' batch.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Basic Information Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="edit_product_type" class="form-label">Type</label>
+                            <select id="edit_product_type" class="form-control" name="product_type">
+                                <option value="batch" {% if batch.batch_id %}selected{% endif %}>Batch</option>
+                                <option value="unit" {% if batch.unit %}selected{% endif %}>Unit</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6" id="edit_batch_container" {% if not batch.batch_id %}style="display: none;"{% endif %}>
+                            <label for="edit_batch_id" class="form-label">Batch ID</label>
+                            <input type="text" class="form-control" id="edit_batch_id" name="batch_id" 
+                                   value="{{ batch.batch_id|default:'' }}" placeholder="Enter Batch ID">
+                        </div>
+                        
+                        <div class="col-md-6" id="edit_unit_container" {% if not batch.unit %}style="display: none;"{% endif %}>
+                            <label for="edit_unit_id" class="form-label">Unit ID</label>
+                            <input type="text" class="form-control" id="edit_unit_id" name="unit_id" 
+                                   value="{{ batch.unit|default:'' }}" placeholder="Enter Unit ID">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="edit_product" class="form-label">Product</label>
+                            <select id="edit_product" class="form-control" name="product">
+                                <option value="">Select Product</option>
+                                {% for product in products %}
+                                    <option value="{{ product.id }}" {% if batch.product_id == product.id %}selected{% endif %}>
+                                        {{ product.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="edit_manufacturing_start" class="form-label">Manufacturing Start Date</label>
+                            <input type="date" class="form-control" id="edit_manufacturing_start" name="manufacturing_start" 
+                                   value="{{ batch.manufacturing_start|date:'Y-m-d'|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="edit_manufacturing_end" class="form-label">Manufacturing End Date</label>
+                            <input type="date" class="form-control" id="edit_manufacturing_end" name="manufacturing_end" 
+                                   value="{{ batch.manufacturing_end|date:'Y-m-d'|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="edit_status" class="form-label">Status</label>
+                            <select id="edit_status" class="form-control" name="status">
+                                <option value="pending" {% if batch.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="approved" {% if batch.status == 'approved' %}selected{% endif %}>Approved</option>
+                                <option value="rejected" {% if batch.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applicable Drawings Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-drafting-compass me-2"></i>Applicable Drawings</h5>
+                    <button type="button" class="btn btn-light btn-sm" onclick="addDrawingRow()">
+                        <i class="fas fa-plus me-1"></i>Add Drawing
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Drawing Title</th>
+                                    <th>Drawing Number</th>
+                                    <th>Status</th>
+                                    <th>Document</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="edit_drawing_table_body">
+                                {% for drawing_item in drawings %}
+                                <tr>
+                                    <td>
+                                        <input type="text" class="form-control" name="drawing_title[]" 
+                                               value="{{ drawing_item.drawing.drawing_title|default:'' }}" placeholder="Drawing Title">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="drawing_number[]" 
+                                               value="{{ drawing_item.drawing.drawing_number|default:'' }}" placeholder="Drawing Number">
+                                    </td>
+                                    <td>
+                                        <select class="form-control" name="drawing_status[]">
+                                            <option value="active" {% if drawing_item.drawing.drawing_status == 'active' %}selected{% endif %}>Active</option>
+                                            <option value="inactive" {% if drawing_item.drawing.drawing_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                            <option value="draft" {% if drawing_item.drawing.drawing_status == 'draft' %}selected{% endif %}>Draft</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="file" class="form-control" name="drawing_document[]" accept=".pdf,.png,.jpg,.jpeg">
+                                        {% if drawing_item.drawing.drawing_document %}
+                                            <small class="text-muted">Current: {{ drawing_item.drawing.drawing_document.name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw Materials Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-cubes me-2"></i>Raw Materials</h5>
+                    <button type="button" class="btn btn-light btn-sm" onclick="addRawMaterialRow()">
+                        <i class="fas fa-plus me-1"></i>Add Material
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Material Name</th>
+                                    <th>Batch ID</th>
+                                    <th>Expiry Date</th>
+                                    <th>Source</th>
+                                    <th>Supplier</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="edit_raw_material_table_body">
+                                {% for rm in raw_materials %}
+                                <tr>
+                                    <td>
+                                        <select class="form-control" name="raw_material[]">
+                                            <option value="">Select Material</option>
+                                            {% for material in raw_materials_list %}
+                                                <option value="{{ material.id }}" {% if rm.raw_material_id == material.id %}selected{% endif %}>
+                                                    {{ material.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="raw_material_batch_id[]" 
+                                               value="{{ rm.batch.batch_id|default:'' }}" placeholder="Batch ID">
+                                    </td>
+                                    <td>
+                                        <input type="date" class="form-control" name="raw_material_expiry[]" 
+                                               value="{{ rm.batch.expiry_date|date:'Y-m-d'|default:'' }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="raw_material_source[]" 
+                                               value="{{ rm.batch.sources.first.name|default:'' }}" placeholder="Source">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="raw_material_supplier[]" 
+                                               value="{{ rm.batch.suppliers.first.name|default:'' }}" placeholder="Supplier">
+                                    </td>
+                                    <td>
+                                        <select class="form-control" name="raw_material_status[]">
+                                            <option value="active" {% if rm.status == 'active' %}selected{% endif %}>Active</option>
+                                            <option value="inactive" {% if rm.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Components Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Components</h5>
+                    <button type="button" class="btn btn-light btn-sm" onclick="addComponentRow()">
+                        <i class="fas fa-plus me-1"></i>Add Component
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Component Name</th>
+                                    <th>Batch ID</th>
+                                    <th>Expiry Date</th>
+                                    <th>Source</th>
+                                    <th>Supplier</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="edit_component_table_body">
+                                {% for comp in components %}
+                                <tr>
+                                    <td>
+                                        <select class="form-control" name="component[]">
+                                            <option value="">Select Component</option>
+                                            {% for component in components_list %}
+                                                <option value="{{ component.id }}" {% if comp.component_id == component.id %}selected{% endif %}>
+                                                    {{ component.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="component_batch_id[]" 
+                                               value="{{ comp.batch.batch_id|default:'' }}" placeholder="Batch ID">
+                                    </td>
+                                    <td>
+                                        <input type="date" class="form-control" name="component_expiry[]" 
+                                               value="{{ comp.batch.expiry_date|date:'Y-m-d'|default:'' }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="component_source[]" 
+                                               value="{{ comp.batch.sources.first.name|default:'' }}" placeholder="Source">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="component_supplier[]" 
+                                               value="{{ comp.batch.suppliers.first.name|default:'' }}" placeholder="Supplier">
+                                    </td>
+                                    <td>
+                                        <select class="form-control" name="component_status[]">
+                                            <option value="active" {% if comp.status == 'active' %}selected{% endif %}>Active</option>
+                                            <option value="inactive" {% if comp.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consumables Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-tint me-2"></i>Consumables</h5>
+                    <button type="button" class="btn btn-light btn-sm" onclick="addConsumableRow()">
+                        <i class="fas fa-plus me-1"></i>Add Consumable
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Consumable Name</th>
+                                    <th>Batch ID</th>
+                                    <th>Expiry Date</th>
+                                    <th>Source</th>
+                                    <th>Supplier</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="edit_consumable_table_body">
+                                {% for cons in consumables %}
+                                <tr>
+                                    <td>
+                                        <select class="form-control" name="consumable[]">
+                                            <option value="">Select Consumable</option>
+                                            {% for consumable in consumables_list %}
+                                                <option value="{{ consumable.id }}" {% if cons.consumable_id == consumable.id %}selected{% endif %}>
+                                                    {{ consumable.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="consumable_batch_id[]" 
+                                               value="{{ cons.batch.batch_id|default:'' }}" placeholder="Batch ID">
+                                    </td>
+                                    <td>
+                                        <input type="date" class="form-control" name="consumable_expiry[]" 
+                                               value="{{ cons.batch.expiry_date|date:'Y-m-d'|default:'' }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="consumable_source[]" 
+                                               value="{{ cons.batch.sources.first.name|default:'' }}" placeholder="Source">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="consumable_supplier[]" 
+                                               value="{{ cons.batch.suppliers.first.name|default:'' }}" placeholder="Supplier">
+                                    </td>
+                                    <td>
+                                        <select class="form-control" name="consumable_status[]">
+                                            <option value="active" {% if cons.status == 'active' %}selected{% endif %}>Active</option>
+                                            <option value="inactive" {% if cons.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw Material Acceptance Test Results Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Raw Material Acceptance Test Results</h5>
+                </div>
+                <div class="card-body" id="acceptanceTestContainer">
+                    <div class="alert alert-info">
+                        Select a product to view acceptance test results.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Process Details Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Process Details</h5>
+                </div>
+                <div class="card-body" id="processSetionContainer">
+                    <div class="alert alert-info">
+                        Select a product to view detailed process information including all steps, materials, equipment, and specifications.
+                    </div>
+                    <div id="processSummary" class="mb-3" style="display: none;">
+                        <div class="alert alert-success">
+                            <strong>Selected Processes:</strong> <span id="selectedProcessCount">0</span> processes selected
+                        </div>
+                    </div>
+                    <div id="processDetailsContainer"></div>
+                </div>
+            </div>
+
+            <!-- Process Steps Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-list-ol me-2"></i>Process Steps</h5>
+                </div>
+                <div class="card-body">
+                    <div id="processStepsContainer">
+                        {% for process_data in process_steps_data %}
+                        <div class="process-section mb-4 border p-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0 text-primary">{{ process_data.process.process_title }}</h6>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeProcess(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Process</label>
+                                    <select class="form-control" name="process[]">
+                                        <option value="">Select Process</option>
+                                        {% for process in processes_list %}
+                                            <option value="{{ process.id }}" {% if process_data.process.id == process.id %}selected{% endif %}>
+                                                {{ process.process_title }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Step ID</label>
+                                    <input type="text" class="form-control" name="step_id[]" 
+                                           value="{{ process_data.steps.first.step_id|default:'' }}" placeholder="Step ID">
+                                </div>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" name="process_description[]" rows="2" 
+                                              placeholder="Process Description">{{ process_data.steps.first.process_description|default:'' }}</textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Process Date</label>
+                                    <input type="date" class="form-control" name="process_date[]" 
+                                           value="{{ process_data.steps.first.process_date|date:'Y-m-d'|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment Details Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Equipment Details</h5>
+                </div>
+                <div class="card-body" id="equpmentSetionContainer">
+                    <table class="table table-bordered align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Equipment Name</th>
+                                <th>Equipment ID</th>
+                                <th>Calibration Due Date</th>
+                                <th>Show Calibration Certificate</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="equpmentTableBody">
+                            {% for eq in equipment %}
+                            <tr>
+                                <td>
+                                    <select class="form-control" name="equipment[]">
+                                        <option value="">Select Equipment</option>
+                                        {% for equip in equipment_list %}
+                                        <option value="{{ equip.id }}" {% if eq.equipment_id == equip.id %}selected{% endif %}>{{ equip.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control" name="equipment_id[]" 
+                                           value="{{ eq.equipment.equipment_id|default:'' }}" placeholder="Equipment ID">
+                                </td>
+                                <td>
+                                    <input type="date" class="form-control" name="calibration_due[]" 
+                                           value="{{ eq.calibration_due_date|date:'Y-m-d'|default:'' }}">
+                                </td>
+                                <td>
+                                    <input type="file" class="form-control" name="calibration_certificate[]" accept=".pdf,.png,.jpg,.jpeg">
+                                    {% if eq.equipment.calibration_certificate %}
+                                        <small class="text-muted">Current: {{ eq.equipment.calibration_certificate.name }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeEquipmentRow(this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="text-end mt-2">
+                        <button class="btn btn-primary" id="addEqupmntRowBtn">+ Add Equipment</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Acceptance Tests Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Product Acceptance Tests</h5>
+                </div>
+                <div class="card-body" id="productacceptenceSetionContainer">
+                    <table class="table table-bordered align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Acceptance Test</th>
+                                <th>Specification</th>
+                                <th>Result</th>
+                                <th>Date of Test</th>
+                                <th>Remarks</th>
+                                <th>Upload Test Report</th>
+                                <th>View Test Report</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productacceptenceTableBody">
+                            {% for test in acceptance_tests %}
+                            <tr>
+                                <td>
+                                    <select class="form-control" name="acceptance_test[]">
+                                        <option value="">Select Test</option>
+                                        {% for test_type in acceptance_tests_list %}
+                                        <option value="{{ test_type.id }}" {% if test.acceptance_test_id == test_type.id %}selected{% endif %}>{{ test_type.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control" name="test_specification[]" 
+                                           value="{{ test.specification|default:'' }}" placeholder="Specification">
+                                </td>
+                                <td>
+                                    <select class="form-control" name="test_result[]">
+                                        <option value="pending" {% if test.result == 'pending' %}selected{% endif %}>Pending</option>
+                                        <option value="pass" {% if test.result == 'pass' %}selected{% endif %}>Pass</option>
+                                        <option value="fail" {% if test.result == 'fail' %}selected{% endif %}>Fail</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="date" class="form-control" name="test_date[]" 
+                                           value="{{ test.date_of_test|date:'Y-m-d'|default:'' }}">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control" name="test_remarks[]" 
+                                           value="{{ test.remarks|default:'' }}" placeholder="Remarks">
+                                </td>
+                                <td>
+                                    <input type="file" class="form-control" name="test_report[]" accept=".pdf,.png,.jpg,.jpeg">
+                                    {% if test.report %}
+                                        <small class="text-muted">Current: {{ test.report.name }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if test.report %}
+                                        <a href="{{ test.report.url }}" target="_blank" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No report</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeAcceptanceTestRow(this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="text-end mt-2">
+                        <button class="btn btn-primary" id="addAcceptanceTestRowBtn">+ Add Acceptance Test</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Tables Display Section -->
+            {% if dynamic_tables %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-table me-2"></i>Current Dynamic Tables Data</h5>
+                </div>
+                <div class="card-body">
+                    {% for table in dynamic_tables %}
+                    <div class="mb-4">
+                        <h6 class="text-primary">{{ table.title }}</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        {% for column in table.columns %}
+                                        <th>{{ column }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in table.rows %}
+                                    <tr>
+                                        {% for column_index in table.columns %}
+                                        <td>{{ row|get_item:forloop.counter0|default:"" }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Additional Data Tables Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between">
+                    <h5 class="mb-0"><i class="fas fa-table me-2"></i>Additional Data Tables</h5>
+                    <button type="button" class="btn btn-light btn-sm" id="addTableBtn">
+                        <i class="fas fa-plus"></i> Add New Table
+                    </button>
+                </div>
+                <div class="card-body" id="tablesContainer">
+                    {% if dynamic_tables %}
+                        {% for table in dynamic_tables %}
+                        <div class="dynamic-table mb-4 border p-3" data-table-index="{{ forloop.counter }}">
+                            <div class="row mb-3 align-items-center">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control table-name" value="{{ table.title }}" placeholder="Table Title" required>
+                                    <input type="hidden" name="tables[{{ forloop.counter }}][title]" value="{{ table.title }}" class="table-title-hidden">
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="badge bg-info">{{ table.columns|length }} columns</span>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button type="button" class="btn btn-danger btn-sm remove-table-btn">
+                                        <i class="fas fa-trash"></i> Remove Table
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            {% for column in table.columns %}
+                                            <th>{{ column }}</th>
+                                            {% endfor %}
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in table.rows %}
+                                        <tr>
+                                            {% for cell in row %}
+                                            <td>
+                                                <input type="text" class="form-control" name="tables[{{ forloop.parentloop.counter }}][rows][{{ forloop.parentloop.counter0 }}][{{ forloop.counter0 }}]" value="{{ cell }}">
+                                            </td>
+                                            {% endfor %}
+                                            <td>
+                                                <button type="button" class="btn btn-danger btn-sm remove-row-btn">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr class="add-row-tr">
+                                            <td colspan="{{ table.columns|length|add:1 }}" class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-primary add-row-btn">
+                                                    <i class="fas fa-plus"></i> Add Row
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            Click "Add New Table" to create your first table
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <button type="submit" class="btn btn-primary btn-lg me-3" onclick="console.log('Form submitting...'); return true;">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                    <a href="{% url 'product-batch-view' batch.id %}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+        
+        <script>
+        // Debug form submission
+        document.getElementById('editBatchForm').addEventListener('submit', function(e) {
+            console.log('Form submit event triggered');
+            console.log('Form action:', this.action);
+            console.log('Form method:', this.method);
+            
+            // Check if form has required data
+            const formData = new FormData(this);
+            console.log('Form data entries:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ':', value);
+            }
+        });
+        </script>
+        
+        <script>
+        // Form validation
+        document.getElementById('editBatchForm').addEventListener('submit', function(e) {
+            // Validate required fields
+            const product = this.querySelector('select[name="product"]').value;
+            const manufacturingStart = this.querySelector('input[name="manufacturing_start"]').value;
+            const manufacturingEnd = this.querySelector('input[name="manufacturing_end"]').value;
+            
+            if (!product || !manufacturingStart || !manufacturingEnd) {
+                e.preventDefault();
+                alert('Please fill in all required fields: Product, Manufacturing Start Date, and Manufacturing End Date');
+                return false;
+            }
+            
+            // Validate dates
+            if (manufacturingStart && manufacturingEnd) {
+                const startDate = new Date(manufacturingStart);
+                const endDate = new Date(manufacturingEnd);
+                
+                if (startDate > endDate) {
+                    e.preventDefault();
+                    alert('Manufacturing Start Date cannot be after Manufacturing End Date');
+                    return false;
+                }
+            }
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            submitBtn.disabled = true;
+            
+            // Re-enable button after a delay (in case of errors)
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 10000);
+            
+            return true;
+        });
+        
+        // Add confirmation before leaving page with unsaved changes
+        let formChanged = false;
+        const form = document.getElementById('editBatchForm');
+        
+        form.addEventListener('change', function() {
+            formChanged = true;
+        });
+        
+        form.addEventListener('input', function() {
+            formChanged = true;
+        });
+        
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                return 'You have unsaved changes. Are you sure you want to leave?';
+            }
+        });
+        
+        // Reset form changed flag on successful submission
+        form.addEventListener('submit', function() {
+            formChanged = false;
+        });
+        </script>
+    </div>
+</div>
+
+<script>
+// Toggle between Batch ID and Unit ID based on type selection
+document.getElementById('edit_product_type').addEventListener('change', function() {
+    const batchContainer = document.getElementById('edit_batch_container');
+    const unitContainer = document.getElementById('edit_unit_container');
+    
+    if (this.value === 'batch') {
+        batchContainer.style.display = 'block';
+        unitContainer.style.display = 'none';
+    } else {
+        batchContainer.style.display = 'none';
+        unitContainer.style.display = 'block';
+    }
+});
+
+// Add new drawing row
+function addDrawingRow() {
+    const tbody = document.getElementById('edit_drawing_table_body');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td><input type="text" class="form-control" name="drawing_title[]" placeholder="Drawing Title"></td>
+        <td><input type="text" class="form-control" name="drawing_number[]" placeholder="Drawing Number"></td>
+        <td>
+            <select class="form-control" name="drawing_status[]">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="draft">Draft</option>
+            </select>
+        </td>
+        <td><input type="file" class="form-control" name="drawing_document[]" accept=".pdf,.png,.jpg,.jpeg"></td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+
+// Add new raw material row
+function addRawMaterialRow() {
+    const tbody = document.getElementById('edit_raw_material_table_body');
+    const newRow = tbody.insertRow();
+    
+    // Get data from JSON script tags
+    const rawMaterialsData = JSON.parse(document.getElementById('raw-materials-data').textContent);
+    
+    let materialOptions = '<option value="">Select Material</option>';
+    rawMaterialsData.forEach(material => {
+        materialOptions += `<option value="${material.id}">${material.name}</option>`;
+    });
+    
+    newRow.innerHTML = `
+        <td><select class="form-control" name="raw_material[]">${materialOptions}</select></td>
+        <td><input type="text" class="form-control" name="raw_material_batch_id[]" placeholder="Batch ID"></td>
+        <td><input type="date" class="form-control" name="raw_material_expiry[]"></td>
+        <td><input type="text" class="form-control" name="raw_material_source[]" placeholder="Source"></td>
+        <td><input type="text" class="form-control" name="raw_material_supplier[]" placeholder="Supplier"></td>
+        <td>
+            <select class="form-control" name="raw_material_status[]">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+// Add new component row
+function addComponentRow() {
+    const tbody = document.getElementById('edit_component_table_body');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td>
+            <select class="form-control" name="component[]">
+                <option value="">Select Component</option>
+                {% for component in components_list %}
+                    <option value="{{ component.id }}">{{ component.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td><input type="text" class="form-control" name="component_batch_id[]" placeholder="Batch ID"></td>
+        <td><input type="date" class="form-control" name="component_expiry[]"></td>
+        <td><input type="text" class="form-control" name="component_source[]" placeholder="Source"></td>
+        <td><input type="text" class="form-control" name="component_supplier[]" placeholder="Supplier"></td>
+        <td>
+            <select class="form-control" name="component_status[]">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+// Add new consumable row
+function addConsumableRow() {
+    const tbody = document.getElementById('edit_consumable_table_body');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td>
+            <select class="form-control" name="consumable[]">
+                <option value="">Select Consumable</option>
+                {% for consumable in consumables_list %}
+                    <option value="{{ consumable.id }}">{{ consumable.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td><input type="text" class="form-control" name="consumable_batch_id[]" placeholder="Batch ID"></td>
+        <td><input type="date" class="form-control" name="consumable_expiry[]"></td>
+        <td><input type="text" class="form-control" name="consumable_source[]" placeholder="Source"></td>
+        <td><input type="text" class="form-control" name="consumable_supplier[]" placeholder="Supplier"></td>
+        <td>
+            <select class="form-control" name="consumable_status[]">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+// Add new equipment row
+function addEquipmentRow() {
+    const tbody = document.getElementById('edit_equipment_table_body');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td>
+            <select class="form-control" name="equipment[]">
+                <option value="">Select Equipment</option>
+                {% for equip in equipment_list %}
+                    <option value="{{ equip.id }}">{{ equip.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td><input type="text" class="form-control" name="equipment_calibration[]" placeholder="Calibration ID"></td>
+        <td><input type="date" class="form-control" name="equipment_calibration_date[]"></td>
+        <td><input type="date" class="form-control" name="equipment_next_calibration[]"></td>
+        <td>
+            <select class="form-control" name="equipment_status[]">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+// Add new raw material row
+function addRawMaterialRow() {
+    const tbody = document.getElementById('edit_raw_material_table_body');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td><select class="form-control" name="raw_material[]"><option value="">Select Material</option></select></td>
+        <td><input type="text" class="form-control" name="raw_material_batch_id[]" placeholder="Batch ID"></td>
+        <td><input type="date" class="form-control" name="raw_material_expiry[]"></td>
+        <td><input type="text" class="form-control" name="raw_material_source[]" placeholder="Source"></td>
+        <td><input type="text" class="form-control" name="raw_material_supplier[]" placeholder="Supplier"></td>
+        <td>
+            <select class="form-control" name="raw_material_status[]">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+// Add new component row
+function addComponentRow() {
+    const tbody = document.getElementById('edit_component_table_body');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td><select class="form-control" name="component[]"><option value="">Select Component</option></select></td>
+        <td><input type="text" class="form-control" name="component_batch_id[]" placeholder="Batch ID"></td>
+        <td><input type="date" class="form-control" name="component_expiry[]"></td>
+        <td><input type="text" class="form-control" name="component_source[]" placeholder="Source"></td>
+        <td><input type="text" class="form-control" name="component_supplier[]" placeholder="Supplier"></td>
+        <td>
+            <select class="form-control" name="component_status[]">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+// Add new consumable row
+function addConsumableRow() {
+    const tbody = document.getElementById('edit_consumable_table_body');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td><select class="form-control" name="consumable[]"><option value="">Select Consumable</option></select></td>
+        <td><input type="text" class="form-control" name="consumable_batch_id[]" placeholder="Batch ID"></td>
+        <td><input type="date" class="form-control" name="consumable_expiry[]"></td>
+        <td><input type="text" class="form-control" name="consumable_source[]" placeholder="Source"></td>
+        <td><input type="text" class="form-control" name="consumable_supplier[]" placeholder="Supplier"></td>
+        <td>
+            <select class="form-control" name="consumable_status[]">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+// Add new process row
+function addProcessRow() {
+    const container = document.getElementById('edit_process_container');
+    const newProcess = document.createElement('div');
+    newProcess.className = 'process-section mb-4 border p-3 rounded';
+    newProcess.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0 text-primary">New Process</h6>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeProcess(this)"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Process</label>
+                <select class="form-control" name="process[]"><option value="">Select Process</option></select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Step ID</label>
+                <input type="text" class="form-control" name="step_id[]" placeholder="Step ID">
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="process_description[]" rows="2" placeholder="Process Description"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Process Date</label>
+                <input type="date" class="form-control" name="process_date[]">
+            </div>
+        </div>
+    `;
+    container.appendChild(newProcess);
+}
+
+// Add new equipment row
+function addEquipmentRow() {
+    const tbody = document.getElementById('edit_equipment_table_body');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td><select class="form-control" name="equipment[]"><option value="">Select Equipment</option></select></td>
+        <td><input type="text" class="form-control" name="equipment_serial[]" placeholder="Serial Number"></td>
+        <td><input type="date" class="form-control" name="calibration_due[]"></td>
+        <td><input type="text" class="form-control" name="certificate_ref[]" placeholder="Certificate Reference"></td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+// Add new test row
+function addTestRow() {
+    const tbody = document.getElementById('edit_test_table_body');
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
+        <td><select class="form-control" name="acceptance_test[]"><option value="">Select Test</option></select></td>
+        <td><input type="text" class="form-control" name="test_specification[]" placeholder="Specification"></td>
+        <td>
+            <select class="form-control" name="test_result[]">
+                <option value="pending">Pending</option>
+                <option value="pass">Pass</option>
+                <option value="fail">Fail</option>
+            </select>
+        </td>
+        <td><input type="date" class="form-control" name="test_date[]"></td>
+        <td><input type="text" class="form-control" name="test_remarks[]" placeholder="Remarks"></td>
+        <td><input type="file" class="form-control" name="test_report[]" accept=".pdf,.png,.jpg,.jpeg"></td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+// Remove row from table
+function removeRow(button) {
+    button.closest('tr').remove();
+}
+
+// Remove process section
+function removeProcess(button) {
+    button.closest('.process-section').remove();
+}
+
+// Dynamic Tables JavaScript
+let tableCounter = 0;
+
+$('#addTableBtn').on('click', function () {
+    tableCounter++;
+    const tableId = `dynamicTable_${tableCounter}`;
+
+    const tableHtml = `
+        <div class="dynamic-table mb-4 border p-3" id="${tableId}" data-table-index="${tableCounter}">
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                    <input type="text" class="form-control table-name" placeholder="Table Title" required>
+                    <input type="hidden" name="tables[${tableCounter}][title]" class="table-title-hidden">
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="number" class="form-control columns-count" placeholder="Columns" min="1" max="10" value="2">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-primary set-columns-btn" type="button">
+                                <i class="fas fa-check"></i> Set
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" class="btn btn-danger btn-sm remove-table-btn">
+                        <i class="fas fa-trash"></i> Remove Table
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-preview" style="display: none;">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="thead-light"></thead>
+                        <tbody>
+                            <tr class="add-row-tr">
+                                <td colspan="100%" class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-primary add-row-btn">
+                                        <i class="fas fa-plus"></i> Add Row
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('#tablesContainer .alert').remove();
+    $('#tablesContainer').append(tableHtml);
+});
+
+$('#tablesContainer').on('click', '.set-columns-btn', function () {
+    const tableDiv = $(this).closest('.dynamic-table');
+    const tableIndex = tableDiv.data('table-index');
+    const columnsCount = parseInt(tableDiv.find('.columns-count').val());
+    const tableNameInput = tableDiv.find('.table-name');
+    const tableName = tableNameInput.val().trim();
+
+    if (!tableName) {
+        alert('Please enter a table title');
+        return;
+    }
+
+    if (isNaN(columnsCount) || columnsCount < 1 || columnsCount > 10) {
+        alert('Please enter a valid number of columns (1-10)');
+        return;
+    }
+
+    tableDiv.find('.table-title-hidden').val(tableName);
+
+    const thead = tableDiv.find('thead');
+    thead.empty();
+
+    let headerRow = '<tr>';
+    for (let i = 0; i < columnsCount; i++) {
+        headerRow += `
+            <th>
+                <input type="text" class="form-control form-control-sm column-name" 
+                       name="tables[${tableIndex}][columns][${i}][name]" 
+                       value="Column ${i + 1}" required>
+            </th>
+        `;
+    }
+    headerRow += `<th class="text-center" style="width: 100px;">Actions</th></tr>`;
+    thead.append(headerRow);
+
+    tableDiv.find('.table-preview').show();
+    tableDiv.find('.columns-count, .set-columns-btn').prop('disabled', true);
+});
+
+$('#tablesContainer').on('click', '.add-row-btn', function () {
+    const tableDiv = $(this).closest('.dynamic-table');
+    const tableIndex = tableDiv.data('table-index');
+    const table = $(this).closest('table');
+    const headerCells = table.find('thead th');
+    const columnCount = headerCells.length - 1;
+
+    let newRow = '<tr>';
+    for (let i = 0; i < columnCount; i++) {
+        const columnName = $(headerCells[i]).find('.column-name').val() || `Column ${i + 1}`;
+        newRow += `
+            <td>
+                <input type="text" class="form-control form-control-sm"
+                       placeholder="${columnName}"
+                       name="tables[${tableIndex}][columns][${i}][data][]">
+            </td>
+        `;
+    }
+    newRow += `
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>`;
+
+    $(this).closest('tbody').find('.add-row-tr').before(newRow);
+});
+
+$('#tablesContainer').on('click', '.remove-row-btn', function () {
+    $(this).closest('tr').remove();
+});
+
+$('#tablesContainer').on('click', '.remove-table-btn', function () {
+    const tableDiv = $(this).closest('.dynamic-table');
+    if (confirm('Are you sure you want to remove this table?')) {
+        tableDiv.remove();
+        if ($('#tablesContainer .dynamic-table').length === 0) {
+            $('#tablesContainer').html(`
+                <div class="alert alert-info">
+                    Click "Add New Table" to create your first table
+                </div>
+            `);
+        }
+    }
+});
+</script>
+
+<style>
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.page-header h4 {
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+.btn {
+    border-radius: 0.375rem;
+}
+
+.process-section {
+    border-left: 4px solid #007bff;
+    padding-left: 1rem;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+</style>
+
+{% endblock %}

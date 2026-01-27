@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Manage Permissions for {{ role.name }}</h2>
+
+<form id="perm-form" method="post">
+  {% csrf_token %}
+  {% for module, items in grouped_permissions.items %}
+    <h4>{{ module }}</h4>
+    <div>
+      {% for perm, checked in items %}
+        <label style="display:block">
+          <input type="checkbox" name="permissions" value="{{ perm.id }}" {% if checked %}checked{% endif %}>
+          {{ perm.permission_type }} - {{ perm.name }}
+        </label>
+      {% endfor %}
+    </div>
+    <hr>
+  {% endfor %}
+  <button type="submit">Save</button>
+  <a href="/permissions/">Back</a>
+ </form>
+
+<script>
+document.getElementById('perm-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  const resp = await fetch(window.location.href, { method: 'POST', body: data });
+  if (resp.ok) { alert('Saved'); location.reload(); } else { alert('Error'); }
+});
+</script>
+{% endblock %}
+
+
