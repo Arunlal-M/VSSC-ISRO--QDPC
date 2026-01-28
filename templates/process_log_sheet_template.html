@@ -1,0 +1,552 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load json_filters %}
+
+{% block title %}Process Log-Sheet - Batch {{ batch.batch_id }}{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="page-title">Process Log-Sheet</h3>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'user-dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'process-log-sheet-list' %}">Process Log-Sheet</a></li>
+                        <li class="breadcrumb-item active">Batch {{ batch.batch_id }}</li>
+                    </ul>
+                </div>
+                <div class="col-auto">
+                    <a href="{% url 'generate_process_log_sheet' batch.id %}?format=pdf" class="btn btn-primary">
+                        <i class="fas fa-download"></i> Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="row">
+            <div class="col-12">
+                <!-- Batch Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Batch Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Batch ID:</strong></td>
+                                        <td><span class="badge bg-primary">{{ batch.batch_id }}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Product Name:</strong></td>
+                                        <td>{{ batch.product.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Unit:</strong></td>
+                                        <td>{{ batch.unit|default:"N/A" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Manufacturing Start:</strong></td>
+                                        <td>{{ batch.manufacturing_start|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Manufacturing End:</strong></td>
+                                        <td>{{ batch.manufacturing_end|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Created At:</strong></td>
+                                        <td>{{ batch.created_at|date:"d/m/Y H:i" }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td>
+                                            <span class="badge {% if batch.status == 'approved' %}bg-success{% elif batch.status == 'active' %}bg-info{% elif batch.status == 'rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                                                {{ batch.status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Generated On:</strong></td>
+                                        <td>{{ generated_date|date:"d/m/Y H:i" }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Raw Materials Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Raw Materials</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if raw_materials %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Material Name</th>
+                                            <th>Grade</th>
+                                            <th>Source</th>
+                                            <th>Supplier</th>
+                                            <th>Batch ID</th>
+                                            <th>Date Added</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for material in raw_materials %}
+                                        <tr>
+                                            <td>{{ material.rawmaterial_name }}</td>
+                                            <td>{{ material.grade|default:"N/A" }}</td>
+                                            <td>{{ material.sources|default:"N/A" }}</td>
+                                            <td>{{ material.suppliers|default:"N/A" }}</td>
+                                            <td>{{ material.batch_id|default:"N/A" }}</td>
+                                            <td>{{ material.date_added|date:"d/m/Y"|default:"N/A" }}</td>
+                                            <td>
+                                                <span class="badge {% if material.status == 'available' %}bg-success{% else %}bg-warning{% endif %}">
+                                                    {{ material.status|default:"N/A" }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No raw materials found for this batch.</p>
+                        {% endif %}
+
+                        <!-- Raw Materials Acceptance Tests -->
+                        {% if raw_materials %}
+                            <h6 class="mt-3">Raw Materials Acceptance Tests</h6>
+                            {% for material in raw_materials %}
+                                {% if material.acceptance_tests %}
+                                    <div class="mb-3">
+                                        <h6 class="text-primary">{{ material.rawmaterial_name }} - Acceptance Tests</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Test Name</th>
+                                                        <th>Min Value</th>
+                                                        <th>Max Value</th>
+                                                        <th>Unit</th>
+                                                        <th>Test Type</th>
+                                                        <th>Test Result</th>
+                                                        <th>Specification Result</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for test in material.acceptance_tests %}
+                                                    <tr>
+                                                        <td>{{ test.name }}</td>
+                                                        <td>{{ test.min_value|default:"N/A" }}</td>
+                                                        <td>{{ test.max_value|default:"N/A" }}</td>
+                                                        <td>{{ test.unit|default:"N/A" }}</td>
+                                                        <td>{{ test.test_type|default:"N/A" }}</td>
+                                                        <td>{{ test.test_result|default:"N/A" }}</td>
+                                                        <td>{{ test.specification_result|default:"N/A" }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Components Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Components</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if components %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Component Name</th>
+                                            <th>Grade</th>
+                                            <th>Source</th>
+                                            <th>Supplier</th>
+                                            <th>Batch ID</th>
+                                            <th>Date Added</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for component in components %}
+                                        <tr>
+                                            <td>{{ component.component_name }}</td>
+                                            <td>{{ component.grade|default:"N/A" }}</td>
+                                            <td>{{ component.sources|default:"N/A" }}</td>
+                                            <td>{{ component.suppliers|default:"N/A" }}</td>
+                                            <td>{{ component.batch_id|default:"N/A" }}</td>
+                                            <td>{{ component.date_added|date:"d/m/Y"|default:"N/A" }}</td>
+                                            <td>
+                                                <span class="badge {% if component.status == 'available' %}bg-success{% else %}bg-warning{% endif %}">
+                                                    {{ component.status|default:"N/A" }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No components found for this batch.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Consumables Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Consumables</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if consumables %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Consumable Name</th>
+                                            <th>Grade</th>
+                                            <th>Source</th>
+                                            <th>Supplier</th>
+                                            <th>Batch ID</th>
+                                            <th>Date Added</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for consumable in consumables %}
+                                        <tr>
+                                            <td>{{ consumable.consumable_name }}</td>
+                                            <td>{{ consumable.grade|default:"N/A" }}</td>
+                                            <td>{{ consumable.sources|default:"N/A" }}</td>
+                                            <td>{{ consumable.suppliers|default:"N/A" }}</td>
+                                            <td>{{ consumable.batch_id|default:"N/A" }}</td>
+                                            <td>{{ consumable.date_added|date:"d/m/Y"|default:"N/A" }}</td>
+                                            <td>
+                                                <span class="badge {% if consumable.status == 'available' %}bg-success{% else %}bg-warning{% endif %}">
+                                                    {{ consumable.status|default:"N/A" }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No consumables found for this batch.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Process Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Process Information</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if process %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Process Title:</strong></td>
+                                            <td>{{ process.process_title }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Process Type:</strong></td>
+                                            <td>{{ process.process_type|default:"N/A" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Description:</strong></td>
+                                            <td>{{ process.description|default:"N/A" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            {% if process_steps %}
+                                <h6 class="mt-3">Process Steps</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Step ID</th>
+                                                <th>Step Type</th>
+                                                <th>Description</th>
+                                                <th>Date</th>
+                                                <th>Min Value</th>
+                                                <th>Max Value</th>
+                                                <th>Test Result</th>
+                                                <th>Specification Result</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for step in process_steps %}
+                                            <tr>
+                                                <td>{{ step.step_id }}</td>
+                                                <td>{{ step.process_type|default:"N/A" }}</td>
+                                                <td>{{ step.process_description|default:"N/A" }}</td>
+                                                <td>{{ step.process_date|date:"d/m/Y"|default:"N/A" }}</td>
+                                                <td>{{ step.min_value|default:"N/A" }}</td>
+                                                <td>{{ step.max_value|default:"N/A" }}</td>
+                                                <td>{{ step.test_result|default:"N/A" }}</td>
+                                                <td>{{ step.specification_result|default:"N/A" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">No process steps defined for this process.</p>
+                            {% endif %}
+                        {% else %}
+                            <p class="text-muted">No process information available for this batch.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Equipment Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Equipment Used</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if equipment_list %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Equipment Name</th>
+                                            <th>Type</th>
+                                            <th>Date Added</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for equipment in equipment_list %}
+                                        <tr>
+                                            <td>{{ equipment.name }}</td>
+                                            <td>{{ equipment.equipment_type|default:"N/A" }}</td>
+                                            <td>{{ equipment.date_added|date:"d/m/Y"|default:"N/A" }}</td>
+                                            <td>
+                                                <span class="badge bg-success">Available</span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No equipment information available for this batch.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Pre-Certification Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Pre-Certification Details</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if raw_materials or consumables or components %}
+                            {% if raw_materials %}
+                                <h6>Raw Materials Pre-Certification</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Material Name</th>
+                                                <th>Certified By</th>
+                                                <th>Certificate Ref No</th>
+                                                <th>Issue Date</th>
+                                                <th>Valid Till</th>
+                                                <th>Disposition</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for material in raw_materials %}
+                                                {% if material.precertification %}
+                                                <tr>
+                                                    <td>{{ material.rawmaterial_name }}</td>
+                                                    <td>{{ material.precertification.certified_by.name }}</td>
+                                                    <td>{{ material.precertification.certificate_reference_no }}</td>
+                                                    <td>{{ material.precertification.certificate_issue_date|date:"d/m/Y" }}</td>
+                                                    <td>{{ material.precertification.certificate_valid_till|date:"d/m/Y" }}</td>
+                                                    <td>
+                                                        <span class="badge {% if material.precertification.certificate_disposition == 'CLEARED' %}bg-success{% elif material.precertification.certificate_disposition == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                            {{ material.precertification.certificate_disposition }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+
+                            {% if consumables %}
+                                <h6 class="mt-3">Consumables Pre-Certification</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Consumable Name</th>
+                                                <th>Certified By</th>
+                                                <th>Certificate Ref No</th>
+                                                <th>Issue Date</th>
+                                                <th>Valid Till</th>
+                                                <th>Disposition</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for consumable in consumables %}
+                                                {% if consumable.precertification %}
+                                                <tr>
+                                                    <td>{{ consumable.consumable_name }}</td>
+                                                    <td>{{ consumable.precertification.certified_by.name }}</td>
+                                                    <td>{{ consumable.precertification.certificate_reference_no }}</td>
+                                                    <td>{{ consumable.precertification.certificate_issue_date|date:"d/m/Y" }}</td>
+                                                    <td>{{ consumable.precertification.certificate_valid_till|date:"d/m/Y" }}</td>
+                                                    <td>
+                                                        <span class="badge {% if consumable.precertification.certificate_disposition == 'CLEARED' %}bg-success{% elif consumable.precertification.certificate_disposition == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                            {{ consumable.precertification.certificate_disposition }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+
+                            {% if components %}
+                                <h6 class="mt-3">Components Pre-Certification</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Component Name</th>
+                                                <th>Certified By</th>
+                                                <th>Certificate Ref No</th>
+                                                <th>Issue Date</th>
+                                                <th>Valid Till</th>
+                                                <th>Disposition</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for component in components %}
+                                                {% if component.precertification %}
+                                                <tr>
+                                                    <td>{{ component.component_name }}</td>
+                                                    <td>{{ component.precertification.certified_by.name }}</td>
+                                                    <td>{{ component.precertification.certificate_reference_no }}</td>
+                                                    <td>{{ component.precertification.certificate_issue_date|date:"d/m/Y" }}</td>
+                                                    <td>{{ component.precertification.certificate_valid_till|date:"d/m/Y" }}</td>
+                                                    <td>
+                                                        <span class="badge {% if component.precertification.certificate_disposition == 'CLEARED' %}bg-success{% elif component.precertification.certificate_disposition == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                            {{ component.precertification.certificate_disposition }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <p class="text-muted">No pre-certification information available for this batch.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Dynamic Tables Section -->
+                {% if dynamic_tables %}
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Additional Data Tables</h4>
+                    </div>
+                    <div class="card-body">
+                        {% for table in dynamic_tables %}
+                        <div class="mb-4">
+                            <h6 class="text-primary">{{ table.title }}</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            {% for column in table.columns %}
+                                            <th>{{ column }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in table.rows %}
+                                        <tr>
+                                            {% for column_index in table.columns %}
+                                            <td>{{ row|get_item:forloop.counter0|default:"" }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .badge {
+        font-size: 0.875rem;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        border-top: none;
+        font-weight: 600;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    h6 {
+        color: #495057;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

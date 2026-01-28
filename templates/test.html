@@ -1,0 +1,1907 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Add Product Batch</h4>
+            </div>
+            <div class="page-btn">
+                <a href="{% url 'product-batch-list' %}" class="btn btn-added">Back to List</a>
+            </div>
+        </div>
+
+<form id="productBatchForm" method="POST" action="{% url 'product-batch-add' %}">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Select ID Type</label>
+                        <select id="id_type" class="form-control" required>
+                            <option value="" disabled selected></option>
+                            <option value="batch">Batch ID</option>
+                            <option value="unit">Unit ID</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6 batch-field" style="display: none;">
+                    <div class="form-group">
+                        <label for="batch_id">Batch ID</label>
+                        <input type="text" id="batch_id" name="batch_id" class="form-control">
+                    </div>
+                </div>
+
+                 <input type="hidden" id="processStepsData" name="process_steps">
+                
+                <!-- Unit ID Field (Initially Hidden) -->
+                <div class="col-md-6 unit-field" style="display: none;">
+                    <div class="form-group">
+                        <label for="unit_id">Unit ID</label>
+                        <input type="text" id="unit_id" name="unit_id" class="form-control">
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="product">Product</label>
+                        <select id="product" name="product" class="form-control" required>
+                            <option value="" disabled selected>Select Product</option>
+                            {% for prodct in products %}
+                            <option value="{{ prodct.id }}">{{ prodct.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="raw_material">Raw Material</label>
+                      <select id="raw_material" name="raw_material" class="form-control" required>
+                        <option value="" disabled selected>Select Rawmatrial</option>
+                      </select>
+                    </div>
+                  </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="raw_material_batch">Raw Material Batch</label>
+                        <select id="raw_material_batch" name="raw_material_batch[]" class="form-control" multiple required>
+                           
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="consumable">Consumable</label>
+                      <select id="consumable" name="consumable" class="form-control" required>
+                        <option value="" disabled selected>Select Consumable</option>
+                      </select>
+                    </div>
+                  </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="consumable_batch">Consumable Batch</label>
+                        <select id="consumable_batch" name="consumable_batch[]" class="form-control" multiple required>
+                           
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="component">Component</label>
+                      <select id="component" name="component" class="form-control" required>
+                        <option value="" disabled selected>Select Component</option>
+                      </select>
+                    </div>
+                  </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="component_batch">Component Batch</label>
+                        <select id="component_batch" name="component_batch[]" class="form-control" multiple required>
+                            <option value="" disabled selected>Select Batch</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="process">Process</label>
+                        <select id="process" name="Process" class="form-control" required disabled>
+                            <option value="" disabled selected>Select Process</option>
+                            <!-- Processes will be loaded dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div id="process-steps-container" style="display: none;">
+                        <!-- Process steps will be injected here -->
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="batch_size_value">Batch Size</label>
+                        <input type="number" id="batch_size_value" name="batch_size_value" class="form-control"
+                            required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="batch_size_unit">Batch Size Unit</label>
+                        <select id="batch_size_unit" name="batch_size_unit" class="form-control" required>
+                            <option value="" disabled selected>Select Unit</option>
+                            {% for unit in units %}
+                            <option value="{{ unit.id }}">{{ unit.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="manufacturings_start_date">Manufacturing Start Date</label>
+                        <input type="date" id="manufacturings_start_date" name="manufacturings_start_date"
+                            class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="manufacturings_end_date">Manufacturing End Date</label>
+                        <input type="date" id="manufacturings_end_date" name="manufacturings_end_date"
+                            class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="packing_details">Packing Details</label>
+                        <textarea id="packing_details" name="packing_details" class="form-control" rows="3"
+                            required></textarea>
+                    </div>
+                </div>
+                  <div class="col-md-12">
+                    <div class="form-group">
+                        <input type="hidden" id="action" name="action" value="">
+                            <button type="button" name="action" value="save" class="btn btn-submit" id="saveBatchBtn">Save Batch</button>
+                            <button type="button" name="action" value="qa_approval" class="btn btn-submit" onclick="handleSubmit('qa_approval')">QA Approval</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+    </div>
+</div>
+{% block scripts %}
+<!-- <script>
+    $(document).ready(function () {
+        $('#productBatchForm').on('submit', function (e) {
+            e.preventDefault();  // prevent default form submission
+
+            const form = $(this)[0];
+            const formData = new FormData(form);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                success: function (response) {
+                    console.log("✅ Success response:", response);
+
+                    // Only redirect if the backend confirms success
+                    if (response.success) {
+                        window.location.href = "{% url 'product-batch-list' %}";
+                    } else {
+                        alert("⚠️ Backend returned failure: " + response.message);
+                    }
+                },
+
+
+              	error: function (xhr, status, error) {
+			let errorMsg = 'An error occurred. Please try again.';
+			
+			// Check if DRF returned validation errors
+			if (xhr.responseJSON && xhr.responseJSON.errors) {
+				const errors = xhr.responseJSON.errors;
+				errorMsg = '';
+
+				// Loop over all errors and append messages
+				for (const field in errors) {
+					if (errors.hasOwnProperty(field)) {
+						errorMsg += `${field.toUpperCase()}: ${errors[field].join(', ')}\n`;
+					}
+				}
+			} else if (xhr.responseJSON && xhr.responseJSON.detail) {
+				errorMsg = xhr.responseJSON.detail;
+			} else if (xhr.responseText) {
+				errorMsg = xhr.responseText;
+			}
+
+			Swal.fire({
+				icon: 'error',
+				title: 'Error',
+				html: errorMsg // Using html to support line breaks
+			});
+		}
+            });
+        });
+    });
+
+
+
+    function handleSubmit(action) {
+        // You can perform any validation or processing here if needed
+
+        // Redirect based on the button clicked
+        if (action === 'save') {
+            $('#form-action').val(action); // set the action value
+            $('#productBatchForm').submit();     // submit the form
+        } else if (action === 'qa_approval') {
+            // Handle QA Approval action if needed
+           
+
+
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'QA Approval action triggered.',
+    }).then(() => {
+        window.location.href = "{% url 'clearance' %}"; // Redirect to the clearance path
+    });
+
+    // Placeholder for QA approval logic
+
+           
+        }
+    }
+//     $(document).ready(function () {
+//     $('#raw_material').on('change', function () {
+//         const materialId = $(this).val();
+//         const batchDropdown = $('#raw_material_batch');
+
+//         if (materialId) {
+//             $.ajax({
+//                 url: `/product/raw-material-batches/${materialId}/`,
+//                 type: 'GET',
+//                 success: function (data) {
+//                     batchDropdown.empty();
+                  
+//                     data.forEach(function (batch) {
+//                         batchDropdown.append(`<option value="${batch.id}">${batch.batch_id}</option>`);
+//                     });
+//                 },
+//                 error: function (xhr, status, error) {
+//                     alert("Failed to load raw material batches");
+//                     console.error(error);
+//                 }
+//             });
+//         }
+//     });
+// });
+
+
+// $(document).ready(function () {
+//     // Initialize select2 for multiple select boxes
+//     $('.select').select2({
+//         width: '100%',
+//         placeholder: "Select items",
+//         allowClear: true
+//     });
+
+//     // Array to store selected batches to prevent duplicates
+//     let selectedBatches = [];
+
+//     $('#raw_material').on('change', function () {
+//         alert("Clock    ")
+//         const selectedMaterialIds = $(this).val();
+//         const batchDropdown = $('#raw_material_batch');
+        
+//         // Clear existing options but keep selected batches
+//         batchDropdown.empty();
+        
+//         if (selectedMaterialIds && selectedMaterialIds.length > 0) {
+//             // Show loading state
+//             batchDropdown.append('<option value="">Loading batches...</option>');
+            
+//             // Array to store all promises for batch loading
+//             const batchPromises = [];
+            
+//             // Clear selected batches array when materials change
+//             selectedBatches = [];
+            
+//             selectedMaterialIds.forEach(function(materialId) {
+//                 const promise = $.ajax({
+//                     url: `/product/raw-material-batches/${materialId}/`,
+//                     type: 'GET'
+//                 }).then(function(data) {
+//                     // Process batches for this material
+//                     data.forEach(function(batch) {
+//                         // Only add if not already in our selectedBatches array
+//                         if (!selectedBatches.some(b => b.id === batch.id)) {
+//                             selectedBatches.push({
+//                                 id: batch.id,
+//                                 batch_id: batch.batch_id,
+//                                 material_id: materialId
+//                             });
+//                         }
+//                     });
+//                 });
+                
+//                 batchPromises.push(promise);
+//             });
+            
+//             // When all promises are resolved
+//             Promise.all(batchPromises).then(function() {
+//                 // Clear loading message
+//                 batchDropdown.empty();
+                
+//                 // Add all unique batches to dropdown
+//                 selectedBatches.forEach(function(batch) {
+//                     batchDropdown.append(
+//                         $('<option></option>')
+//                             .val(batch.id)
+//                             .text(`${batch.batch_id} (Material ID: ${batch.material_id})`)
+//                     );
+//                 });
+                
+//                 // Refresh select2 to show new options
+//                 batchDropdown.trigger('change');
+//             }).catch(function(error) {
+//                 console.error("Error loading batches:", error);
+//                 batchDropdown.empty().append('<option value="">Error loading batches</option>');
+//             });
+//         } else {
+//             batchDropdown.empty().append('<option value="">Select raw materials first</option>');
+//         }
+//     });
+// });
+
+
+
+
+document.getElementById('id_type').addEventListener('change', function() {
+    const selectedValue = this.value;
+    
+    // Hide all fields first
+    document.querySelectorAll('.batch-field, .unit-field').forEach(field => {
+        field.style.display = 'none';
+    });
+
+    // Show selected field
+    if(selectedValue === 'batch') {
+        document.querySelector('.batch-field').style.display = 'block';
+    } else if(selectedValue === 'unit') {
+        document.querySelector('.unit-field').style.display = 'block';
+    }
+});
+
+// $(document).ready(function () {
+//     $('#product').on('change', function () {
+//         const materialId = $(this).val();
+//         const componentDropdown= $('#component');
+
+//         if (materialId) {
+//           $.ajax({
+//                 url: `/product/list-view/`,
+//                 type: 'GET',
+//                 data: {
+//                 'id': materialId
+//                 },
+//                 success: function (data) {
+//                     console
+//                     populateComponents(data);
+//                     populateConsumable(data);
+//                     populateRawmaterial(data);
+//                 },
+//                 error: function (xhr, status, error) {
+//                     alert("Failed to load raw material batches");
+//                     console.error(error);
+//                 }
+//             });
+
+          
+
+//         }
+//     });
+// });
+$(document).ready(function () {
+    // Only ONE change handler for #product
+    $('#product').on('change', function () {
+        const productId = $(this).val();
+        
+        if (!productId) {
+            // Clear dropdowns if no product selected
+            $('#component, #process').empty().prop('disabled', true);
+            return;
+        }
+
+        // --- First AJAX Call: Fetch Product Data ---
+        $.ajax({
+            url: `/product/list-view/`,
+            type: 'GET',
+            data: { 'id': productId },
+            success: function (data) {
+                console.log("Product data:", data);
+                populateComponents(data);
+                populateConsumable(data);
+                populateRawmaterial(data);
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load product data:", error);
+            }
+        });
+
+        // --- Second AJAX Call: Fetch Processes ---
+        const processDropdown = $('#process');
+        processDropdown.empty().append('<option value="">Loading processes...</option>').prop('disabled', true);
+
+        $.ajax({
+            url: `/process/by-product/${productId}/`,
+            type: 'GET',
+            success: function(response) {
+                processDropdown.empty();
+                
+                if (response.status === 'success' && response.processes.length > 0) {
+                    processDropdown.append('<option value="" disabled selected>Select Process</option>');
+                    
+                    $.each(response.processes, function(index, process) {
+                        processDropdown.append($('<option>', {
+                            value: process.process,
+                            text: process.process
+                        }));
+                    });
+                    
+                    processDropdown.prop('disabled', false);
+                } else {
+                    processDropdown.append('<option value="" disabled>No processes found</option>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Process load error:", error);
+                processDropdown.empty().append('<option value="" disabled>Error loading processes</option>');
+            }
+        });
+    });
+});
+
+function populateRawmaterial(data) {
+    console.log("Data received in populateRawmaterial:", data);
+    const rawMaterialDropdown = $('#raw_material');
+    rawMaterialDropdown.empty().append(
+        '<option value="" disabled selected>Select Raw Material</option>'
+    );
+
+    let rawMaterialIds = data.rawmaterial;
+    if (!rawMaterialIds) return;
+
+    // Convert to array and remove duplicates
+    if (typeof rawMaterialIds === 'string') {
+        rawMaterialIds = rawMaterialIds.split(',').map(id => id.trim()).filter(Boolean);
+    }
+    if (!Array.isArray(rawMaterialIds)) {
+        rawMaterialIds = [rawMaterialIds];
+    }
+
+    // Remove duplicate IDs before making requests
+    const uniqueIds = [...new Set(rawMaterialIds)];
+    const addedIds = new Set();
+
+    console.log("Original IDs:", rawMaterialIds);
+    console.log("Unique IDs:", uniqueIds);
+
+    let ajaxCalls = uniqueIds.map(function(id) {
+        return $.ajax({
+            url: `/product/raw-material/${id}/`,
+            type: 'GET',
+            success: function(response) {
+
+                console.log("Response data:", response.data);
+
+                const rawMaterialData = response.data;
+                if (rawMaterialData && !addedIds.has(rawMaterialData.id)) {
+                    rawMaterialDropdown.append(
+                        `<option value="${rawMaterialData.id}">${rawMaterialData.name}</option>`
+                    );
+                    addedIds.add(rawMaterialData.id);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`Failed to load raw material with ID ${id}:`, error);
+            }
+        });
+    });
+
+    $.when.apply($, ajaxCalls).then(function() {
+        if (addedIds.size === 1) {
+            rawMaterialDropdown.val(Array.from(addedIds)[0]).trigger('change');
+        }
+    });
+}
+
+// Function to populate consumables
+function populateConsumable(data) {
+  console.log("Data received in populateConsumable:", data); // Debugging
+  const consumableDropdown = $('#consumable');
+  consumableDropdown.empty().append(
+    '<option value="" disabled selected>Select Consumable</option>'
+  );
+
+  let consumableIds = data.consumable;
+  if (!consumableIds) return;
+
+  if (typeof consumableIds === 'string') {
+    consumableIds = consumableIds.split(',').map(id => id.trim()).filter(Boolean);
+  }
+  if (!Array.isArray(consumableIds)) {
+    consumableIds = [consumableIds];
+  }
+
+  const addedIds = new Set();
+
+  let ajaxCalls = consumableIds.map(function(id) {
+    return $.ajax({
+      url: `/consumable/consumable-id/${id}/`,
+      type: 'GET',
+      success: function(response) {
+        let consumable = Array.isArray(response) ? response : [response];
+        consumable.forEach(function(consumable) {
+          if (consumable && !addedIds.has(consumable.id)) {
+             consumableDropdown.append(
+              `<option value="${consumable.id}">${consumable.name}</option>`
+            );
+            addedIds.add(consumable.id);
+          }
+        });
+      },
+      error: function(xhr, status, error) {
+        console.error(`Failed to load consumable with ID ${id}:`, error);
+      }
+    });
+  });
+
+  $.when.apply($, ajaxCalls).then(function() {
+    if (addedIds.size === 1) {
+      const onlyId = Array.from(addedIds)[0];
+       consumableDropdown.val(onlyId).trigger('change');
+    }
+  });
+}
+
+
+function populateComponents(data) {
+  const componentDropdown = $('#component');
+  componentDropdown.empty().append(
+    '<option value="" disabled selected>Select Component</option>'
+  );
+
+  let componentIds = data.components;
+  if (!componentIds) return;
+
+  if (typeof componentIds === 'string') {
+    componentIds = componentIds.split(',').map(id => id.trim()).filter(Boolean);
+  }
+  if (!Array.isArray(componentIds)) {
+    componentIds = [componentIds];
+  }
+
+  const addedIds = new Set();
+
+  let ajaxCalls = componentIds.map(function(id) {
+    return $.ajax({
+      url: `/component/component-id/${id}/`,
+      type: 'GET',
+      success: function(response) {
+        let components = Array.isArray(response) ? response : [response];
+        components.forEach(function(component) {
+          if (component && !addedIds.has(component.id)) {
+            componentDropdown.append(
+              `<option value="${component.id}">${component.name}</option>`
+            );
+            addedIds.add(component.id);
+          }
+        });
+      },
+      error: function(xhr, status, error) {
+        console.error(`Failed to load component with ID ${id}:`, error);
+      }
+    });
+  });
+
+  $.when.apply($, ajaxCalls).then(function() {
+    if (addedIds.size === 1) {
+      const onlyId = Array.from(addedIds)[0];
+      componentDropdown.val(onlyId).trigger('change');
+    }
+  });
+}
+
+
+
+$(document).ready(function () {
+    $('#raw_material').on('change', function () {
+       
+        const materialId = $(this).val();
+       
+        const batchDropdown = $('#raw_material_batch');
+
+        if (materialId) {
+            $.ajax({
+                url: `/product/raw-material-batches/${materialId}/`,
+                type: 'GET',
+                success: function (data) {
+                    console.log(data)
+                    batchDropdown.empty();
+                  
+                    data.forEach(function (batch) {
+                        batchDropdown.append(`<option value="${batch.batch_id}">${batch.batch_id}</option>`);
+                    });
+
+
+                },
+                error: function (xhr, status, error) {
+                    alert("Failed to load raw material batches");
+                    console.error(error);
+                }
+            });
+        }
+
+
+    });
+});
+
+
+
+
+$(document).ready(function () {
+    $('#consumable').on('change', function () {
+       
+        const materialId = $(this).val();
+        const batchDropdown = $('#consumable_batch');
+
+        if (materialId) {
+            $.ajax({
+                url: `/consumable/consumable-batches/${materialId}/`,
+                type: 'GET',
+                success: function (data) {
+                    batchDropdown.empty();
+                  
+                    data.forEach(function (batch) {
+                        batchDropdown.append(`<option value="${batch.id}">${batch.batch_id}</option>`);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    alert("Failed to load raw material batches");
+                    console.error(error);
+                }
+            });
+        }
+    });
+});
+
+
+$(document).ready(function () {
+    $('#component').on('change', function () {
+     
+        const materialId = $(this).val();
+        const batchDropdown = $('#component_batch');
+
+        if (materialId) {
+            $.ajax({
+                url: `/component/component-batches/${materialId}/`,
+                type: 'GET',
+                success: function (data) {
+                    batchDropdown.empty();
+                  
+                    data.forEach(function (batch) {
+                        batchDropdown.append(`<option value="${batch.id}">${batch.batch_id}</option>`);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    alert("Failed to load raw material batches");
+                    console.error(error);
+                }
+            });
+
+
+
+
+        }
+    });
+});
+
+
+
+// $(document).ready(function() {
+//     $('#product').on('change', function() {
+//         const productId = $(this).val();
+//         const processDropdown = $('#process');
+        
+//         if (!productId) {
+//             processDropdown.empty().append('<option value="" disabled selected>Select Process</option>').prop('disabled', true);
+//             return;
+//         }
+        
+//         // Show loading state
+//         processDropdown.empty().append('<option value="">Loading processes...</option>').prop('disabled', true);
+        
+//         $.ajax({
+//     url: `/process/by-product/${productId}/`,
+//     type: 'GET',
+//     success: function(response) {
+//         console.log("Full response:", response); // Debugging
+        
+//         const processDropdown = $('#process');
+//         processDropdown.empty(); // Clear existing options
+        
+//         if (response.status === 'success' && response.processes.length > 0) {
+//             processDropdown.append('<option value="" disabled selected>Select Process</option>');
+            
+//             $.each(response.processes, function(index, process) {
+//                 console.log("Processing:", process); // Debugging
+//                 processDropdown.append($('<option>', {
+//                     value: process.process,  // Using ID as value is more reliable
+//                     text: process.process
+//                 }));
+//             });
+            
+//             processDropdown.prop('disabled', false);
+//         } else {
+//             processDropdown.append('<option value="" disabled>No processes found</option>');
+//         }
+//     },
+//     error: function(xhr, status, error) {
+//         console.error("Error:", error);
+//         $('#process').empty().append('<option value="" disabled>Error loading processes</option>');
+//     }
+// });
+
+//     });
+// });
+
+
+$(document).ready(function() {
+    // When process is selected
+    $('#process').on('change', function() {
+        const processTitle = $(this).val();
+        const selectedText = $(this).val(); // Get the full process name
+        const container = $('#process-steps-container');
+        
+        if (!processTitle) {
+            container.hide();
+            return;
+        }
+
+        // Show loading state
+        container.html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Loading process steps...</p>
+            </div>
+        `).show();
+
+        // Fetch process steps
+        $.ajax({
+            url: `/process/by-process-title/${processTitle}/`,
+            type: 'GET',
+            success: function(response) {
+              
+                console.log(response.data)
+                container.empty();
+                
+                if (response.data && response.data.length > 0) {
+                    // Create a form for all steps
+                    const stepsForm = $('<form>', { 
+                        id: 'processStepsForm',
+                        class: 'process-steps-form'
+                    });
+                    
+                    response.data.forEach(function(data, index) {
+                        const stepNumber = index + 1;
+                        const stepHtml = `
+                <div class="card mb-4 border-primary">
+                     <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">${selectedText} - Step ${stepNumber}</h5>
+                                </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Process Description</label>
+                            <textarea class="form-control" name="process_description" rows="2">${data.process_description || ''}</textarea>
+                        </div>
+
+
+                        <div class="row border-bottom pb-3 mb-3"> 
+                            <
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Raw Matrial</label>
+                                    <select class="form-control" name="rm_status">
+                                        <option value="Material Valid" ${data.raw_materials === '1' ? 'selected' : ''}>Raw Matatria1</option>
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                             <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Raw material Batch</label>
+                                    <select class="form-control" name="rm_status">
+                                        <option value="Material Valid" ${data.rm_status === 'Material Valid' ? 'selected' : ''}>RM1242</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Expiry date</label>
+                                    <select class="form-control" name="equipment_status">
+                                        <option value="Calibration Valid" ${data.equipment_status === 'Calibration Valid' ? 'selected' : ''}>25/2/2025</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Source name </label>
+                                    <select class="form-control" name="consumable_status">
+                                        <option value="Consumable Valid" ${data.consumable_status === 'Consumable Valid' ? 'selected' : ''}>Source1</option>
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Supplier name </label>
+                                    <select class="form-control" name="component_status">
+                                        <option value="Component Valid" ${data.component_status === 'Component Valid' ? 'selected' : ''}>Supplier 1</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+
+                                <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select class="form-control status-select" name="component_status"
+                                    style="${data.rm_status === 'Material Valid' ? 'background-color:rgb(218, 54, 54); color: white;' : 'background-color: #dc3545; color: white;'}">
+                                    <option value="Component Valid" ${data.rm_status === 'Component Valid' ? 'selected' : ''}>Valid</option>
+                                    <option value="Component Expired" ${data.rm_status === 'Material Valid' ? 'selected' : ''}>Expired</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        </div>
+
+
+
+                        
+                         <div class="row border-bottom pb-3 mb-3"> 
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Components </label>
+                                    <select class="form-control" name="rm_status">
+                                        <option value="Material Valid" ${data.raw_materials === '1' ? 'selected' : ''}>Component 1</option>
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                             <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Component Batch</label>
+                                    <select class="form-control" name="rm_status">
+                                        <option value="Material Valid" ${data.rm_status === 'Material Valid' ? 'selected' : ''}>CMD1242</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+                              <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Unit ID </label>
+                                    <select class="form-control" name="rm_status">
+                                        <option value="Material Valid" ${data.rm_status === 'Material Valid' ? 'selected' : ''}>UNIT12243</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Expiry date</label>
+                                    <select class="form-control" name="equipment_status">
+                                        <option value="Calibration Valid" ${data.equipment_status === 'Calibration Valid' ? 'selected' : ''}>21/6/2025</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Source name </label>
+                                    <select class="form-control" name="consumable_status">
+                                        <option value="Consumable Valid" ${data.consumable_status === 'Consumable Valid' ? 'selected' : ''}>Source1</option>
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Supplier name </label>
+                                    <select class="form-control" name="component_status">
+                                        <option value="Component Valid" ${data.component_status === 'Component Valid' ? 'selected' : ''}>Supplier 1</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+                             
+                    
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select class="form-control status-select" name="component_status"
+                                    style="${data.rm_status === 'Material Valid' ? 'background-color: #28a745; color: white;' : 'background-color: #dc3545; color: white;'}">
+                                    <option value="Component Valid" ${data.rm_status === 'Component Valid' ? 'selected' : ''}>Valid</option>
+                                    <option value="Component Expired" ${data.rm_status === 'Component Expired' ? 'selected' : ''}>Expired</option>
+                                </select>
+                            </div>
+                        </div>
+
+
+                        </div>
+                        <div class="row">
+                           
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Consumable </label>
+                                    <select class="form-control" name="rm_status">
+                                        <option value="Material Valid" ${data.raw_materials === '1' ? 'selected' : ''}>Consumable1</option>
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                             <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Consumable Batch</label>
+                                    <select class="form-control" name="rm_status">
+                                        <option value="Material Valid" ${data.rm_status === 'Material Valid' ? 'selected' : ''}>CS1242</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Expiry date</label>
+                                    <select class="form-control" name="equipment_status">
+                                        <option value="Calibration Valid" ${data.equipment_status === 'Calibration Valid' ? 'selected' : ''}>28/7/2025</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Source name </label>
+                                    <select class="form-control" name="consumable_status">
+                                        <option value="Consumable Valid" ${data.consumable_status === 'Consumable Valid' ? 'selected' : ''}>Source1</option>
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Supplier name </label>
+                                    <select class="form-control" name="component_status">
+                                        <option value="Component Valid" ${data.component_status === 'Component Valid' ? 'selected' : ''}>Supplier 1</option>
+                                       
+                                    </select>
+                                </div>
+                            </div>
+                                 <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select class="form-control status-select" name="component_status"
+                                    style="${data.rm_status === 'Material Valid' ? 'background-color: #28a745; color: white;' : 'background-color: #dc3545; color: white;'}">
+                                    <option value="Component Valid" ${data.rm_status === 'Component Valid' ? 'selected' : ''}>Valid</option>
+                                    <option value="Component Expired" ${data.rm_status === 'Component Expired' ? 'selected' : ''}>Expired</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        </div>
+
+
+                        </div>
+                       
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Min Value</label>
+                                    <input type="number" class="form-control" name="min_value" value="${data.min_value || ''}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Max Value</label>
+                                    <input type="number" class="form-control" name="max_value" value="${data.max_value || ''}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Specification Result</label>
+                                    <input type="text" class="form-control" name="specification_result" value="${data.specification_result || ''}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                       
+                        <div class="row">
+                           
+                        
+                      
+                        <div class="form-group">
+                            <label>Remarks</label>
+                            <textarea class="form-control" name="remarks" rows="2">${data.remarks || ''}</textarea>
+                        </div>
+                        
+                        <input type="hidden" name="id" value="${data.id}">
+                    </div>
+                </div>
+            `;
+                        stepsForm.append(stepHtml);
+                    });
+                    
+                    // Add save button
+                    // stepsForm.append(`
+                    //     <div class="text-right mb-4">
+                    //         <button type="button" class="btn btn-primary save-process-steps">
+                    //             <i class="fas fa-save"></i> Save All Steps
+                    //         </button>
+                    //     </div>
+                    // `);
+                    
+                    container.append(stepsForm);
+                    
+                    // Initialize Select2 for multi-select fields
+                    $('.select2').select2({
+                        width: '100%',
+                        placeholder: "Select items",
+                        allowClear: true
+                    });
+                    
+                    // Handle save button click
+                    $('.save-process-steps').on('click', function() {
+                        saveProcessSteps(processTitle);
+                    });
+                    
+                } else {
+                    container.html('<div class="alert alert-info">No steps found for this process</div>');
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = 'Failed to load process steps';
+                if (xhr.responseJSON && xhr.responseJSON.detail) {
+                    errorMsg = xhr.responseJSON.detail;
+                }
+                container.html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> ${errorMsg}
+                    </div>
+                `);
+            }
+        });
+        
+    });
+    
+    
+    // Function to save process steps
+    function saveProcessSteps(processTitle) {
+        const formData = new FormData(document.getElementById('processStepsForm'));
+        const data = {};
+        
+        // Convert FormData to JSON
+        formData.forEach((value, key) => {
+            // Handle array fields (multi-select)
+            if (key.includes('[]')) {
+                const baseKey = key.replace('[]', '');
+                if (!data[baseKey]) {
+                    data[baseKey] = [];
+                }
+                data[baseKey].push(value);
+            } else {
+                data[key] = value;
+            }
+        });
+        
+        // Show loading state
+        const saveBtn = $('.save-process-steps');
+        saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+        
+        $.ajax({
+            url: `/process/by-process-title/${processTitle}`,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Process steps saved successfully!',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                saveBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Save All Steps');
+            },
+            error: function(xhr) {
+                let errorMsg = 'Failed to save process steps';
+                if (xhr.responseJSON && xhr.responseJSON.detail) {
+                    errorMsg = xhr.responseJSON.detail;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMsg
+                });
+                saveBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Save All Steps');
+            }
+        });
+    }
+});
+
+</script> -->
+
+<script>
+$(document).ready(function () {
+    // Initialize select2
+    $('.select').select2({
+        width: '100%',
+        placeholder: "Select items",
+        allowClear: true
+    });
+
+    // ID Type selection handler
+    $('#id_type').on('change', function() {
+        const selectedValue = $(this).val();
+        $('.batch-field, .unit-field').hide();
+        if(selectedValue === 'batch') {
+            $('.batch-field').show();
+        } else if(selectedValue === 'unit') {
+            $('.unit-field').show();
+        }
+    });
+
+    // Combined product change handler
+    $('#product').on('change', function () {
+        const productId = $(this).val();
+        
+        // Clear all dependent fields when product changes
+        $('#raw_material, #consumable, #component').empty()
+            .append('<option value="" disabled selected>Select...</option>');
+        $('#raw_material_batch, #consumable_batch, #component_batch').empty();
+        $('#process').empty().prop('disabled', true);
+        
+        if (!productId) return;
+
+        // Show loading states
+        $('#raw_material').append('<option value="">Loading...</option>');
+        $('#consumable').append('<option value="">Loading...</option>');
+        $('#component').append('<option value="">Loading...</option>');
+        $('#process').append('<option value="">Loading...</option>');
+
+        // Single AJAX call to get all product data
+        $.ajax({
+            url: `/product/list-view/`,
+            type: 'GET',
+            data: { 'id': productId },
+            success: function (productData) {
+                console.log("Product data loaded:", productData);
+                
+                // Populate all dropdowns
+                populateRawmaterial(productData);
+                populateConsumable(productData);
+                populateComponents(productData);
+                
+                // Load processes
+                loadProcesses(productId);
+
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load product data:", error);
+                resetDropdowns();
+            }
+        });
+    });
+
+    // Raw Material change handler
+    $('#raw_material').on('change', function () {
+        const materialId = $(this).val();
+        const batchDropdown = $('#raw_material_batch');
+        
+        batchDropdown.empty();
+        if (!materialId) return;
+        
+        batchDropdown.append('<option value="">Loading batches...</option>');
+        
+        $.ajax({
+            url: `/product/raw-material-batches/${materialId}/`,
+            type: 'GET',
+            success: function (data) {
+                batchDropdown.empty();
+                data.forEach(function (batch) {
+                    batchDropdown.append(`<option value="${batch.batch_id}">${batch.batch_id}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load raw material batches:", error);
+                batchDropdown.empty().append('<option value="">Error loading batches</option>');
+            }
+        });
+    });
+
+    // Similar handlers for consumable and component
+    $('#consumable').on('change', function () {
+        const consumableId = $(this).val();
+        const batchDropdown = $('#consumable_batch');
+        
+        batchDropdown.empty();
+        if (!consumableId) return;
+        
+        batchDropdown.append('<option value="">Loading batches...</option>');
+        
+        $.ajax({
+            url: `/consumable/consumable-batches/${consumableId}/`,
+            type: 'GET',
+            success: function (data) {
+                batchDropdown.empty();
+                data.forEach(function (batch) {
+                    batchDropdown.append(`<option value="${batch.batch_id}">${batch.batch_id}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load consumable batches:", error);
+                batchDropdown.empty().append('<option value="">Error loading batches</option>');
+            }
+        });
+    });
+
+    $('#component').on('change', function () {
+        const componentId = $(this).val();
+        const batchDropdown = $('#component_batch');
+        
+        batchDropdown.empty();
+        if (!componentId) return;
+        
+        batchDropdown.append('<option value="">Loading batches...</option>');
+        
+        $.ajax({
+            url: `/component/component-batches/${componentId}/`,
+            type: 'GET',
+            success: function (data) {
+                batchDropdown.empty();
+                data.forEach(function (batch) {
+                    batchDropdown.append(`<option value="${batch.batch_id}">${batch.batch_id}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load component batches:", error);
+                batchDropdown.empty().append('<option value="">Error loading batches</option>');
+            }
+        });
+    });
+
+
+
+    $(document).ready(function() {
+    // When process is selected
+    $('#process').on('change', function() {
+        alert("Hello")
+        const processTitle = $(this).val();
+        alert(processTitle)
+        const selectedText = $(this).val(); // Get the full process name
+        const container = $('#process-steps-container');
+        
+        if (!processTitle) {
+            container.hide();
+            return;
+        }
+
+        // Show loading state
+        container.html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Loading process steps...</p>
+            </div>
+        `).show();
+
+        // Fetch process steps
+        $.ajax({
+            url: `/process/by-process-title/${processTitle}/`,
+            type: 'GET',
+            success: function(response) {
+                console.log(response.data);
+                container.empty();
+                
+                if (response.data && response.data.length > 0) {
+                    // Create a form for all steps
+                    const stepsForm = $('<form>', { 
+                        id: 'processStepsForm',
+                        class: 'process-steps-form'
+                    });
+                    
+
+
+response.data.forEach(function(data, index) {
+    const stepNumber = index + 1;
+  
+    const stepHtml = `
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Step ${stepNumber}</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Process Description</label>
+                    <textarea class="form-control" name="process_description" rows="2">${data.process_description || ''}</textarea>
+                </div>
+
+                <div class="row border-bottom pb-3 mb-3"> 
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Raw Material</label>
+                            <select class="form-control" name="raw_material">
+                                <option value="345" ${data.raw_material === '345' ? 'selected' : ''}>Raw Material1</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Raw Material Batch</label>
+                            <select class="form-control" name="raw_material_batch">
+                                ${data.raw_material_batch.map(batch => `<option value="${batch}" ${data.raw_material_batch_status === batch ? 'selected' : ''}>${batch}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <select class="form-control" name="raw_material_expiry">
+                                <option value="25/2/2025" ${data.raw_material_expiry === '25/2/2025' ? 'selected' : ''}>25/2/2025</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Source Name</label>
+                            <select class="form-control" name="raw_material_source">
+                                <option value="Source1" ${data.raw_material_source === 'Source1' ? 'selected' : ''}>Source1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Supplier Name</label>
+                            <select class="form-control" name="raw_material_supplier">
+                                <option value="Supplier1" ${data.raw_material_supplier === 'Supplier1' ? 'selected' : ''}>Supplier 1</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control status-select" name="raw_material_status"
+                                style="${data.raw_material_status === 'Material Valid' ? 'background-color: #28a745; color: white;' : 'background-color: #dc3545; color: white;'}">
+                                <option value="Material Valid" ${data.raw_material_status === 'Material Valid' ? 'selected' : ''}>Valid</option>
+                                <option value="Material Expired" ${data.raw_material_status === 'Material Expired' ? 'selected' : ''}>Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row border-bottom pb-3 mb-3"> 
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Component</label>
+                            <select class="form-control" name="component">
+                                <option value="Component1" ${data.component === 'Component1' ? 'selected' : ''}>Component 1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Component Batch</label>
+                             <select class="form-control" name="component_batc">
+                                <option value="Component1" ${data.component === 'Component1' ? 'selected' : ''}>Component 1</option>
+                            </select>
+                           
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Unit ID</label>
+                            <select class="form-control" name="component_unit_id">
+                                <option value="UNIT12243" ${data.component_unit_id === 'UNIT12243' ? 'selected' : ''}>UNIT12243</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <select class="form-control" name="component_expiry">
+                                <option value="21/6/2025" ${data.component_expiry === '21/6/2025' ? 'selected' : ''}>21/6/2025</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Source Name</label>
+                            <select class="form-control" name="component_source">
+                                <option value="Source1" ${data.component_source === 'Source1' ? 'selected' : ''}>Source1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Supplier Name</label>
+                            <select class="form-control" name="component_supplier">
+                                <option value="Supplier1" ${data.component_supplier === 'Supplier1' ? 'selected' : ''}>Supplier 1</option>
+                            </select>
+                        </div>
+                    </div>
+            
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control status-select" name="component_status"
+                                style="${data.component_status === 'Component Valid' ? 'background-color: #28a745; color: white;' : 'background-color: #dc3545; color: white;'}">
+                                <option value="Component Valid" ${data.component_status === 'Component Valid' ? 'selected' : ''}>Valid</option>
+                                <option value="Component Expired" ${data.component_status === 'Component Expired' ? 'selected' : ''}>Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Consumable</label>
+                            <select class="form-control" name="consumable">
+                                <option value="Consumable1" ${data.consumable === 'Consumable1' ? 'selected' : ''}>Consumable1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Consumable Batch</label>
+                            <select class="form-control" name="consumable_batch">
+                                <option value="CS1242" ${data.consumable_batch === 'CS1242' ? 'selected' : ''}>CS1242</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <select class="form-control" name="consumable_expiry">
+                                <option value="28/7/2025" ${data.consumable_expiry === '28/7/2025' ? 'selected' : ''}>28/7/2025</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Source Name</label>
+                            <select class="form-control" name="consumable_source">
+                                <option value="Source1" ${data.consumable_source === 'Source1' ? 'selected' : ''}>Source1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Supplier Name</label>
+                            <select class="form-control" name="consumable_supplier">
+                                <option value="Supplier1" ${data.consumable_supplier === 'Supplier1' ? 'selected' : ''}>Supplier 1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control status-select" name="consumable_status"
+                                style="${data.consumable_status === 'Consumable Valid' ? 'background-color: #28a745; color: white;' : 'background-color: #dc3545; color: white;'}">
+                                <option value="Consumable Valid" ${data.consumable_status === 'Consumable Valid' ? 'selected' : ''}>Valid</option>
+                                <option value="Consumable Expired" ${data.consumable_status === 'Consumable Expired' ? 'selected' : ''}>Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Min Value</label>
+                            <input type="number" class="form-control" name="min_value" value="${data.min_value || ''}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Max Value</label>
+                            <input type="number" class="form-control" name="max_value" value="${data.max_value || ''}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Specification Result</label>
+                            <input type="text" class="form-control" name="specification_result" value="${data.specification_result || ''}">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Remarks</label>
+                    <textarea class="form-control" name="remarks" rows="2">${data.remarks || ''}</textarea>
+                </div>
+                
+                <input type="hidden" name="id" value="${data.id}">
+            </div>
+        </div>
+    `;
+  
+  
+  
+  
+  
+    stepsForm.append(stepHtml);
+});
+
+
+
+
+
+
+
+                    // Add save button
+                    stepsForm.append(`
+                        <div class="text-right mb-4">
+                            <button type="button" class="btn btn-primary save-process-steps">
+                                <i class="fas fa-save"></i> Save All Steps
+                            </button>
+                        </div>
+                    `);
+                    
+                    container.append(stepsForm);
+                    
+                    // Initialize Select2 for multi-select fields
+                    $('.select2').select2({
+                        width: '100%',
+                        placeholder: "Select items",
+                        allowClear: true
+                    });
+                    
+                    // Handle save button click
+                    $('.save-process-steps').on('click', function() {
+                        saveProcessSteps(processTitle);
+                    });
+                    
+                } else {
+                    container.html('<div class="alert alert-info">No steps found for this process</div>');
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = 'Failed to load process steps';
+                if (xhr.responseJSON && xhr.responseJSON.detail) {
+                    errorMsg = xhr.responseJSON.detail;
+                }
+                container.html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> ${errorMsg}
+                    </div>
+                `);
+            }
+        });
+    });
+    });
+
+
+
+
+    
+       // Form submission handler
+    $('#productBatchForm').on('submit', function(e) {
+        e.preventDefault();
+        // Collect process steps data
+        const processSteps = collectProcessStepsData();
+        
+        // Create FormData object
+        const formData = new FormData(this);
+        
+        // Add process steps data to formData
+        formData.set('process_steps', JSON.stringify(processSteps));
+        
+        // Add the action to the form data
+        const action = $('#action').val();
+        formData.append('action', action);
+        
+        // Submit the form
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    if (action === 'save') {
+                        window.location.href = "{% url 'product-batch-list' %}";
+                    } else if (action === 'qa_approval') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'QA Approval',
+                            text: 'The batch has been submitted for QA approval'
+                        }).then(() => {
+                            window.location.href = "{% url 'clearance' %}";
+                        });
+                    }
+                } else {
+                    alert("Error: " + (response.message || "Unknown error occurred"));
+                }
+            },
+            error: function(xhr, status, error) {
+                let errorMsg = 'An error occurred. Please try again.';
+                if (xhr.responseJSON) {
+                    errorMsg = formatErrors(xhr.responseJSON);
+                }
+                Swal.fire('Error', errorMsg, 'error');
+            }
+        });
+    });
+
+    // Function to collect process steps data
+    function collectProcessStepsData() {
+        const steps = [];
+        const processTitle = $('#process').val();
+        
+        // Loop through each process step card
+        $('#process-steps-container .card').each(function() {
+            const stepData = {
+                process_title: processTitle,
+                process_description: $(this).find('[name="process_description"]').val(),
+                raw_material: $(this).find('[name="rm_status"]').val(),
+                raw_material_batch: $(this).find('[name="rm_batch"]').val(),
+                component: $(this).find('[name="component_status"]').val(),
+                component_batch: $(this).find('[name="component_batch"]').val(),
+                consumable: $(this).find('[name="consumable_status"]').val(),
+                consumable_batch: $(this).find('[name="consumable_batch"]').val(),
+                min_value: $(this).find('[name="min_value"]').val(),
+                max_value: $(this).find('[name="max_value"]').val(),
+                specification_result: $(this).find('[name="specification_result"]').val(),
+                remarks: $(this).find('[name="remarks"]').val()
+            };
+            steps.push(stepData);
+        });
+        
+        return steps;
+    }
+
+
+$('#saveBatchBtn').on('click', function() {
+    $('#productBatchForm').submit();
+});
+
+
+
+
+
+
+
+
+    function handleSubmit(action) {
+        // Set the action value in a hidden field
+        $('#action').val(action);
+        
+        // Validate form before submission
+        const form = document.getElementById('productBatchForm');
+        if (!form.checkValidity()) {
+            // If the form is invalid, trigger the browser's native validation UI
+            form.reportValidity();
+            return;
+        }
+        
+        // Submit the form via AJAX
+        $('#productBatchForm').submit();
+    }
+
+    // function formatErrors(errors) {
+    //     let errorMsg = '';
+    //     for (const field in errors) {
+    //         errorMsg += `${field}: ${errors[field].join(', ')}\n`;
+    //     }
+    //     return errorMsg || 'Unknown error occurred';
+    // }
+
+    // Helper functions
+    function resetDropdowns() {
+        $('#raw_material, #consumable, #component, #process').empty()
+            .append('<option value="" disabled selected>Select...</option>')
+            .prop('disabled', true);
+        $('#raw_material_batch, #consumable_batch, #component_batch').empty();
+    }
+
+    function formatErrors(response) {
+        if (response.errors) {
+            return Object.entries(response.errors)
+                .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
+                .join('\n');
+        }
+        return response.detail || response.message || "Unknown error";
+    }
+
+    function loadProcesses(productId) {
+       const processDropdown = $('#process');
+        processDropdown.empty().append('<option value="" disabled selected>Select Process</option>');
+        processDropdown.prop('disabled', true);
+
+            if (!productId) {
+                processDropdown.empty().append('<option value="" disabled selected>Select Process</option>');
+                processDropdown.prop('disabled', true);
+                return;
+            }
+
+            // Show loading state
+            processDropdown.empty().append('<option value="">Loading processes...</option>').prop('disabled', true);
+
+            $.ajax({
+                url: `/process/by-product/${productId}/`,
+                type: 'GET',
+                success: function(response) {
+                processDropdown.empty();
+                const addedProcesses = new Set();
+
+                if (response.status === 'success' && Array.isArray(response.processes) && response.processes.length > 0) {
+                    processDropdown.append('<option value="" disabled selected>Select Process</option>');
+                    response.processes.forEach(function(processObj) {
+                    const processValue = processObj.process;
+                    if (processValue && !addedProcesses.has(processValue)) {
+                        processDropdown.append(
+                        $('<option>', {
+                            value: processValue,
+                            text: processValue
+                        })
+                        );
+                        addedProcesses.add(processValue);
+                    }
+                    });
+                    processDropdown.prop('disabled', false);
+                } else {
+                    processDropdown.append('<option value="" disabled>No processes found</option>');
+                    processDropdown.prop('disabled', true);
+                }
+                },
+                error: function(xhr, status, error) {
+                processDropdown.empty().append('<option value="" disabled>Error loading processes</option>');
+                processDropdown.prop('disabled', true);
+                console.error("Error:", error);
+                }
+            });
+                }
+
+    function populateRawmaterial(data) {
+        const dropdown = $('#raw_material');
+        dropdown.empty().append('<option value="" disabled selected>Select Raw Material</option>');
+        
+        if (!data.rawmaterial) return;
+        
+        let ids = Array.isArray(data.rawmaterial) ? data.rawmaterial : 
+                 typeof data.rawmaterial === 'string' ? data.rawmaterial.split(',').map(id => id.trim()) : 
+                 [data.rawmaterial];
+        
+        ids = [...new Set(ids.filter(id => id))]; // Remove duplicates and empty values
+        
+        const requests = ids.map(id => 
+            $.get(`/product/raw-material/${id}/`).catch(() => null)
+        );
+        
+        Promise.all(requests).then(responses => {
+            dropdown.empty().append('<option value="" disabled selected>Select Raw Material</option>');
+            
+            responses.filter(r => r && r.data).forEach(response => {
+                const material = response.data;
+                dropdown.append(`<option value="${material.id}">${material.name}</option>`);
+            });
+            
+            if (responses.length === 1 && responses[0] && responses[0].data) {
+                dropdown.val(responses[0].data.id).trigger('change');
+            }
+        });
+    }
+
+    function populateConsumable(data) {
+        const dropdown = $('#consumable');
+        dropdown.empty().append('<option value="" disabled selected>Select Consumable</option>');
+        
+        if (!data.consumable) return;
+        
+        let ids = Array.isArray(data.consumable) ? data.consumable : 
+                 typeof data.consumable === 'string' ? data.consumable.split(',').map(id => id.trim()) : 
+                 [data.consumable];
+        
+        ids = [...new Set(ids.filter(id => id))];
+        
+        const requests = ids.map(id => 
+            $.get(`/consumable/consumable-id/${id}/`).catch(() => null)
+        );
+        
+        Promise.all(requests).then(responses => {
+            dropdown.empty().append('<option value="" disabled selected>Select Consumable</option>');
+            
+            responses.filter(r => r && Array.isArray(r) ? r[0] : r).forEach(response => {
+                const consumable = Array.isArray(response) ? response[0] : response;
+                if (consumable) {
+                    dropdown.append(`<option value="${consumable.id}">${consumable.name}</option>`);
+                }
+            });
+            
+            if (responses.length === 1 && responses[0]) {
+                const consumable = Array.isArray(responses[0]) ? responses[0][0] : responses[0];
+                if (consumable) {
+                    dropdown.val(consumable.id).trigger('change');
+                }
+            }
+        });
+    }
+
+    function populateComponents(data) {
+        const dropdown = $('#component');
+        dropdown.empty().append('<option value="" disabled selected>Select Component</option>');
+        
+        if (!data.components) return;
+        
+        let ids = Array.isArray(data.components) ? data.components : 
+                 typeof data.components === 'string' ? data.components.split(',').map(id => id.trim()) : 
+                 [data.components];
+        
+        ids = [...new Set(ids.filter(id => id))];
+        
+        const requests = ids.map(id => 
+            $.get(`/component/component-id/${id}/`).catch(() => null)
+        );
+        
+        Promise.all(requests).then(responses => {
+            dropdown.empty().append('<option value="" disabled selected>Select Component</option>');
+            
+            responses.filter(r => r && Array.isArray(r) ? r[0] : r).forEach(response => {
+                const component = Array.isArray(response) ? response[0] : response;
+                if (component) {
+                    dropdown.append(`<option value="${component.id}">${component.name}</option>`);
+                }
+            });
+            
+            if (responses.length === 1 && responses[0]) {
+                const component = Array.isArray(responses[0]) ? responses[0][0] : responses[0];
+                if (component) {
+                    dropdown.val(component.id).trigger('change');
+                }
+            }
+        });
+    }
+
+});
+</script>
+
+{% endblock %}
+{% endblock %}

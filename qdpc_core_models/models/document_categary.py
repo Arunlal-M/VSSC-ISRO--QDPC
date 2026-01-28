@@ -18,7 +18,7 @@ class DocumentCategory(models.Model):
         
         
     ]
-    name = models.CharField(max_length=255, choices=CATEGORY_NAME_CHOICES, unique=True, default='PDF')
+    name = models.CharField(max_length=50, choices=CATEGORY_NAME_CHOICES, unique=True, default='PDF')
 
     def __str__(self):
         return self.name

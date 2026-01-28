@@ -1,0 +1,21 @@
+.alert {
+    position: fixed;
+    top: 12%;
+    right: 2%;
+    transform: translateY(-50%);
+    padding: 5px;
+    width: 600px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: black;
+    border-radius: 5px;
+    display: none;
+    z-index: 1000;
+}
+.success {
+    background-color: lightgreen;
+}
+.error {
+    background-color: lightcoral;
+}

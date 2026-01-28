@@ -1,0 +1,515 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load page_permission_tags %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Page Permission Management</h4>
+                <h6>Manage page permissions for all roles/groups</h6>
+            </div>
+        </div>
+
+        <!-- Overview Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="card-title">System Overview</h6>
+                        <p class="mb-1"><strong>Total Groups:</strong> {{ groups|length }}</p>
+                        <p class="mb-1"><strong>Total Pages:</strong> 
+                            {% with total_pages=0 %}
+                                {% for section_name, pages in pages_by_section.items %}
+                                    {% with total_pages=total_pages|add:pages|length %}{% endwith %}
+                                {% endfor %}
+                                {{ total_pages }}
+                            {% endwith %}
+                        </p>
+                        <p class="mb-0"><strong>Permission Types:</strong> View, Add, Edit, Delete, Approve</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="card-title">Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-sm" onclick="selectAllPermissions()">
+                                <i data-feather="check-square" class="me-1"></i>Select All Permissions
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="clearAllPermissions()">
+                                <i data-feather="square" class="me-1"></i>Clear All Permissions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VSSC Role Information Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i data-feather="info" class="me-2"></i>
+                    VSSC Role Permission Guidelines
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-primary">SDA Roles</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Division Head SDA:</strong> Pages 1,5,7,9,12,22</li>
+                            <li><strong>Section Head SDA:</strong> Pages 1,5,7,9,12,22</li>
+                            <li><strong>Engineer SDA:</strong> Pages 1,5,7,9,12,22</li>
+                            <li><strong>Technical/Scientific staff SDA:</strong> Pages 1,5,7,9,12,22</li>
+                            <li><strong>Operator/Technicians SDA:</strong> Pages 1,5,7,9,12,22</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-success">QA & QC Roles</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Division Head QA:</strong> Pages 1,12,23,24</li>
+                            <li><strong>Section Head QA:</strong> Pages 1,12,23,24</li>
+                            <li><strong>Division Head QC:</strong> Pages 1,12</li>
+                            <li><strong>Section Head QC:</strong> Pages 1,12</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-warning">Other Roles</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Testing Agency:</strong> Pages 1,5,7,9,12</li>
+                            <li><strong>Industry:</strong> Pages 1,5,7,9,12</li>
+                            <li><strong>GOCO:</strong> Pages 1,5,7,9,12</li>
+                            <li><strong>System Admin:</strong> All Pages</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permission Matrix -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h5 class="card-title">Permission Matrix</h5>
+                        <p class="text-muted">Check/uncheck permissions for each group and page combination.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" id="group-filter" class="form-control" placeholder="Filter groups...">
+                            <button class="btn btn-outline-secondary" type="button" onclick="clearGroupFilter()">
+                                <i data-feather="x"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permission Legend -->
+                <div class="permission-legend mb-4">
+                    <h6>Permission Types:</h6>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <span class="badge bg-primary me-2">V</span>
+                            <small>View</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-success me-2">A</span>
+                            <small>Add</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-warning me-2">E</span>
+                            <small>Edit</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-danger me-2">D</span>
+                            <small>Delete</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-info me-2">P</span>
+                            <small>Approve</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permission Matrix Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="min-width: 200px;">Page / Group</th>
+                                {% for group in groups %}
+                                <th class="text-center group-column" data-group-name="{{ group.name|lower }}">
+                                    <div class="group-header">
+                                        <small class="d-block fw-bold">{{ group.name }}</small>
+                                        <div class="group-actions">
+                                            <button class="btn btn-sm btn-outline-primary btn-sm" 
+                                                    onclick="selectAllForGroup({{ group.id }})" 
+                                                    title="Select all for this group">
+                                                <i data-feather="check-square" class="feather-sm"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary btn-sm" 
+                                                    onclick="clearAllForGroup({{ group.id }})" 
+                                                    title="Clear all for this group">
+                                                <i data-feather="square" class="feather-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for section_name, pages in pages_by_section.items %}
+                            <tr class="section-header-row">
+                                <td colspan="{{ groups|length|add:1 }}" class="bg-light">
+                                    <h6 class="mb-0">
+                                        <i data-feather="folder" class="me-2"></i>
+                                        {{ section_name }}
+                                    </h6>
+                                </td>
+                            </tr>
+                            {% for page in pages %}
+                            <tr class="page-row" data-page-name="{{ page.name|lower }}">
+                                <td class="page-name-cell">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <span class="page-number me-2">{{ page.page_id }}</span>
+                                            <div>
+                                                <strong>{{ page.name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ page.url }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group btn-group-sm" role="group" aria-label="Page bulk actions">
+                                            <button type="button" class="btn btn-outline-primary" onclick="selectAllForPage('{{ page.name }}')" title="Select all permissions for this page across all groups">
+                                                <i data-feather="check-square" class="feather-sm"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="clearAllForPage('{{ page.name }}')" title="Clear all permissions for this page across all groups">
+                                                <i data-feather="square" class="feather-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                                {% for group in groups %}
+                                <td class="text-center permission-cell" data-group-id="{{ group.id }}" data-page-name="{{ page.name }}">
+                                    <div class="permission-checkboxes">
+                                        {% for perm_type, perm_label in permission_types %}
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input permission-checkbox" 
+                                                   type="checkbox" 
+                                                   id="permission_{{ page.name }}_{{ perm_type }}_{{ group.id }}"
+                                                   name="permission_{{ page.name }}_{{ perm_type }}"
+                                                   data-group-id="{{ group.id }}"
+                                                   data-page-name="{{ page.name }}"
+                                                   data-permission-type="{{ perm_type }}"
+                                                   {% if group_permissions|get_item:group.id|get_item:page.name|get_item:perm_type %}checked{% endif %}
+                                                   onchange="updatePermission(this)">
+                                            <label class="form-check-label" for="permission_{{ page.name }}_{{ perm_type }}_{{ group.id }}">
+                                                <span class="badge 
+                                                    {% if perm_type == 'view' %}bg-primary
+                                                    {% elif perm_type == 'add' %}bg-success
+                                                    {% elif perm_type == 'edit' %}bg-warning
+                                                    {% elif perm_type == 'delete' %}bg-danger
+                                                    {% else %}bg-info{% endif %}">
+                                                    {{ perm_label|first|upper }}
+                                                </span>
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Save Button -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary btn-lg" onclick="saveAllPermissions()">
+                        <i data-feather="save" class="me-2"></i>Save All Permissions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Permission Update Modal -->
+<div class="modal fade" id="permissionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Permission Update</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="permission-modal-content">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.permission-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-check-inline {
+    margin-right: 0;
+}
+
+.group-header {
+    text-align: center;
+}
+
+.group-actions {
+    margin-top: 5px;
+}
+
+.group-actions .btn {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+}
+
+.page-name-cell {
+    vertical-align: middle;
+}
+
+.page-number {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    color: #6c757d;
+    min-width: 30px;
+    text-align: center;
+}
+
+.section-header-row td {
+    background: #f8f9fa !important;
+    font-weight: 600;
+}
+
+.permission-cell {
+    vertical-align: middle;
+}
+
+.feather-sm {
+    width: 14px;
+    height: 14px;
+}
+
+.table th {
+    vertical-align: top;
+    padding: 10px;
+}
+
+.table td {
+    padding: 15px 10px;
+}
+</style>
+
+<script>
+// Initialize filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    initializeGroupFilter();
+});
+
+// Initialize group filter
+function initializeGroupFilter() {
+    const filterInput = document.getElementById('group-filter');
+    filterInput.addEventListener('input', function() {
+        const filterValue = this.value.toLowerCase();
+        filterGroups(filterValue);
+    });
+}
+
+// Filter groups
+function filterGroups(filterValue) {
+    const groupColumns = document.querySelectorAll('.group-column');
+    const pageRows = document.querySelectorAll('.page-row');
+    
+    groupColumns.forEach(column => {
+        const groupName = column.getAttribute('data-group-name');
+        if (groupName.includes(filterValue)) {
+            column.style.display = '';
+        } else {
+            column.style.display = 'none';
+        }
+    });
+    
+    // Show/hide page rows based on visible groups
+    pageRows.forEach(row => {
+        const visibleGroups = row.querySelectorAll('.group-column:not([style*="display: none"])').length;
+        if (visibleGroups === 0) {
+            row.style.display = 'none';
+        } else {
+            row.style.display = '';
+        }
+    });
+}
+
+// Clear group filter
+function clearGroupFilter() {
+    document.getElementById('group-filter').value = '';
+    filterGroups('');
+}
+
+// Update permission via AJAX
+function updatePermission(checkbox) {
+    const groupId = checkbox.getAttribute('data-group-id');
+    const pageName = checkbox.getAttribute('data-page-name');
+    const permissionType = checkbox.getAttribute('data-permission-type');
+    const enabled = checkbox.checked;
+    
+    // Show loading state
+    checkbox.disabled = true;
+    
+    fetch('/page-permissions/update/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            group_id: groupId,
+            page_name: pageName,
+            permission_type: permissionType,
+            enabled: enabled
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Show success feedback
+            showPermissionUpdateFeedback(checkbox, true);
+        } else {
+            // Revert checkbox state on error
+            checkbox.checked = !enabled;
+            showPermissionUpdateFeedback(checkbox, false);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        checkbox.checked = !enabled;
+        showPermissionUpdateFeedback(checkbox, false);
+    })
+    .finally(() => {
+        checkbox.disabled = false;
+    });
+}
+
+// Show permission update feedback
+function showPermissionUpdateFeedback(checkbox, success) {
+    const cell = checkbox.closest('.permission-cell');
+    const originalBg = cell.style.backgroundColor;
+    
+    cell.style.backgroundColor = success ? '#d4edda' : '#f8d7da';
+    
+    setTimeout(() => {
+        cell.style.backgroundColor = originalBg;
+    }, 1000);
+}
+
+// Select all permissions for a specific group
+function selectAllForGroup(groupId) {
+    const checkboxes = document.querySelectorAll(`.permission-checkbox[data-group-id="${groupId}"]`);
+    checkboxes.forEach(checkbox => {
+        if (!checkbox.checked) {
+            checkbox.checked = true;
+            updatePermission(checkbox);
+        }
+    });
+}
+
+// Clear all permissions for a specific group
+function clearAllForGroup(groupId) {
+    const checkboxes = document.querySelectorAll(`.permission-checkbox[data-group-id="${groupId}"]`);
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            checkbox.checked = false;
+            updatePermission(checkbox);
+        }
+    });
+}
+
+// Select all permissions for a specific page across all groups
+function selectAllForPage(pageName) {
+    const selector = `.permission-cell[data-page-name="${pageName}"] .permission-checkbox`;
+    const checkboxes = document.querySelectorAll(selector);
+    checkboxes.forEach(checkbox => {
+        if (!checkbox.checked) {
+            checkbox.checked = true;
+            updatePermission(checkbox);
+        }
+    });
+}
+
+// Clear all permissions for a specific page across all groups
+function clearAllForPage(pageName) {
+    const selector = `.permission-cell[data-page-name="${pageName}"] .permission-checkbox`;
+    const checkboxes = document.querySelectorAll(selector);
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            checkbox.checked = false;
+            updatePermission(checkbox);
+        }
+    });
+}
+
+// Select all permissions for all groups
+function selectAllPermissions() {
+    const checkboxes = document.querySelectorAll('.permission-checkbox');
+    checkboxes.forEach(checkbox => {
+        if (!checkbox.checked) {
+            checkbox.checked = true;
+            updatePermission(checkbox);
+        }
+    });
+}
+
+// Clear all permissions for all groups
+function clearAllPermissions() {
+    const checkboxes = document.querySelectorAll('.permission-checkbox');
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            checkbox.checked = false;
+            updatePermission(checkbox);
+        }
+    });
+}
+
+// Save all permissions (bulk save)
+function saveAllPermissions() {
+    // This would collect all checkbox states and send them in a single request
+    // For now, we're using individual AJAX updates
+    alert('Permissions are automatically saved when you check/uncheck boxes. All changes have been applied.');
+}
+
+// Get CSRF cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

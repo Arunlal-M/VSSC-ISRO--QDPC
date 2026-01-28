@@ -1,0 +1,1143 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Add Product Batch</h4>
+            </div>
+            <div class="page-btn">
+                <a href="{% url 'product-batch-list' %}" class="btn btn-added">Back to List</a>
+            </div>
+        </div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Select ID Type</label>
+                    <select id="id_type" class="form-control" required>
+                        <option value="" disabled selected></option>
+                        <option value="batch">Batch ID</option>
+                        <option value="unit">Unit ID</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6 batch-field" style="display: none;">
+                <div class="form-group">
+                    <label for="batch_id">Batch ID</label>
+                    <input type="text" id="batch_id" class="form-control">
+                </div>
+            </div>
+            
+            <!-- Unit ID Field (Initially Hidden) -->
+            <div class="col-md-6 unit-field" style="display: none;">
+                <div class="form-group">
+                    <label for="unit_id">Unit ID</label>
+                    <input type="text" id="unit_id" class="form-control">
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="product">Product</label>
+                    <select id="product" class="form-control" required>
+                        <option value="" disabled selected>Select Product</option>
+                        {% for prodct in products %}
+                        <option value="{{ prodct.id }}">{{ prodct.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                  <label for="raw_material">Raw Material</label>
+                  <select id="raw_material" class="form-control" required>
+                    <option value="" disabled selected>Select Rawmatrial</option>
+                  </select>
+                </div>
+              </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="raw_material_batch">Raw Material Batch</label>
+                    <select id="raw_material_batch" class="form-control" multiple required>
+                       
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                  <label for="consumable">Consumable</label>
+                  <select id="consumable" class="form-control" required>
+                    <option value="" disabled selected>Select Consumable</option>
+                  </select>
+                </div>
+              </div>
+            
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="consumable_batch">Consumable Batch</label>
+                    <select id="consumable_batch" class="form-control" multiple required>
+                       
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                  <label for="component">Component</label>
+                  <select id="component" class="form-control" required>
+                    <option value="" disabled selected>Select Component</option>
+                  </select>
+                </div>
+              </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="component_batch">Component Batch</label>
+                    <select id="component_batch" class="form-control" multiple required>
+                        <option value="" disabled selected>Select Batch</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="process">Process</label>
+                    <select id="process" class="form-control" required disabled>
+                      
+                        <!-- Processes will be loaded dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div id="process-steps-container" style="display: none;">
+                    <!-- Process steps will be injected here -->
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="batch_size_value">Batch Size</label>
+                    <input type="number" id="batch_size_value" class="form-control" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="batch_size_unit">Batch Size Unit</label>
+                    <select id="batch_size_unit" class="form-control" required>
+                        <option value="" disabled selected>Select Unit</option>
+                        {% for unit in units %}
+                        <option value="{{ unit.id }}">{{ unit.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="manufacturings_start_date">Manufacturing Start Date</label>
+                    <input type="date" id="manufacturings_start_date" class="form-control" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="manufacturings_end_date">Manufacturing End Date</label>
+                    <input type="date" id="manufacturings_end_date" class="form-control" required>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label for="packing_details">Packing Details</label>
+                    <textarea id="packing_details" class="form-control" rows="3" required></textarea>
+                </div>
+            </div>
+            <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Additional Data Tables</h5>
+                    <button type="button" class="btn btn-light btn-sm" id="addTableBtn">
+                        <i class="fas fa-plus"></i> Add New Table
+                    </button>
+                </div>
+                <div class="card-body" id="tablesContainer">
+                    <!-- Dynamic tables will appear here -->
+                    <div class="alert alert-info">
+                        Click "Add New Table" to create your first table
+                    </div>
+                </div>
+            </div>
+        </div>
+           
+              <div class="col-md-12">
+                <div class="form-group">
+                    <button type="button" class="btn btn-submit" id="saveBatchBtn">Save Batch</button>
+                    <button type="button" class="btn btn-submit" id="qaApprovalBtn">QA Approval</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+    // Initialize select2
+    $('.select').select2({
+        width: '100%',
+        placeholder: "Select items",
+        allowClear: true
+    });
+
+    // ID Type selection handler
+    $('#id_type').on('change', function() {
+        const selectedValue = $(this).val();
+        $('.batch-field, .unit-field').hide();
+        if(selectedValue === 'batch') {
+            $('.batch-field').show();
+        } else if(selectedValue === 'unit') {
+            $('.unit-field').show();
+        }
+    });
+
+    // Combined product change handler
+    $('#product').on('change', function () {
+        const productId = $(this).val();
+        
+        // Clear all dependent fields when product changes
+        $('#raw_material, #consumable, #component').empty()
+            .append('<option value="" disabled selected>Select...</option>');
+        $('#raw_material_batch, #consumable_batch, #component_batch').empty();
+        $('#process').empty().prop('disabled', true);
+        
+        if (!productId) return;
+
+        // Show loading states
+        $('#raw_material').append('<option value="">Loading...</option>');
+        $('#consumable').append('<option value="">Loading...</option>');
+        $('#component').append('<option value="">Loading...</option>');
+        $('#process').append('<option value="">Loading...</option>');
+
+        // Single AJAX call to get all product data
+        $.ajax({
+            url: `/product/list-view/`,
+            type: 'GET',
+            data: { 'id': productId },
+            success: function (productData) {
+                console.log("Product data loaded:", productData);
+                
+                // Populate all dropdowns
+                populateRawmaterial(productData);
+                populateConsumable(productData);
+                populateComponents(productData);
+                
+                // Load processes
+                loadProcesses(productId);
+
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load product data:", error);
+                resetDropdowns();
+            }
+        });
+    });
+
+    // Raw Material change handler
+    $('#raw_material').on('change', function () {
+        const materialId = $(this).val();
+        const batchDropdown = $('#raw_material_batch');
+        
+        batchDropdown.empty();
+        if (!materialId) return;
+        
+        batchDropdown.append('<option value="">Loading batches...</option>');
+        
+        $.ajax({
+            url: `/product/raw-material-batches/${materialId}/`,
+            type: 'GET',
+            success: function (data) {
+                console.log(data)
+                batchDropdown.empty();
+                data.forEach(function (batch) {
+                    batchDropdown.append(`<option value="${batch.id}">${batch.id}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load raw material batches:", error);
+                batchDropdown.empty().append('<option value="">Error loading batches</option>');
+            }
+        });
+    });
+
+
+
+
+
+
+
+
+
+
+
+// Dynamic Tables functionality
+let tableCounter = 0;
+
+// Add Table button handler
+$('#addTableBtn').on('click', function() {
+    tableCounter++;
+    const tableId = `dynamicTable_${tableCounter}`;
+    
+    const tableHtml = `
+        <div class="dynamic-table mb-4 border p-3" id="${tableId}">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control table-name" placeholder="Table Title" required>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="number" class="form-control columns-count" placeholder="Columns" min="1" max="10" value="2">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-primary set-columns-btn" type="button">
+                                <i class="fas fa-check"></i> Set
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-right">
+                    <button type="button" class="btn btn-danger btn-sm remove-table-btn">
+                        <i class="fas fa-trash"></i> Remove Table
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-preview" style="display: none;">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="thead-light"></thead>
+                        <tbody>
+                            <tr class="add-row-tr">
+                                <td colspan="100%" class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-primary add-row-btn">
+                                        <i class="fas fa-plus"></i> Add Row
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('#tablesContainer .alert').remove();
+    $('#tablesContainer').append(tableHtml);
+});
+
+// Delegated event handlers for dynamic elements
+$('#tablesContainer').on('click', '.set-columns-btn', function() {
+    const tableDiv = $(this).closest('.dynamic-table');
+    const columnsCount = parseInt(tableDiv.find('.columns-count').val());
+    const tableName = tableDiv.find('.table-name').val().trim();
+    
+    if (!tableName) {
+        Swal.fire('Error', 'Please enter a table title', 'error');
+        return;
+    }
+    
+    if (isNaN(columnsCount) || columnsCount < 1 || columnsCount > 10) {
+        Swal.fire('Error', 'Please enter a valid number of columns (1-10)', 'error');
+        return;
+    }
+    
+    // Create table header
+    const thead = tableDiv.find('thead');
+    thead.empty();
+    
+    let headerRow = '<tr>';
+    for (let i = 1; i <= columnsCount; i++) {
+        headerRow += `
+            <th>
+                <input type="text" class="form-control form-control-sm column-name" 
+                       placeholder="Column ${i}" value="Column ${i}" required>
+            </th>
+        `;
+    }
+    headerRow += '<th class="text-center" style="width: 100px;">Actions</th></tr>';
+    thead.append(headerRow);
+    
+    // Show the table
+    tableDiv.find('.table-preview').show();
+    
+    // Disable column count input and set button
+    tableDiv.find('.columns-count, .set-columns-btn').prop('disabled', true);
+});
+
+$('#tablesContainer').on('click', '.add-row-btn', function() {
+    const table = $(this).closest('table');
+    const headerCells = table.find('thead th');
+    const columnCount = headerCells.length - 1; // exclude actions column
+    
+    let newRow = '<tr>';
+    for (let i = 0; i < columnCount; i++) {
+        const columnName = $(headerCells[i]).find('.column-name').val() || `Column ${i+1}`;
+        newRow += `
+            <td>
+                <input type="text" class="form-control form-control-sm" 
+                       placeholder="${columnName}">
+            </td>
+        `;
+    }
+    newRow += `
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>`;
+    
+    $(this).closest('tbody').find('.add-row-tr').before(newRow);
+});
+
+$('#tablesContainer').on('click', '.remove-row-btn', function() {
+    $(this).closest('tr').remove();
+});
+
+$('#tablesContainer').on('click', '.remove-table-btn', function() {
+    const tableDiv = $(this).closest('.dynamic-table');
+    Swal.fire({
+        title: 'Remove Table?',
+        text: 'Are you sure you want to remove this table?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Yes, remove it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            tableDiv.remove();
+            if ($('#tablesContainer .dynamic-table').length === 0) {
+                $('#tablesContainer').html(`
+                    <div class="alert alert-info">
+                        Click "Add New Table" to create your first table
+                    </div>
+                `);
+            }
+        }
+    });
+});
+
+
+
+
+
+function collectDynamicTablesData() {
+    const tablesData = [];
+    
+    // Loop through each dynamic table
+    $('.dynamic-table').each(function() {
+        const tableDiv = $(this);
+        const tableName = tableDiv.find('.table-name').val();
+        
+        // Skip if table has no name
+        if (!tableName) return;
+        
+        // Get column names
+        const columns = [];
+        tableDiv.find('thead .column-name').each(function() {
+            columns.push($(this).val());
+        });
+        
+        // Get row data
+        const rows = [];
+        tableDiv.find('tbody tr').not('.add-row-tr').each(function() {
+            const rowData = {};
+            $(this).find('td').not(':last').each(function(index) {
+                const colName = columns[index] || `Column ${index+1}`;
+                rowData[colName] = $(this).find('input').val();
+            });
+            rows.push(rowData);
+        });
+        
+        // Add table data to collection
+        tablesData.push({
+            table_name: tableName,
+            columns: columns,
+            rows: rows
+        });
+    });
+    
+    return tablesData;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    // Similar handlers for consumable and component
+    $('#consumable').on('change', function () {
+        const consumableId = $(this).val();
+        const batchDropdown = $('#consumable_batch');
+        
+        batchDropdown.empty();
+        if (!consumableId) return;
+        
+        batchDropdown.append('<option value="">Loading batches...</option>');
+        
+        $.ajax({
+            url: `/consumable/consumable-batches/${consumableId}/`,
+            type: 'GET',
+            success: function (data) {
+                batchDropdown.empty();
+                data.forEach(function (batch) {
+                    batchDropdown.append(`<option value="${batch.id}">${batch.id}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load consumable batches:", error);
+                batchDropdown.empty().append('<option value="">Error loading batches</option>');
+            }
+        });
+    });
+
+    $('#component').on('change', function () {
+        const componentId = $(this).val();
+        const batchDropdown = $('#component_batch');
+        
+        batchDropdown.empty();
+        if (!componentId) return;
+        
+        batchDropdown.append('<option value="">Loading batches...</option>');
+        
+        $.ajax({
+            url: `/component/component-batches/${componentId}/`,
+            type: 'GET',
+            success: function (data) {
+                batchDropdown.empty();
+                data.forEach(function (batch) {
+                    batchDropdown.append(`<option value="${batch.id}">${batch.id}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load component batches:", error);
+                batchDropdown.empty().append('<option value="">Error loading batches</option>');
+            }
+        });
+    });
+
+    // Process change handler
+    $('#process').on('change', function() {
+        const processTitle = $(this).val();
+        const container = $('#process-steps-container');
+        
+        if (!processTitle) {
+            container.hide();
+            return;
+        }
+
+        // Show loading state
+        container.html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Loading process steps...</p>
+            </div>
+        `).show();
+
+        // Fetch process steps
+        $.ajax({
+            url: `/process/by-process-title/${processTitle}/`,
+            type: 'GET',
+            success: function(response) {
+                console.log("my data is coming")
+                console.log(response.data);
+                container.empty();
+                
+                if (response.data && response.data.length > 0) {
+                    // Create a div for all steps
+                    const stepsDiv = $('<div>', { 
+                        id: 'processStepsDiv',
+                        class: 'process-steps-div'
+                    });
+                    
+                    response.data.forEach(function(data, index) {
+                        const stepNumber = index + 1;
+                     const stepHtml = `
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Step ${stepNumber}</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Process Description</label>
+                    <textarea class="form-control" name="process_description" rows="2">${data.process_description || ''}</textarea>
+                </div>
+
+                <div class="row border-bottom pb-3 mb-3"> 
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Raw Material</label>
+                            <select class="form-control" name="raw_material">
+                                <option value=${data.rawmaterial[0].id}>${data.rawmaterial[0].name}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Raw Material Batch</label>
+                            <select class="form-control" name="raw_material_batch">
+                                    ${data.raw_material_batch.map(raw_material_batch => `
+                                        <option value="${raw_material_batch.id}">${raw_material_batch.batch_id}</option>
+                                    `).join('')}
+                                </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Expiry Date</label>  
+                             <select class="form-control" name="raw_material_expirey">
+                                <option value=${data.rawmaterial[0].expiry_date}>${data.rawmaterial[0].expiry_date}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Source Name</label>
+                             <select class="form-control" name="raw_material_source">
+                                <option value=${data.rawmaterial[0].sources[0].id}>${data.rawmaterial[0].sources[0].name}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Supplier Name</label>
+                             <select class="form-control" name="raw_material_supplier">
+                                <option value=${data.rawmaterial[0].suppliers[0].id}>${data.rawmaterial[0].suppliers[0].name}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control status-select" name="raw_material_status"
+                                style="${data.rawmaterial[0].status === 'valid' ? 'background-color: #28a745; color: white;' : 'background-color: #dc3545; color: white;'}">
+                                <option value="Material Valid" ${data.rawmaterial[0].status === 'valid' ? 'selected' : ''}>Valid</option>
+                                <option value="Material Expired" ${data.rawmaterial[0].status === 'expired' ? 'selected' : ''}>Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row border-bottom pb-3 mb-3"> 
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Component</label>
+                            <select class="form-control" name="component">
+                                <option value=${data.component[0].id}>${data.component[0].name}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Component Batch</label>
+                             <select class="form-control" name="component_batch">
+                                    ${data.component_batch.map(component_batch => `
+                                        <option value="${component_batch.id}">${component_batch.batch_id}</option>
+                                    `).join('')}
+                                </select>
+                           
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Unit ID</label>
+                             <select class="form-control" name="component_unit_id">
+                                    ${data.unit_options.map(unit_options => `
+                                        <option value="${unit_options.unit_id}">${unit_options.unit_id}</option>
+                                    `).join('')}
+                                </select>
+                            
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                              <select class="form-control" name="component_expiry">
+                                <option value=${data.component[0].expiry_date}>${data.component[0].expiry_date}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Source Name</label>
+                            <select class="form-control" name="component_source">
+                                <option value=${data.component[0].sources[0].id}>${data.component[0].sources[0].name}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Supplier Name</label>
+                             <select class="form-control" name="component_supplier">
+                                <option value=${data.component[0].suppliers[0].id}>${data.component[0].suppliers[0].name}</option>
+                            </select>
+                        </div>
+                    </div>
+            
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control status-select" name="component_status"
+                                style="${data.component[0].status === 'valid' ? 'background-color: #28a745; color: white;' : 'background-color: #dc3545; color: white;'}">
+                                <option value="Material Valid" ${data.component[0].status === 'valid' ? 'selected' : ''}>Valid</option>
+                                <option value="Material Expired" ${data.component[0].status === 'expired' ? 'selected' : ''}>Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Consumable</label>
+                              <select class="form-control" name="consumable">
+                                <option value=${data.consumable[0].id}>${data.consumable[0].name}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Consumable Batch</label>
+                             <select class="form-control" name="consumable_batch">
+                                    ${data.consumable_batch.map(consumable_batch => `
+                                        <option value="${consumable_batch.id}">${consumable_batch.batch_id}</option>
+                                    `).join('')}
+                                </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                              <select class="form-control" name="consumable_expiry">
+                                <option value=${data.consumable[0].expiry_date}>${data.consumable[0].expiry_date}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Source Name</label>
+                             <select class="form-control" name="consumable_source">
+                                <option value=${data.consumable[0].sources[0].id}>${data.consumable[0].sources[0].name}</option>
+                            </select>
+                            
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Supplier Name</label>
+                              <select class="form-control" name="consumable_supplier">
+                                <option value=${data.consumable[0].suppliers[0].id}>${data.consumable[0].suppliers[0].name}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Status</label>
+                             <select class="form-control status-select" name="consumable_status"
+                                style="${data.consumable[0].status === 'valid' ? 'background-color: #28a745; color: white;' : 'background-color: #dc3545; color: white;'}">
+                                <option value="Material Valid" ${data.consumable[0].status === 'valid' ? 'selected' : ''}>Valid</option>
+                                <option value="Material Expired" ${data.consumable[0].status === 'expired' ? 'selected' : ''}>Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Min Value</label>
+                            <input type="number" class="form-control" name="min_value" value="${data.min_value || ''}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Max Value</label>
+                            <input type="number" class="form-control" name="max_value" value="${data.max_value || ''}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Specification Result</label>
+                            <input type="text" class="form-control" name="specification_result" value="${data.specification_result || ''}">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Remarks</label>
+                    <textarea class="form-control" name="remarks" rows="2">${data.remarks || ''}</textarea>
+                </div>
+                
+                <input type="hidden" name="id" value="${data.id}">
+            </div>
+        </div>
+    `;
+  
+  
+  
+  
+
+                        stepsDiv.append(stepHtml);
+                    });
+                    
+
+                    
+                    container.append(stepsDiv);
+                } else {
+                    container.html('<div class="alert alert-info">No steps found for this process</div>');
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = 'Failed to load process steps';
+                if (xhr.responseJSON && xhr.responseJSON.detail) {
+                    errorMsg = xhr.responseJSON.detail;
+                }
+                container.html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> ${errorMsg}
+                    </div>
+                `);
+            }
+        });
+    });
+
+    // Save Batch button handler
+    $('#saveBatchBtn').on('click', function() {
+        submitBatch('save');
+    });
+
+    // QA Approval button handler
+    $('#qaApprovalBtn').on('click', function() {
+        submitBatch('qa_approval');
+    });
+
+    function submitBatch(action) {
+        // Validate form
+        if (!validateForm()) {
+            return;
+        }
+
+        // Collect all form data
+     const formData = {
+    id_type: $('#id_type').val(),
+    batch_id: $('#batch_id').val(),
+    unit_id: parseInt($('#unit_id').val()),
+    product: parseInt($('#product').val()),
+    raw_material: parseInt($('#raw_material').val()),
+    raw_material_batch: parseInt( $('#raw_material_batch').val()),
+    consumable: parseInt($('#consumable').val()),
+    consumable_batch:  parseInt($('#consumable_batch').val()),
+    component: parseInt($('#component').val()),
+    component_batch: parseInt( $('#component_batch').val()),
+    Process: $('#process').val(),
+    batch_size_value: parseFloat($('#batch_size_value').val()),
+    batch_size_unit: parseInt($('#batch_size_unit').val()),
+    manufacturings_start_date: $('#manufacturings_start_date').val(),
+    manufacturings_end_date: $('#manufacturings_end_date').val(),
+    packing_details: $('#packing_details').val(),
+    action: action,
+    process_steps: collectProcessStepsData(),
+    dynamic_tables_data: collectDynamicTablesData() 
+};
+
+
+        // Add CSRF token
+    const csrfToken = "{{ csrf_token }}";
+
+        // Submit via AJAX
+        $.ajax({
+            url: "{% url 'product-batch-add' %}",
+            type: 'POST',
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            success: function(response) {
+                alert("hello varun i am here")
+                alert(response.success)
+                if (response.success) {
+                    if (action === 'save') {
+                        alert("ented save")
+                           Swal.fire({
+                            icon: 'success',
+                            title: 'Product Batch',
+                            text: 'Sucessfully Added'
+                        }).then(() => {
+                            window.location.href = "{% url 'product-batch-list' %}";
+                        });
+                       
+                    } else if (action === 'qa_approval') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'QA Approval',
+                            text: 'The batch has been submitted for QA approval'
+                        }).then(() => {
+                            window.location.href = "{% url 'clearance' %}";
+                        });
+                    }
+                } 
+            },
+          
+        });
+    }
+
+    function validateForm() {
+        // Simple validation - you can expand this
+        if (!$('#product').val()) {
+            alert('Please select a product');
+            return false;
+        }
+        // Add more validation as needed
+        return true;
+    }
+
+
+
+
+
+
+    function collectProcessStepsData() {
+        const steps = [];
+        const processTitle = $('#process').val();
+        
+        // Loop through each process step card
+        $('#process-steps-container .card').each(function() {
+            const stepData = {
+                process_title: processTitle,
+                process_description: $(this).find('[name="process_description"]').val(),
+                raw_material: $(this).find('[name="raw_material"]').val(),
+                raw_material_batch: $(this).find('[name="raw_material_batch"]').val(),
+                raw_material_expiry: $(this).find('[name="raw_material_expiry"]').val(),
+                raw_material_source: $(this).find('[name="raw_material_source"]').val(),
+                raw_material_supplier: $(this).find('[name="raw_material_supplier"]').val(),
+                raw_material_status: $(this).find('[name="raw_material_status"]').val(),
+
+                component: $(this).find('[name="component"]').val(),
+                component_unit_id: $(this).find('[name="component_unit_id"]').val(),
+                component_expiry: $(this).find('[name="component_expiry"]').val(),
+                component_source: $(this).find('[name="component_source"]').val(),
+                component_supplier: $(this).find('[name="component_supplier"]').val(),
+                component_status: $(this).find('[name="component_status"]').val(),
+                component_batch: $(this).find('[name="component_batch"]').val(),
+                
+                consumable: $(this).find('[name="consumable"]').val(),
+                consumable_batch: $(this).find('[name="consumable_batch"]').val(),
+                consumable_expiry: $(this).find('[name="consumable_expiry"]').val(),
+                consumable_source: $(this).find('[name="consumable_source"]').val(),
+                consumable_supplier: $(this).find('[name="consumable_supplier"]').val(),
+                min_value: $(this).find('[name="min_value"]').val(),
+                max_value: $(this).find('[name="max_value"]').val(),
+                specification_result: $(this).find('[name="specification_result"]').val(),
+                remarks: $(this).find('[name="remarks"]').val()
+            };
+            steps.push(stepData);
+        });
+        
+        return steps;
+    }
+
+
+
+
+    // Helper functions (keep your existing helper functions)
+    function resetDropdowns() {
+        $('#raw_material, #consumable, #component, #process').empty()
+            .append('<option value="" disabled selected>Select...</option>')
+            .prop('disabled', true);
+        $('#raw_material_batch, #consumable_batch, #component_batch').empty();
+    }
+
+    function formatErrors(response) {
+        if (response.errors) {
+            return Object.entries(response.errors)
+                .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
+                .join('\n');
+        }
+        return response.detail || response.message || "Unknown error";
+    }
+
+    function loadProcesses(productId) {
+        const processDropdown = $('#process');
+        processDropdown.empty().append('<option value="" disabled selected>Select Process</option>');
+        processDropdown.prop('disabled', true);
+
+        if (!productId) {
+            processDropdown.empty().append('<option value="" disabled selected>Select Process</option>');
+            processDropdown.prop('disabled', true);
+            return;
+        }
+
+        // Show loading state
+        processDropdown.empty().append('<option value="">Loading processes...</option>').prop('disabled', true);
+
+        $.ajax({
+            url: `/process/by-product/${productId}/`,
+            type: 'GET',
+            success: function(response) {
+            processDropdown.empty();
+            const addedProcesses = new Set();
+
+            if (response.status === 'success' && Array.isArray(response.processes) && response.processes.length > 0) {
+                processDropdown.append('<option value="" disabled selected>Select Process</option>');
+                response.processes.forEach(function(processObj) {
+                const processValue = processObj.process;
+                if (processValue && !addedProcesses.has(processValue)) {
+                    processDropdown.append(
+                    $('<option>', {
+                        value: processValue,
+                        text: processValue
+                    })
+                    );
+                    addedProcesses.add(processValue);
+                }
+                });
+                processDropdown.prop('disabled', false);
+            } else {
+                processDropdown.append('<option value="" disabled>No processes found</option>');
+                processDropdown.prop('disabled', true);
+            }
+            },
+            error: function(xhr, status, error) {
+            processDropdown.empty().append('<option value="" disabled>Error loading processes</option>');
+            processDropdown.prop('disabled', true);
+            console.error("Error:", error);
+            }
+        });
+    }
+
+    function populateRawmaterial(data) {
+        const dropdown = $('#raw_material');
+        dropdown.empty().append('<option value="" disabled selected>Select Raw Material</option>');
+        
+        if (!data.rawmaterial) return;
+        
+        let ids = Array.isArray(data.rawmaterial) ? data.rawmaterial : 
+                 typeof data.rawmaterial === 'string' ? data.rawmaterial.split(',').map(id => id.trim()) : 
+                 [data.rawmaterial];
+        
+        ids = [...new Set(ids.filter(id => id))]; // Remove duplicates and empty values
+        
+        const requests = ids.map(id => 
+            $.get(`/product/raw-material/${id}/`).catch(() => null)
+        );
+        
+        Promise.all(requests).then(responses => {
+            dropdown.empty().append('<option value="" disabled selected>Select Raw Material</option>');
+            
+            responses.filter(r => r && r.data).forEach(response => {
+                const material = response.data;
+                dropdown.append(`<option value="${material.id}">${material.name}</option>`);
+            });
+            
+            if (responses.length === 1 && responses[0] && responses[0].data) {
+                dropdown.val(responses[0].data.id).trigger('change');
+            }
+        });
+    }
+
+    function populateConsumable(data) {
+        const dropdown = $('#consumable');
+        dropdown.empty().append('<option value="" disabled selected>Select Consumable</option>');
+        
+        if (!data.consumable) return;
+        
+        let ids = Array.isArray(data.consumable) ? data.consumable : 
+                 typeof data.consumable === 'string' ? data.consumable.split(',').map(id => id.trim()) : 
+                 [data.consumable];
+        
+        ids = [...new Set(ids.filter(id => id))];
+        
+        const requests = ids.map(id => 
+            $.get(`/consumable/consumable-id/${id}/`).catch(() => null)
+        );
+        
+        Promise.all(requests).then(responses => {
+            dropdown.empty().append('<option value="" disabled selected>Select Consumable</option>');
+            
+            responses.filter(r => r && Array.isArray(r) ? r[0] : r).forEach(response => {
+                const consumable = Array.isArray(response) ? response[0] : response;
+                if (consumable) {
+                    dropdown.append(`<option value="${consumable.id}">${consumable.name}</option>`);
+                }
+            });
+            
+            if (responses.length === 1 && responses[0]) {
+                const consumable = Array.isArray(responses[0]) ? responses[0][0] : responses[0];
+                if (consumable) {
+                    dropdown.val(consumable.id).trigger('change');
+                }
+            }
+        });
+    }
+
+    function populateComponents(data) {
+        const dropdown = $('#component');
+        dropdown.empty().append('<option value="" disabled selected>Select Component</option>');
+        
+        if (!data.components) return;
+        
+        let ids = Array.isArray(data.components) ? data.components : 
+                 typeof data.components === 'string' ? data.components.split(',').map(id => id.trim()) : 
+                 [data.components];
+        
+        ids = [...new Set(ids.filter(id => id))];
+        
+        const requests = ids.map(id => 
+            $.get(`/component/component-id/${id}/`).catch(() => null)
+        );
+        
+        Promise.all(requests).then(responses => {
+            dropdown.empty().append('<option value="" disabled selected>Select Component</option>');
+            
+            responses.filter(r => r && Array.isArray(r) ? r[0] : r).forEach(response => {
+                const component = Array.isArray(response) ? response[0] : response;
+                if (component) {
+                    dropdown.append(`<option value="${component.id}">${component.name}</option>`);
+                }
+            });
+            
+            if (responses.length === 1 && responses[0]) {
+                const component = Array.isArray(responses[0]) ? responses[0][0] : responses[0];
+                if (component) {
+                    dropdown.val(component.id).trigger('change');
+                }
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}
+{% endblock %}

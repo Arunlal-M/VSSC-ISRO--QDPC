@@ -1,0 +1,31 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="container">
+    <h2>All Notifications</h2>
+    <ul class="list-group">
+        {% for notification in notifications %}
+        <li class="list-group-item">
+            <div class="media d-flex">
+                <span class="avatar flex-shrink-0">
+                    <img alt="" src="{% static 'assets/img/profiles/avatar-02.jpg' %}">
+                </span>
+                <div class="media-body flex-grow-1">
+                    <p class="noti-details">
+                        <span class="noti-title">{{ notification.message }}</span>
+                    </p>
+                    <p class="noti-time">
+                        <span class="notification-time">{{ notification.created_at|timesince }} ago</span>
+                    </p>
+                </div>
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item">
+            <p class="noti-details">
+                <span class="noti-title">No notifications found.</span>
+            </p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

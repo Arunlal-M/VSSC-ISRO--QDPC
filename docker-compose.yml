@@ -1,0 +1,29 @@
+name: docker-project-vssc
+
+services:
+  app:
+    build:                                    # Build the image from the Dockerfile
+      context: .                              # Build context
+      dockerfile: dockerfile                  # Dockerfile name
+    image: app-image-python # Name of the image
+    container_name: app-container-vssc # Name of the container
+    ports:
+      - "8000:8000" # Map port 8000 of the container to port 8000 of the host
+    volumes:
+      - .:/app # Mount the current directory to /app in the container
+
+#   db:
+#     image: postgres:17
+#     container_name: postgres-db
+#     restart: always
+#     environment:
+#       POSTGRES_USER: admin
+#       POSTGRES_PASSWORD: test@123
+#       POSTGRES_DB: isro_new
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
+
+# volumes:
+#   postgres_data:

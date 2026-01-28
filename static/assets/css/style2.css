@@ -2670,7 +2670,7 @@ body[data-layout-mode=dark] .alertify .ajs-content .ajs-input {
   transform: translateX(-50%) translateY(-50%);
   -webkit-transform: translateX(-50%) translateY(-50%);
   -ms-transform: translateX(-50%) translateY(-50%);
-  background: url(../img/arrow.svg) no-repeat 0 0;
+  background: none no-repeat 0 0;
 }
 
 .cd-timeline-navigation a.prev {
@@ -4954,6 +4954,10 @@ span.select2-container.select2-container--default.select2-container--open {
 @media (min-width: 991.98px) {
   .mini-sidebar .page-wrapper {
     margin-left: 80px;
+  }
+  /* When hovering/expanding mini-sidebar, restore full left space so content isn't hidden */
+  .mini-sidebar.expand-menu .page-wrapper {
+    margin-left: 260px;
   }
   .mini-sidebar .header-left #toggle_btn {
     opacity: 0;
@@ -8198,4 +8202,4 @@ span.select2-container.select2-container--default.select2-container--open {
   right: 10px;
 }
 
-/*# sourceMappingURL=style.css.map */
+

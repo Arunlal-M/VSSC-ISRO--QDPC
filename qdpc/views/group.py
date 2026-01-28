@@ -4,18 +4,29 @@ from django.contrib.auth.models import Group, Permission  # Import Group and Per
 from rest_framework.permissions import IsAuthenticated  # Import permission class to ensure user is authenticated
 from rest_framework import status  # Import status to handle HTTP status codes
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render
+from django.shortcuts import render, redirect  # Import render and redirect for template rendering and redirection
+from qdpc.core.decorators import require_admin_permission
+
 
 class GroupListView(APIView):  # Create a class for the API view to list all groups
     permission_classes = [IsAuthenticated]  # Set permission to allow only authenticated users
 
     def get(self, request):  # Define the GET method for retrieving groups
-        groups = Group.objects.all()  # Query all groups from the database
-        group_list = [{"id": group.id, "name": group.name} for group in groups]  # Create a list of dictionaries with group ID and name
+        # Check if user has admin permissions using dynamic permission system
+        from qdpc.core.permissions import has_page_permission
+        if not (request.user.is_superuser or has_page_permission(request.user, 'Groups', 'view')):
+            return redirect('user-dashboard')
+        # Simple search by name
+        query_text = (request.GET.get('q') or '').strip()
+        groups = Group.objects.all()
+        if query_text:
+            groups = groups.filter(name__icontains=query_text)
+        group_list = [{"id": group.id, "name": group.name} for group in groups]
         
         context = {
-            'groups' : groups,
+            'groups': groups,
             'group_list': group_list,
+            'q': query_text,
         }
         return render(request, 'group_list.html', context)
     

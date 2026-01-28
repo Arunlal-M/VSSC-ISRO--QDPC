@@ -1,0 +1,438 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>QA Approval - Product Batch</h4>
+                <p class="text-muted">Review and approve/reject product batch</p>
+            </div>
+            <div class="page-btn">
+                <a href="{% url 'product-batch-list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Batch List
+                </a>
+            </div>
+        </div>
+
+        <!-- Batch Header Information -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-box"></i> Batch: {{ batch.batch_id|default:batch.unit|default:"N/A" }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label fw-bold">Batch ID</label>
+                            <input type="text" class="form-control" value="{{ batch.batch_id|default:batch.unit }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label fw-bold">Product Name</label>
+                            <input type="text" class="form-control" value="{{ batch.product.name }}" readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label fw-bold">Manufacturing Start Date</label>
+                            <input type="text" class="form-control" value="{{ batch.manufacturing_start }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label fw-bold">Manufacturing End Date</label>
+                            <input type="text" class="form-control" value="{{ batch.manufacturing_end }}" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label fw-bold">Created Date</label>
+                            <input type="text" class="form-control" value="{{ batch.created_at|date:'Y-m-d H:i' }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label fw-bold">Current Status</label>
+                            <input type="text" class="form-control" value="{{ batch.status|default:'Pending' }}" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                {% if batch.qa_approval_date %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label fw-bold">QA Approval Date</label>
+                            <input type="text" class="form-control" value="{{ batch.qa_approval_date|date:'Y-m-d H:i' }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label fw-bold">QA Approved By</label>
+                            <input type="text" class="form-control" value="{{ batch.qa_approved_by.username|default:'N/A' }}" readonly>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if batch.rejection_reason %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-label fw-bold">Rejection Reason</label>
+                            <textarea class="form-control" rows="3" readonly>{{ batch.rejection_reason }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Raw Materials Section -->
+        {% if raw_materials %}
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cubes"></i> Raw Materials ({{ raw_materials|length }} items)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Raw Material Name</th>
+                                <th>Raw Material Batch ID</th>
+                                <th>Raw Material Status</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rm in raw_materials %}
+                            <tr>
+                                <td><strong>{{ rm.raw_material.name }}</strong></td>
+                                <td><span class="badge bg-primary">{{ rm.batch.batch_id|default:"N/A" }}</span></td>
+                                <td>
+                                    {% if rm.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif rm.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% elif rm.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ rm.status|default:'N/A' }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ rm.quantity|default:'N/A' }}</td>
+                                <td>{{ rm.unit|default:'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Components Section -->
+        {% if components %}
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cogs"></i> Components ({{ components|length }} items)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Component Name</th>
+                                <th>Component Batch ID</th>
+                                <th>Component Status</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for comp in components %}
+                            <tr>
+                                <td><strong>{{ comp.component.name }}</strong></td>
+                                <td><span class="badge bg-primary">{{ comp.batch|default:"N/A" }}</span></td>
+                                <td>
+                                    {% if comp.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif comp.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% elif comp.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ comp.status|default:'N/A' }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ comp.quantity|default:'N/A' }}</td>
+                                <td>{{ comp.unit|default:'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Consumables Section -->
+        {% if consumables %}
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tools"></i> Consumables ({{ consumables|length }} items)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Consumable Name</th>
+                                <th>Consumable Batch ID</th>
+                                <th>Consumable Status</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cons in consumables %}
+                            <tr>
+                                <td><strong>{{ cons.consumable.name }}</strong></td>
+                                <td><span class="badge bg-primary">{{ cons.batch|default:"N/A" }}</span></td>
+                                <td>
+                                    {% if cons.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif cons.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% elif cons.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ cons.status|default:'N/A' }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ cons.quantity|default:'N/A' }}</td>
+                                <td>{{ cons.unit|default:'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Acceptance Tests Section -->
+        {% if acceptance_tests %}
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clipboard-check"></i> Acceptance Tests ({{ acceptance_tests|length }} tests)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Test Name</th>
+                                <th>Test Result</th>
+                                <th>Test Date</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for test in acceptance_tests %}
+                            <tr>
+                                <td><strong>{{ test.acceptance_test.name }}</strong></td>
+                                <td>
+                                    {% if test.result == 'pass' %}
+                                        <span class="badge bg-success">PASS</span>
+                                    {% elif test.result == 'fail' %}
+                                        <span class="badge bg-danger">FAIL</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ test.result|default:'N/A' }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ test.date_of_test|date:'Y-m-d'|default:'N/A' }}</td>
+                                <td>{{ test.remarks|default:'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- QA Decision Section -->
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-gavel"></i> QA Decision
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="qaDecisionForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label fw-bold">Remarks/Comments</label>
+                                <textarea class="form-control" id="remarks" name="remarks" rows="4" 
+                                          placeholder="Enter your remarks or comments about this batch..."></textarea>
+                                <small class="form-text text-muted">Please provide detailed remarks, especially if rejecting the batch.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <button type="button" class="btn btn-success btn-lg me-2" id="approveBtn">
+                                    <i class="fas fa-check"></i> Approve Batch
+                                </button>
+                                <button type="button" class="btn btn-danger btn-lg me-2" id="rejectBtn">
+                                    <i class="fas fa-times"></i> Reject Batch
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-lg" id="cancelBtn">
+                                    <i class="fas fa-arrow-left"></i> Back to List
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+$(document).ready(function() {
+    // Approve Button Handler
+    $('#approveBtn').click(function() {
+        const remarks = $('#remarks').val().trim();
+        
+        Swal.fire({
+            title: 'Approve Product Batch?',
+            text: 'Are you sure you want to approve this batch?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Approve',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                submitQADecision('approve', remarks);
+            }
+        });
+    });
+
+    // Reject Button Handler
+    $('#rejectBtn').click(function() {
+        const remarks = $('#remarks').val().trim();
+        
+        if (!remarks) {
+            Swal.fire('Warning', 'Please provide remarks when rejecting a batch.', 'warning');
+            return;
+        }
+        
+        Swal.fire({
+            title: 'Reject Product Batch?',
+            text: 'Are you sure you want to reject this batch?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Reject',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                submitQADecision('reject', remarks);
+            }
+        });
+    });
+
+    // Cancel Button Handler
+    $('#cancelBtn').click(function() {
+        window.location.href = "{% url 'product-batch-list' %}";
+    });
+
+    function submitQADecision(action, remarks) {
+        const batchId = {{ batch.id }};
+        const btn = action === 'approve' ? $('#approveBtn') : $('#rejectBtn');
+        const originalText = btn.html();
+        
+        // Disable button and show loading
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+        
+        $.ajax({
+            url: `/product/product-batch/${batchId}/qa-approval/`,
+            type: 'POST',
+            data: {
+                action: action,
+                remarks: remarks
+            },
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Redirect back to batch list
+                        window.location.href = "{% url 'product-batch-list' %}";
+                    });
+                } else {
+                    Swal.fire('Error', response.message || 'Failed to process batch.', 'error');
+                    // Re-enable button
+                    btn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred while processing the batch.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseJSON && xhr.responseJSON.detail) {
+                    errorMessage = xhr.responseJSON.detail;
+                }
+                
+                Swal.fire('Error', errorMessage, 'error');
+                // Re-enable button
+                btn.prop('disabled', false).html(originalText);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

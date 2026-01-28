@@ -26,7 +26,7 @@
 					<!-- Test Type Selection -->
 					<div class="col-lg-4 col-sm-6 col-12">
 						<div class="form-group">
-							<label for="test_type">Specification</label>
+							<label for="test_type">Specification Type</label>
 							<select id="test_type" name="test_type" class="form-control">
 								<option value="">Choose Type</option>
 								<option value="quantitative">Quantitative</option>
@@ -65,10 +65,18 @@
 
 
 					<!-- Qualitative Fields -->
-					<div class="col-lg-4 col-sm-6 col-12" id="qualitative-fields" style="display: none;">
-						<div class="form-group">
-							<label for="test_result">Test Result</label>
-							<input type="text" name="test_result" id="test_result" class="form-control">
+					<div class="form-group row" id="qualitative-fields" style="display: none;">
+						<div class="col-lg-4 col-sm-6 col-12 ">
+							<div class="form-group">
+								<label for="test_result">Test Result</label>
+								<input type="text" name="test_result" id="test_result" class="form-control">
+							</div>
+						</div>
+						<div class="col-lg-4 col-sm-6 col-12">
+							<div class="form-group">
+								<label for="specification_result">Specification Result</label>
+								<input type="text" name="specification_result" id="specification_result" class="form-control">
+							</div>
 						</div>
 					</div>
 
@@ -90,6 +98,7 @@
 								<option value="">Select Timeperiod</option>
 								<option value="months">Months</option>
 								<option value="days">Days</option>
+								<option value="years">Years</option>
 							</select>
 						</div>
 					</div>
@@ -195,6 +204,7 @@
 				var min_value = $('#min_value').val();
 				var test_type = $('#test_type').val();
 				var test_result = $('#test_result').val();
+				var specification_result = $('#specification_result').val();
 				var reevaluation_frequency_value = parseInt($('#reevaluation_frequency_value').val(), 10); // Ensure integer conversion
 				var reevaluation_frequency_unit = $('#reevaluation_frequency_unit').val();
 
@@ -209,6 +219,7 @@
 					max_value: max_value, // Include the max_value field
 					test_type: test_type,
 					test_result: test_result,
+					specification_result: specification_result,
 					reevaluation_frequency_value: reevaluation_frequency_value,
 					reevaluation_frequency_unit: reevaluation_frequency_unit,
 				};

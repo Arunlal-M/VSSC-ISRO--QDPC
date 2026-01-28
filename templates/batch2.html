@@ -2,11 +2,14 @@
 {% block content %}
 {% load static %}
 
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
-                <h4>Add Batch</h4>
+                <h4>Add Raw Material Batch</h4>
                 <h6>Create new Batch</h6>
             </div>
         </div>
@@ -15,52 +18,86 @@
                 <div class="row">
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Batch ID</label>
-                            <input type="text" id="batch-id" name="batch-id" class="form-control">
+                            <label>Batch ID <span class="text-danger">*</span></label>
+                            <input type="text" id="batch-id" name="batch-id" class="form-control" required>
+                            <div class="invalid-feedback">Batch ID is required</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Raw Material</label>
-                            <select id="raw_material" name="raw_material" class="form-control">
+                            <label for="procurement_date">Procurement Date <span class="text-danger">*</span></label>
+                            <input type="date" id="procurement_date" name="procurement_date" class="form-control" required>
+                            <div class="invalid-feedback">Procurement date is required</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Raw Material <span class="text-danger">*</span></label>
+                            <select id="raw_material" name="raw_material" class="form-control" required>
                                 <option value="">Select a Raw Material</option>
                                 {% for rwm in raw_materials %}
                                 <option value="{{ rwm.id }}">{{ rwm.name }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Raw material is required</div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Batch Size <span class="text-danger">*</span></label>
+                            <input type="number" name="batch_size_value" id="batch_size_value" class="form-control" min="0.01" step="0.01" required>
+                            <div class="invalid-feedback">Batch size is required and must be greater than 0</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label for="procurement_date">Procurement Date</label>
-                            <input type="date" id="procurement_date" name="procurement_date" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Batch Size</label>
-                            <input type="text" name="batch_size_value" id="batch_size_value" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
-                        <div class="form-group">
-                            <label>Unit</label>
-                            <select class="select" id="batch_size_unit" name="batch_size_unit" >
+                            <label>Unit <span class="text-danger">*</span></label>
+                            <select class="select" id="batch_size_unit" name="batch_size_unit" required>
                                 <option value="">Select a Unit</option>
                                 {% for unit in units %}
                                 <option value="{{ unit.id }}">{{ unit.name }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">Unit is required</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Packing Details</label>
-                            <input type="text" name="packing_details" id="packing_details" class="form-control">
+                            <label>Packing Details <span class="text-danger">*</span></label>
+                            <input type="text" name="packing_details" id="packing_details" class="form-control" required>
+                            <div class="invalid-feedback">Packing details are required</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="date" id="expiry_date" name="expiry_date" class="form-control" readonly>
+                            <small class="form-text text-muted">Auto-calculated based on shelf life</small>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Shelf Life Info</label>
+                            <div id="shelf_life_info" class="form-control-plaintext text-info">
+                                <small>Select raw material to see shelf life details</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="date" id="expiry_date" name="expiry_date" class="form-control" readonly>
                         </div>
                     </div>
                     <div class="col-lg-12">
-                        <button id="submitButton" class="btn btn-submit me-2">Submit</button>
+                        <button id="submitButton" class="btn btn-submit me-2">
+                            <span class="btn-text">Submit</span>
+                            <span class="btn-loading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i> Submitting...
+                            </span>
+                        </button>
+                        <a href="{% url 'raw-material-batch-add' %}" class="btn btn-cancel">Clear</a>
                     </div>
                 </div>
             </div>
@@ -68,7 +105,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="recents" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="recents" tabindex="-1" aria-hidden="true" >
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -91,13 +128,51 @@
     $(document).ready(function () {
         $('#raw_material').on('change', function () {
             var selectedValue = $(this).val();
+            console.log('Raw material changed to:', selectedValue);
+            
             if (selectedValue) {
                 $.ajax({
                     url: `/product/raw-material/${selectedValue}/`,
                     type: 'GET',
                     success: function (response) {
-                        var rawMaterialData = response.data;
-                        console.log(response.data)
+                        console.log('Raw material API response:', response);
+                        var rawMaterialData = response.data;                      
+                        var procurementDate = $('#procurement_date').val();
+                        var shelfLifeValue = rawMaterialData.shelf_life_value;
+                        var shelfLifeUnit = rawMaterialData.shelf_life_unit;
+                        
+                        console.log('Shelf life data:', {shelfLifeValue, shelfLifeUnit, procurementDate});
+                        
+                        // Update shelf life info display
+                        if (shelfLifeValue && shelfLifeUnit) {
+                            $('#shelf_life_info').html(`
+                                <span class="badge badge-info">
+                                    <i class="fas fa-clock"></i> ${shelfLifeValue} ${shelfLifeUnit}
+                                </span>
+                            `);
+                            
+                            // Removed notification call to fix functionality
+                        } else {
+                            $('#shelf_life_info').html(`
+                                <span class="text-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> No shelf life defined
+                                </span>
+                            `);
+                            
+                            // Removed notification call to fix functionality
+                        }
+
+                        // Calculate Expiry Date if procurement date is available
+                        if (procurementDate && shelfLifeValue && shelfLifeUnit) {
+                            var expiryDate = calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit);
+                            $('#expiry_date').val(expiryDate);
+                            $('#expiry_date').removeClass('is-invalid').addClass('is-valid');
+                            console.log('Expiry date calculated:', expiryDate, 'from procurement:', procurementDate, 'shelf life:', shelfLifeValue, shelfLifeUnit);
+                        } else {
+                            $('#expiry_date').val('');
+                            $('#expiry_date').removeClass('is-valid is-invalid');
+                            console.log('Cannot calculate expiry date - missing:', {procurementDate, shelfLifeValue, shelfLifeUnit});
+                        }
 
                         var acceptanceTests = rawMaterialData.acceptance_test;
                         var tabContent = $('#tab-content');
@@ -186,72 +261,116 @@
                         </div>
                     `;
 
-                            acceptanceTests.forEach((test) => {
-                                newContent += `
-                            <div class="row mb-3 align-items-center border-bottom">
-                               <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>Specification</label>
-                                        <input type="text" id="specification-value-${test.id}" value="${test.min}-${test.max}" placeholder="Enter specification" class="form-control" readonly>
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>${test.name}</label>
-                                        <input type="number" id="test-value-${test.id}" placeholder="Enter test value" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>Unit</label>
-                                        <input type="text" id="unit-${test.id}" value="${test.unit}" placeholder="Enter unit" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select class="form-control" id="status-${test.id}" style="background-color: green; color: white;">
-                                            <option value="Valid">Specification Met</option>
-                                            <option value="Invalid">Specification Not Met</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>Remark</label>
-                                        <input type="text" id="remark-${test.id}" placeholder="Enter remark" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-sm-6 col-12 p-2">
-                                    <div class="form-group">
-                                        <label>File</label>
-                                        <input type="file" class="form-control mt-2" id="file-${test.id}">
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                           
+                            $(document).on('change', '#grade-dropdown', function () {
 
-                            // Add event listener to check if test value is within the min and max range
-                            $(document).on('input', `#test-value-${test.id}`, function () {
-                                var enteredValue = parseFloat($(this).val());
+                                    var gradeID = $(this).val();                                  
+                                    const selectedGradeName = $(this).find('option:selected').text();                                  
+                                    const rawMaterialID = $('#raw_material').val();                                   
+                                    const rawMaterialName = $('#raw_material option:selected').text();
+                                    if (!gradeID || !rawMaterialID) {
+                                        alert('Please select a valid grade and raw material.');
+                                        return;
+                                    }
 
-                                var min = parseFloat(test.min);
-                                var max = parseFloat(test.max);
-                                var statusDropdown = $(`#status-${test.id}`);
+                                  
 
-                                // Automatically select status based on entered value
-                                if (enteredValue >= min && enteredValue <= max) {
-                                    statusDropdown.val("Valid");
-                                    statusDropdown.css("background-color", "green");
-                                    statusDropdown.css("color", "white");
-                                } else {
-                                    statusDropdown.val("Invalid");
-                                    statusDropdown.css("background-color", "red");
-                                    statusDropdown.css("color", "white");
-                                }
+                                $.ajax({
+                                    url: '/product/rawmaterial-add-batch/',
+                                    type: 'GET',
+                                    data: {
+                                        grade_name: gradeID,
+                                        raw_material_name: rawMaterialID
+                                    },
+                                    success: function (response) {
+                                        const acceptanceTests = response.tests;
+
+
+                                        
+
+                                        const tabContent = $('#tab-content');
+                                        const testBlockId = `grade-test-block-${selectedGradeName}`;
+                                        const newTestBlock = $(`<div id="${testBlockId}" class="grade-test-block"></div>`);
+
+                                        // ✅ Clear previous test block
+                                        $('.grade-test-block').remove();
+
+                                        // ✅ Generate content for this grade
+                                        acceptanceTests.forEach((test) => {
+                                            const testHtml = `
+                    <div class="row mb-3 align-items-center border-bottom">
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>Specification</label>
+                            <input type="text" id="specification-value-${test.id}" value="${test.min}-${test.max}" class="form-control specification-display" readonly>
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>${test.name}</label>
+                            <input type="number" id="test-value-${test.id}" class="form-control test-value-field" placeholder="Enter test value">
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>Unit</label>
+                            <input type="text" id="unit-${test.id}" value="${test.unit}" class="form-control" readonly>
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>Status</label>
+                            <select class="form-control" id="status-${test.id}">
+                                <option value="Valid">Specification Met</option>
+                                <option value="Invalid">Specification Not Met</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>Remark</label>
+                            <input type="text" id="remark-${test.id}" class="form-control" placeholder="Enter remark">
+                        </div>
+                        <div class="col-lg-2 col-sm-6 col-12 p-2">
+                            <label>File</label>
+                            <input type="file" class="form-control mt-2" id="fileUpload-${test.id}"> 
+                        </div>
+                    </div>
+                `;
+
+                                            newTestBlock.append(testHtml);
+
+                                                                                         // ✅ Bind value checker
+                                             $(document).off('input', `#test-value-${test.id}`).on('input', `#test-value-${test.id}`, function () {
+                                                 const val = parseFloat($(this).val());
+                                                 const min = parseFloat(test.min);
+                                                 const max = parseFloat(test.max);
+                                                 const status = $(`#status-${test.id}`);
+
+                                                 if (!isNaN(val) && val >= min && val <= max) {
+                                                     status.val("Valid").removeClass('status-invalid').addClass('status-valid');
+                                                 } else {
+                                                     status.val("Invalid").removeClass('status-valid').addClass('status-invalid');
+                                                 }
+                                             });
+
+                                             // ✅ Set initial status based on current value
+                                             const currentVal = parseFloat($(`#test-value-${test.id}`).val());
+                                             if (!isNaN(currentVal)) {
+                                                 const min = parseFloat(test.min);
+                                                 const max = parseFloat(test.max);
+                                                 const status = $(`#status-${test.id}`);
+                                                 
+                                                 if (currentVal >= min && currentVal <= max) {
+                                                     status.val("Valid").removeClass('status-invalid').addClass('status-valid');
+                                                 } else {
+                                                     status.val("Invalid").removeClass('status-valid').addClass('status-invalid');
+                                                 }
+                                             }
+                                        });
+
+                                        // ✅ Append the new block and ensure visibility
+                                        tabContent.append(newTestBlock).show();
+                                    },
+                                    error: function () {
+                                        alert('Failed to fetch acceptance tests.');
+                                        // Create notification for acceptance tests loading failure
+                                        createAcceptanceTestsErrorNotification();
+                                    }
+                                });
                             });
 
-                        });
 
                             newContent += `
                         <div class="row">
@@ -269,29 +388,33 @@
                             var formData = new FormData();
                             formData.append('raw_material', selectedValue);
                             formData.append('batch_id', batchId);
-                        
+                            formData.append('expiry_date', expiryDate);//  expiry date in submission
+
                             // Loop through each acceptance test and append its data to FormData
                             acceptanceTests.forEach((test, index) => {
                                 formData.append(`acceptance_tests[${index}][id]`, test.id);
                                 formData.append(`acceptance_tests[${index}][test_value]`, $(`#test-value-${test.id}`).val());
-                                formData.append(`acceptance_tests[${index}][min_value]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[0], 10));
-                                formData.append(`acceptance_tests[${index}][max_value]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[1], 10));
+                                formData.append(`acceptance_tests[${index}][min]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[0]));
+                                formData.append(`acceptance_tests[${index}][max]`, parseInt($(`#specification-value-${test.id}`).val().split('-')[1]));
                                 formData.append(`acceptance_tests[${index}][status]`, $(`#status-${test.id}`).val());
-                                formData.append(`acceptance_tests[${index}][remark]`, $(`#remark-${test.id}`).val());
+
+                                // formData.append(`acceptance_tests[${index}][status]`, $(`#status-${test.id}`).val());
+                                formData.append(`acceptance_tests[${index}][remark]`, $(`#remark-${test.id}`).val()); 
                                 formData.append(`acceptance_tests[${index}][created_by]`, 'user');
-                        
+
                                 // Append the file directly (if a file is selected)
-                                var fileInput = $(`#file-${test.id}`)[0].files[0];
+                                var fileInput = $(`#fileUpload-${test.id}`)[0]?.files[0];
                                 if (fileInput) {
                                     formData.append(`acceptance_tests[${index}][file]`, fileInput);
                                 }
+
                             });
-                        
+
                             // Append additional fields for source, supplier, and grade
                             formData.append('sources', $('#source-dropdown').val());
                             formData.append('suppliers', $('#supplier-dropdown').val());
                             formData.append('grade', $('#grade-dropdown').val());
-                        
+
                             // AJAX request to send FormData to the server
                             $.ajax({
                                 url: '{% url "rawmaterial-batch-test-add" %}',
@@ -305,36 +428,151 @@
                                 success: function (response) {
                                     alert('Files and test values submitted successfully.');
                                     $('#modal-close-btn').click();
+                                    // Remove notification call to fix functionality
                                 },
                                 error: function (error) {
                                     console.log('Error submitting data:', error);
                                 }
                             });
                         });
+
+
+                                         },
+                     error: function (xhr, status, error) {
+                         console.error('Error fetching raw material data:', {xhr, status, error});
+                         $('#shelf_life_info').html(`
+                             <span class="text-danger">
+                                 <i class="fas fa-exclamation-circle"></i> Error loading raw material data
+                             </span>
+                         `);
+                         $('#expiry_date').val('');
+                         $('#expiry_date').removeClass('is-valid is-invalid');
+                     }
+                 });
+             } else {
+                 console.log('No raw material selected');
+                 $('#shelf_life_info').html(`
+                     <small>Select raw material to see shelf life details</small>
+                 `);
+                 $('#expiry_date').val('');
+                 $('#expiry_date').removeClass('is-valid is-invalid');
+             }
+         });
+            });
+
+                 // Handle procurement date change to recalculate expiry date
+         $('#procurement_date').on('change', function() {
+             var rawMaterialId = $('#raw_material').val();
+             var procurementDate = $(this).val();
+             
+             console.log('Procurement date changed:', procurementDate, 'Raw material ID:', rawMaterialId);
+             
+             if (rawMaterialId && procurementDate) {
+                 // Recalculate expiry date when procurement date changes
+                 $.ajax({
+                     url: `/product/raw-material/${rawMaterialId}/`,
+                     type: 'GET',
+                     success: function (response) {
+                         var rawMaterialData = response.data;
+                         var shelfLifeValue = rawMaterialData.shelf_life_value;
+                         var shelfLifeUnit = rawMaterialData.shelf_life_unit;
+                         
+                         console.log('Raw material data:', {shelfLifeValue, shelfLifeUnit, procurementDate});
+                         
+                         if (procurementDate && shelfLifeValue && shelfLifeUnit) {
+                             var expiryDate = calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit);
+                             $('#expiry_date').val(expiryDate);
+                             $('#expiry_date').removeClass('is-invalid').addClass('is-valid');
+                             console.log('Expiry date recalculated:', expiryDate);
+                             // Removed notification call to fix expiry date calculation
+                         } else {
+                             $('#expiry_date').val('');
+                             $('#expiry_date').removeClass('is-valid is-invalid');
+                             console.log('Cannot recalculate expiry date - missing data');
+                         }
+                     },
+                     error: function(xhr, status, error) {
+                         console.error('Error fetching raw material data:', error);
+                         $('#expiry_date').val('');
+                         $('#expiry_date').removeClass('is-valid is-invalid');
+                     }
+                 });
+             } else {
+                 $('#expiry_date').val('');
+                 $('#expiry_date').removeClass('is-valid is-invalid');
+                 console.log('Missing raw material ID or procurement date');
+             }
+         });
+
+        $(document).ready(function () {
+        $('#submitButton').click(function (event) {
+            event.preventDefault();
+            
+            // Clear previous error messages
+            $('.error-message').remove();
+            $('.form-control').removeClass('is-invalid');
+            
+            // Validate required fields
+            var isValid = true;
+            var requiredFields = ['batch-id', 'procurement_date', 'raw_material', 'batch_size_value', 'batch_size_unit', 'packing_details'];
+            
+            requiredFields.forEach(function(fieldId) {
+                var field = $('#' + fieldId);
+                if (!field.val().trim()) {
+                    field.addClass('is-invalid');
+                    field.after('<div class="error-message text-danger">This field is required.</div>');
+                    isValid = false;
+                }
+            });
+            
+            // Validate expiry date
+            var rawMaterialId = $('#raw_material').val();
+            var procurementDate = $('#procurement_date').val();
+            var expiryDate = $('#expiry_date').val();
+            
+            if (rawMaterialId && procurementDate) {
+                $.ajax({
+                    url: `/product/raw-material/${rawMaterialId}/`,
+                    type: 'GET',
+                    async: false,
+                    success: function (response) {
+                        var rawMaterialData = response.data;
+                        var shelfLifeValue = rawMaterialData.shelf_life_value;
+                        var shelfLifeUnit = rawMaterialData.shelf_life_unit;
                         
-                        
-                    },
-                    error: function (error) {
-                        console.log('Error fetching data:', error);
+                        if (shelfLifeValue && shelfLifeUnit) {
+                            if (!expiryDate) {
+                                // Calculate expiry date if not set
+                                var calculatedExpiryDate = calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit);
+                                $('#expiry_date').val(calculatedExpiryDate);
+                                expiryDate = calculatedExpiryDate;
+                                console.log('Auto-calculated expiry date:', calculatedExpiryDate);
+                            }
+                            
+                            // Validate that expiry date is after procurement date
+                            if (expiryDate && expiryDate <= procurementDate) {
+                            $('#expiry_date').addClass('is-invalid');
+                                $('#expiry_date').after('<div class="error-message text-danger">Expiry date must be after procurement date.</div>');
+                            isValid = false;
+                            }
+                        }
                     }
                 });
             }
-        });
-    });
-
-    $(document).ready(function() {
-        $('#submitButton').click(function(event) {
-            event.preventDefault(); 
-            // Check if this alert shows
+            
+            if (!isValid) {
+                showSwalAlert('Please fill in all required fields correctly.', 'error');
+                return;
+            }
 
             // Gather form data
             var rawMaterial = $('#raw_material').val();
             var batchId = $('#batch-id').val();
             var procurementDate = $('#procurement_date').val();
-            var batchSizeValue = parseFloat($('#batch_size_value').val()); // Ensure float conversion
+            var batchSizeValue = parseFloat($('#batch_size_value').val());
             var batchSizeUnit = $('#batch_size_unit').val();
-            // var batchSizeUnit = $('#batch_size_unit').val() ? $('#batch_size_unit').val().map(Number) : [];
             var packingDetails = $('#packing_details').val();
+            var expiryDate = $('#expiry_date').val();
 
             // Create the data object
             var rawMaterialBatchData = {
@@ -343,33 +581,395 @@
                 procurement_date: procurementDate,
                 batch_size_value: batchSizeValue,
                 batch_size_unit: batchSizeUnit,
-                packing_details: packingDetails
+                packing_details: packingDetails,
+                expiry_date: expiryDate
             };
-        // Debug: Check the data object
 
-            // Send data as JSON
+
+
+            // Show loading state
+            $('#submitButton').prop('disabled', true).text('Submitting...');
+
+            // Send data as FormData to handle CSRF properly
+            var formData = new FormData();
+            for (var key in rawMaterialBatchData) {
+                formData.append(key, rawMaterialBatchData[key]);
+            }
+
             $.ajax({
                 type: 'POST',
-                url: '{% url "raw-material-batch-add" %}', // URL to your Django view
-                data: JSON.stringify(rawMaterialBatchData),
-                contentType: 'application/json',
+                url: '{% url "raw-material-batch-add" %}',
+                data: formData,
+                processData: false,
+                contentType: false,
                 headers: {
-                    'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+                    'X-CSRFToken': '{{ csrf_token }}'
                 },
-                success: function(response) {
-                // Check the response
+                success: function (response) {
                     if (response.success) {
-                        window.location.href = "{% url 'raw-material-batch-fetch' %}"; // Redirect or update the UI as needed
+                        // Show success message with SweetAlert
+                        showSwalAlert('Raw Material Batch Created Successfully!', 'success');
+                        
+                        // Removed notification call to fix functionality
+                        
+                        // Redirect after success
+                        setTimeout(function() {
+                            window.location.href = "{% url 'raw-material-batch-fetch' %}";
+                        }, 2000);
                     } else {
-                        $('#error-message').text(response.message).show(); // Show error message
+                        showSwalAlert(response.message || 'Failed to create batch', 'error');
                     }
                 },
-                error: function() {
-                    $('#error-message').text('An error occurred. Please try again.').show(); // Show error message
+                error: function (xhr, status, error) {
+                    var errorMessage = 'An error occurred while creating the batch.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    showSwalAlert(errorMessage, 'error');
+                },
+                complete: function() {
+                    // Reset button state
+                    $('#submitButton').prop('disabled', false).text('Submit');
                 }
             });
         });
+
+        // SweetAlert functions for better user experience
+        function showSwalAlert(message, type) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: type === 'success' ? 'Success!' : 'Error!',
+                    text: message,
+                    icon: type,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: type === 'success' ? '#28a745' : '#dc3545'
+                });
+            } else {
+                // Fallback to regular alert if SweetAlert is not loaded
+                showAlert(message, type);
+            }
+        }
+
+        function showAlert(message, type) {
+            var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            var alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('.page-header').after(alertHtml);
+        }
+
+        // Function to create notification for new batch
+        function createBatchNotification(batchData) {
+            // Create a notification using the existing notification system
+            const notificationData = {
+                title: `New Raw Material Batch Created`,
+                message: `Batch ${batchData.batch_id} for ${getRawMaterialName(batchData.raw_material)} has been created successfully.`,
+                notification_type: 'create',
+                entity_type: 'raw_material',
+                entity_id: batchData.raw_material,
+                entity_name: `Batch ${batchData.batch_id}`,
+                created_by: '{{ request.user.username }}'
+            };
+
+            // Send notification to the backend
+            $.ajax({
+                url: '/notifications/api/',
+                type: 'POST',
+                data: JSON.stringify(notificationData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Notification created successfully:', response);
+                    // Trigger notification display update
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to create notification:', error);
+                    // Still show success message even if notification fails
+                }
+            });
+        }
+
+        // Helper function to get raw material name
+        function getRawMaterialName(rawMaterialId) {
+            const select = document.getElementById('raw_material');
+            const option = select.querySelector(`option[value="${rawMaterialId}"]`);
+            return option ? option.textContent : 'Raw Material';
+        }
+
+        // Function to create notification for acceptance tests submission
+        function createAcceptanceTestNotification(batchId, rawMaterialId) {
+            const notificationData = {
+                title: `Acceptance Tests Submitted`,
+                message: `Acceptance tests for Batch ${batchId} have been submitted successfully.`,
+                notification_type: 'create',
+                entity_type: 'acceptance_test',
+                entity_id: batchId,
+                entity_name: `Batch ${batchId} Tests`,
+                created_by: '{{ request.user.username }}'
+            };
+
+            // Send notification to the backend
+            $.ajax({
+                url: '/notifications/api/',
+                type: 'POST',
+                data: JSON.stringify(notificationData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Acceptance test notification created successfully:', response);
+                    // Trigger notification display update
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to create acceptance test notification:', error);
+                }
+            });
+        }
+
+        // Function to create notification for expiry date calculation
+        function createExpiryDateNotification(expiryDate, shelfLifeValue, shelfLifeUnit) {
+            const notificationData = {
+                title: `Expiry Date Calculated`,
+                message: `Expiry date has been calculated: ${expiryDate} (${shelfLifeValue} ${shelfLifeUnit} from procurement date)`,
+                notification_type: 'create',
+                entity_type: 'raw_material',
+                entity_id: null,
+                entity_name: 'Expiry Date Calculation',
+                created_by: '{{ request.user.username }}'
+            };
+
+            // Send notification to the backend
+            $.ajax({
+                url: '/notifications/api/',
+                type: 'POST',
+                data: JSON.stringify(notificationData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Expiry date notification created successfully:', response);
+                    // Trigger notification display update
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to create expiry date notification:', error);
+                }
+            });
+        }
+
+        // Function to create notification for shelf life information loaded
+        function createShelfLifeNotification(shelfLifeValue, shelfLifeUnit) {
+            const notificationData = {
+                title: `Shelf Life Information Loaded`,
+                message: `Shelf life: ${shelfLifeValue} ${shelfLifeUnit} - Ready for expiry date calculation`,
+                notification_type: 'create',
+                entity_type: 'raw_material',
+                entity_id: null,
+                entity_name: 'Shelf Life Info',
+                created_by: '{{ request.user.username }}'
+            };
+
+            // Send notification to the backend
+            $.ajax({
+                url: '/notifications/api/',
+                type: 'POST',
+                data: JSON.stringify(notificationData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Shelf life notification created successfully:', response);
+                    // Trigger notification display update
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to create shelf life notification:', error);
+                }
+            });
+        }
+
+        // Function to create notification for missing shelf life
+        function createMissingShelfLifeNotification() {
+            const notificationData = {
+                title: `Shelf Life Warning`,
+                message: `No shelf life defined for selected raw material. Expiry date cannot be calculated.`,
+                notification_type: 'create',
+                entity_type: 'raw_material',
+                entity_id: null,
+                entity_name: 'Missing Shelf Life',
+                created_by: '{{ request.user.username }}'
+            };
+
+            // Send notification to the backend
+            $.ajax({
+                url: '/notifications/api/',
+                type: 'POST',
+                data: JSON.stringify(notificationData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Missing shelf life notification created successfully:', response);
+                    // Trigger notification display update
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to create missing shelf life notification:', error);
+                }
+            });
+        }
+
+        // Function to create notification for batch ID validation
+        function createBatchIdValidationNotification(isValid, batchId = null) {
+            let title, message;
+            
+            if (isValid) {
+                title = `Batch ID Validated Successfully`;
+                message = `Batch ID "${batchId}" is valid and ready for processing.`;
+            } else {
+                title = `Batch ID Validation Failed`;
+                message = `Please enter a valid Batch ID to continue.`;
+            }
+
+            const notificationData = {
+                title: title,
+                message: message,
+                notification_type: isValid ? 'create' : 'create',
+                entity_type: 'raw_material',
+                entity_id: batchId,
+                entity_name: isValid ? `Batch ${batchId}` : 'Batch ID Validation',
+                created_by: '{{ request.user.username }}'
+            };
+
+            // Send notification to the backend
+            $.ajax({
+                url: '/notifications/api/',
+                type: 'POST',
+                data: JSON.stringify(notificationData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Batch ID validation notification created successfully:', response);
+                    // Trigger notification display update
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to create batch ID validation notification:', error);
+                }
+            });
+        }
+
+        // Function to create notification for acceptance tests loaded
+        function createAcceptanceTestsLoadedNotification(testCount) {
+            const notificationData = {
+                title: `Acceptance Tests Loaded`,
+                message: `${testCount} acceptance test(s) have been loaded and are ready for input.`,
+                notification_type: 'create',
+                entity_type: 'acceptance_test',
+                entity_id: null,
+                entity_name: 'Acceptance Tests Loaded',
+                created_by: '{{ request.user.username }}'
+            };
+
+            // Send notification to the backend
+            $.ajax({
+                url: '/notifications/api/',
+                type: 'POST',
+                data: JSON.stringify(notificationData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Acceptance tests loaded notification created successfully:', response);
+                    // Trigger notification display update
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to create acceptance tests loaded notification:', error);
+                }
+            });
+        }
+
+        // Function to create notification for acceptance tests loading error
+        function createAcceptanceTestsErrorNotification() {
+            const notificationData = {
+                title: `Acceptance Tests Loading Failed`,
+                message: `Failed to load acceptance tests. Please try again or contact support.`,
+                notification_type: 'create',
+                entity_type: 'acceptance_test',
+                entity_id: null,
+                entity_name: 'Acceptance Tests Error',
+                created_by: '{{ request.user.username }}'
+            };
+
+            // Send notification to the backend
+            $.ajax({
+                url: '/notifications/api/',
+                type: 'POST',
+                data: JSON.stringify(notificationData),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Acceptance tests error notification created successfully:', response);
+                    // Trigger notification display update
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to create acceptance tests error notification:', error);
+                }
+            });
+        }
     });
+
+    //  Function to calculate expiry date
+
+    function calculateExpiryDate(procurementDate, shelfLifeValue, shelfLifeUnit) {
+        var date = new Date(procurementDate);
+
+        if (shelfLifeUnit === 'days') {
+            date.setDate(date.getDate() + shelfLifeValue);
+        } else if (shelfLifeUnit === 'months') {
+            date.setMonth(date.getMonth() + shelfLifeValue);
+        } else if (shelfLifeUnit === 'years') {
+            date.setFullYear(date.getFullYear() + shelfLifeValue);
+        }
+
+        return date.toISOString().split('T')[0];  // Return formatted date (YYYY-MM-DD)
+    }
+
+
 
 </script>
 
@@ -399,6 +999,212 @@
         .row.border-bottom>div {
             margin-bottom: 10px;
         }
+    }
+
+    /* Form styling */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        border-radius: 0.375rem;
+        border: 1px solid #ced4da;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .form-control.is-valid {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .btn-loading {
+        display: none;
+    }
+
+    .select.is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .select.is-valid {
+        border-color: #28a745 !important;
+    }
+
+    .btn-submit {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+    }
+
+    .btn-submit:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        color: white;
+    }
+
+    .btn-submit:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
+    }
+
+    .btn-cancel {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-cancel:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+        color: white;
+        text-decoration: none;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    .page-title h4 {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .page-title h6 {
+        color: #6c757d;
+        font-weight: 400;
+    }
+
+    label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Alert styling */
+    .alert {
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+
+    /* Badge styling */
+    .badge {
+        display: inline-block;
+        padding: 0.25em 0.6em;
+        font-size: 0.75em;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.375rem;
+    }
+
+    .badge-info {
+        color: #fff;
+        background-color: #17a2b8;
+    }
+
+    .text-warning {
+        color: #ffc107 !important;
+    }
+
+    .text-info {
+        color: #17a2b8 !important;
+    }
+
+    .text-success {
+        color: #28a745 !important;
+    }
+
+    /* Form text styling */
+    .form-text {
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #6c757d;
+    }
+
+    .form-control-plaintext {
+        padding: 0.375rem 0;
+        margin-bottom: 0;
+        color: #212529;
+        background-color: transparent;
+        border: solid transparent;
+        border-width: 1px 0;
+    }
+
+    /* Status field styling */
+    .status-valid {
+        background-color: #28a745 !important;
+        color: white !important;
+        border-color: #28a745 !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease;
+    }
+
+    .status-invalid {
+        background-color: #dc3545 !important;
+        color: white !important;
+        border-color: #dc3545 !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease;
+    }
+
+    /* Test value field styling */
+    .test-value-field:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    /* Specification display styling */
+    .specification-display {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        font-family: monospace;
+        font-weight: 500;
     }
 </style>
 

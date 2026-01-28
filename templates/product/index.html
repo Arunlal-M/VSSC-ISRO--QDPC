@@ -1,0 +1,280 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .dashboard-card {
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out;
+        background: white;
+        border: none;
+        height: 100%;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-primary {
+        border-left: 4px solid #4e73df;
+    }
+
+    .card-success {
+        border-left: 4px solid #1cc88a;
+    }
+
+    .card-info {
+        border-left: 4px solid #36b9cc;
+    }
+
+    .card-warning {
+        border-left: 4px solid #f6c23e;
+    }
+
+    .card-danger {
+        border-left: 4px solid #e74a3b;
+    }
+
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        border-radius: 12px;
+        color: white;
+    }
+
+    .icon-primary {
+        background-color: #4e73df;
+    }
+
+    .icon-success {
+        background-color: #1cc88a;
+    }
+
+    .icon-info {
+        background-color: #36b9cc;
+    }
+
+    .icon-warning {
+        background-color: #f6c23e;
+    }
+
+    .icon-danger {
+        background-color: #e74a3b;
+    }
+
+    .card-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #5a5c69;
+    }
+
+    .card-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2e2e2e;
+    }
+
+    .card-percentage {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .percentage-positive {
+        color: #1cc88a;
+    }
+
+    .percentage-negative {
+        color: #e74a3b;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .recent-activity {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .activity-item {
+        position: relative;
+        padding-left: 2rem;
+        padding-bottom: 1.5rem;
+        border-left: 1px solid #e3e6f0;
+    }
+
+    .activity-item:last-child {
+        padding-bottom: 0;
+        border-left: 1px solid transparent;
+    }
+
+    .activity-item::before {
+        content: "";
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        left: -6px;
+        top: 0;
+        background-color: #4e73df;
+    }
+
+    .activity-time {
+        font-size: 0.7rem;
+        color: #b7b9cc;
+    }
+
+    .progress-sm {
+        height: 0.5rem;
+    }
+
+    .resource-status {
+        font-size: 0.8rem;
+    }
+
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    .status-active {
+        background-color: #1cc88a;
+    }
+
+    .status-warning {
+        background-color: #f6c23e;
+    }
+
+    .status-critical {
+        background-color: #e74a3b;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba(0,0,0,.1);
+        border-radius: 50%;
+        border-top-color: #4e73df;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Product Dashboard Overview</h4>
+                <p class="text-muted">Welcome back! Here's what's happening with your inventory today.</p>
+            </div>
+        </div>
+
+       <div class="container-fluid">
+    <!-- Summary Cards Row -->
+    <div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'productcategory-list' %}" class="text-decoration-none">
+            <div class="dashboard-card card-primary">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box icon-primary me-3">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    <div>
+                        <div class="card-title">
+                            Product Category
+                        </div>
+                        <p class="mb-0 text-muted">Your role: {{ request.user.role.name }}</p>
+                        <div class="card-value"></div>
+                        <div class="card-percentage percentage-positive"></div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'product-view' %}" class="text-decoration-none">
+            <div class="dashboard-card card-primary">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box icon-primary me-3">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    <div>
+                        <div class="card-title">Products</div>
+                        <div class="card-value"></div>
+                        <div class="card-percentage percentage-positive"></div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'product-batch-list' %}" class="text-decoration-none">
+            <div class="dashboard-card card-primary">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box icon-primary me-3">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    <div>
+                        <div class="card-title">Product Batch</div>
+                        <div class="card-value"></div>
+                        <div class="card-percentage percentage-positive">our role: {{ request.user.role.name }}</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+
+
+                
+                <!-- <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="dashboard-card card-warning">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box icon-warning me-3">
+                                <i class="bi bi-box2"></i>
+                            </div>
+                            <div>
+                                <div class="card-title">Products</div>
+                                <div class="card-value" data-type="products">
+                                    <span class="loading-spinner"></span>
+                                </div>
+                                <div class="card-percentage percentage-positive" data-type="products">
+                                    <span class="loading-spinner"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Charts Row -->
+           
+
+            <!-- Recent Activity and Resource Status -->
+            
+        </div>
+    </div>
+</div>
+
+{% endblock %}
