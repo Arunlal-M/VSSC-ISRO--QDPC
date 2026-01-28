@@ -2689,7 +2689,7 @@ body[data-layout-mode=dark] .alertify .ajs-content .ajs-input {
   transform: translateX(-50%) translateY(-50%);
   -webkit-transform: translateX(-50%) translateY(-50%);
   -ms-transform: translateX(-50%) translateY(-50%);
-  background: url("none") no-repeat 0 0;
+  background: none no-repeat 0 0;
 }
 
 .cd-timeline-navigation a.prev {
